@@ -12,12 +12,23 @@ import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
+import { DataTransfer } from "@/components/data-transfer";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted } =
-    useTodos();
+  const {
+    todos,
+    hydrated,
+    addTodo,
+    addMany,
+    toggle,
+    rename,
+    remove,
+    removeMany,
+    clearCompleted,
+    importTodos,
+  } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
 
@@ -115,6 +126,8 @@ export function TodoApp() {
       <p className="text-xs opacity-60">
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </p>
+
+      <DataTransfer todos={todos} onImport={importTodos} />
     </section>
   );
 }
