@@ -11,9 +11,11 @@ import {
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
-export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
+type TodoFormProps = { onAdd: (draft: TodoDraft) => void; existingTags?: readonly string[] };
+
+export function TodoForm({ onAdd, existingTags = [] }: TodoFormProps) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate } = form;
+  const { title, priority, dueDate, tags } = form;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,6 +57,20 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         aria-label="Due date"
         className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
       />
+      <input
+        value={tags}
+        onChange={(event) => setForm((f) => ({ ...f, tags: event.target.value }))}
+        list="todo-tag-suggestions"
+        placeholder="Tags, comma-separated"
+        aria-label="Tags"
+        autoComplete="off"
+        className="w-full rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm sm:w-40 dark:border-white/15"
+      />
+      <datalist id="todo-tag-suggestions">
+        {existingTags.map((tag) => (
+          <option key={tag} value={tag} />
+        ))}
+      </datalist>
       <button
         type="submit"
         disabled={!isValidTitle(title)}

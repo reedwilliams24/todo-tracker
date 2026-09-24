@@ -1,6 +1,13 @@
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
+import {
+  allTags,
+  countRemaining,
+  filterByTag,
+  filterTodos,
+  sortTodos,
+  type TodoFilter,
+} from "@todo/shared";
 import { useTodos } from "../hooks/use-todos";
 import { colors, fontSize, radius, spacing } from "../theme";
 import { TodoForm } from "./todo-form";
@@ -12,14 +19,20 @@ export function TodoApp() {
   const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted, undoable, undo } =
     useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
+  const [tag, setTag] = useState<string | null>(null);
 
-  const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
+  const tags = useMemo(() => allTags(todos), [todos]);
+  const activeTag = tag && tags.includes(tag) ? tag : null;
+  const visible = useMemo(
+    () => sortTodos(filterByTag(filterTodos(todos, filter), activeTag)),
+    [todos, filter, activeTag],
+  );
   const remaining = countRemaining(todos);
   const hasCompleted = todos.length > remaining;
 
   return (
     <View style={styles.container}>
-      <TodoForm onAdd={addTodo} />
+      <TodoForm onAdd={addTodo} existingTags={tags} />
 
       <View style={styles.toolbar}>
         <View style={styles.filters} accessibilityRole="tablist" accessibilityLabel="Filter todos">
@@ -47,11 +60,34 @@ export function TodoApp() {
         )}
       </View>
 
+      {tags.length > 0 && (
+        <View style={styles.tags} accessibilityLabel="Filter by tag">
+          {tags.map((option) => {
+            const selected = activeTag === option;
+            return (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => setTag(selected ? null : option)}
+                style={[styles.tag, selected && styles.tagSelected]}
+              >
+                <Text style={[styles.tagText, selected && styles.tagTextSelected]}>#{option}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+
       {!hydrated ? (
         <Text style={styles.empty}>Loading…</Text>
       ) : visible.length === 0 ? (
         <Text style={styles.empty}>
-          {todos.length === 0 ? "No todos yet. Add your first one above." : `No ${filter} todos.`}
+          {todos.length === 0
+            ? "No todos yet. Add your first one above."
+            : activeTag
+              ? `No ${filter === "all" ? "" : `${filter} `}todos tagged #${activeTag}.`
+              : `No ${filter} todos.`}
         </Text>
       ) : (
         <FlatList
@@ -85,6 +121,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, gap: spacing[4] },
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing[3] },
   filters: { flexDirection: "row", gap: spacing[1] },
+  tags: { flexDirection: "row", flexWrap: "wrap", gap: spacing[1] },
+  tag: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing[2],
+    paddingVertical: spacing[0.5],
+  },
+  tagSelected: { backgroundColor: colors.foreground, borderColor: colors.foreground },
+  tagText: { fontSize: fontSize.xs, color: colors.muted },
+  tagTextSelected: { color: colors.card },
   filter: { borderRadius: radius.full, paddingHorizontal: spacing[3], paddingVertical: spacing[1] },
   filterSelected: { backgroundColor: colors.foreground },
   filterText: { fontSize: fontSize.sm, textTransform: "capitalize", color: colors.foreground, opacity: 0.7 },
