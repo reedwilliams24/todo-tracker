@@ -164,3 +164,21 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("reminder option is tied to a due date and shown on the todo", async ({ page }) => {
+  const reminder = page.getByLabel("Reminder");
+  await expect(reminder).toBeDisabled();
+
+  await page.getByLabel("Todo title").fill("Pay rent");
+  await page.getByLabel("Due date").fill("2030-01-01");
+  await expect(reminder).toBeEnabled();
+  await reminder.selectOption("1d");
+  await page.getByRole("button", { name: "Add" }).click();
+
+  const item = page.getByRole("listitem").first();
+  await expect(item).toContainText("2030-01-01");
+  await expect(item.getByLabel("Reminder 1 day before")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("listitem").first().getByLabel("Reminder 1 day before")).toBeVisible();
+});

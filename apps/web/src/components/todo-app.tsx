@@ -9,6 +9,7 @@ import {
   type TodoFilter,
 } from "@todo/shared";
 import { useTodos } from "@/hooks/use-todos";
+import { useReminders } from "@/hooks/use-reminders";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
@@ -20,6 +21,7 @@ export function TodoApp() {
     useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
+  const { permission, request } = useReminders(todos);
 
   const visible = useMemo(
     () => sortTodos(searchTodos(filterTodos(todos, filter), query)),
@@ -32,6 +34,18 @@ export function TodoApp() {
   return (
     <section className="flex flex-col gap-4">
       <TodoForm onAdd={addTodo} />
+      {permission === "default" && (
+        <button
+          type="button"
+          onClick={request}
+          className="self-start text-xs underline opacity-60 hover:opacity-100"
+        >
+          Enable due-date notifications
+        </button>
+      )}
+      {permission === "denied" && (
+        <p className="text-xs opacity-60">Notifications are blocked in this browser.</p>
+      )}
       <VoiceCapture todos={todos} onAddMany={addMany} onUndo={removeMany} />
 
       <div className="relative">

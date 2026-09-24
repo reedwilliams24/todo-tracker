@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { isValidTitle, type Todo } from "@todo/shared";
+import { REMINDER_LABELS, isValidTitle, type Todo } from "@todo/shared";
 import { colors, priorityColors } from "../theme";
 
 type TodoItemProps = {
@@ -56,6 +56,14 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
       )}
 
       {todo.dueDate && <Text style={styles.dueDate}>{todo.dueDate}</Text>}
+      {todo.reminder && (
+        <Text
+          style={styles.dueDate}
+          accessibilityLabel={`Reminder ${REMINDER_LABELS[todo.reminder].toLowerCase()}`}
+        >
+          {REMINDER_LABELS[todo.reminder]}
+        </Text>
+      )}
 
       <View style={[styles.badge, { backgroundColor: priority.bg }]}>
         <Text style={[styles.badgeText, { color: priority.text }]}>{todo.priority}</Text>
