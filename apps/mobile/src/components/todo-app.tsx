@@ -9,7 +9,18 @@ import { TodoItem } from "./todo-item";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted } = useTodos();
+  const {
+    todos,
+    hydrated,
+    addTodo,
+    toggle,
+    rename,
+    remove,
+    clearCompleted,
+    addSubtask,
+    toggleSubtask,
+    removeSubtask,
+  } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
 
   const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
@@ -59,7 +70,15 @@ export function TodoApp() {
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
           renderItem={({ item }) => (
-            <TodoItem todo={item} onToggle={toggle} onRename={rename} onRemove={remove} />
+            <TodoItem
+              todo={item}
+              onToggle={toggle}
+              onRename={rename}
+              onRemove={remove}
+              onAddSubtask={addSubtask}
+              onToggleSubtask={toggleSubtask}
+              onRemoveSubtask={removeSubtask}
+            />
           )}
         />
       )}

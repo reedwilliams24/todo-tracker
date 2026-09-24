@@ -164,3 +164,30 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("subtasks: add, progress badge, completing all completes the parent", async ({ page }) => {
+  await addTodo(page, "Plan trip");
+  await page.getByRole("button", { name: 'Expand subtasks of "Plan trip"' }).click();
+  const input = page.getByRole("textbox", { name: 'New subtask for "Plan trip"' });
+  await input.fill("Book flight");
+  await input.press("Enter");
+  await input.fill("Book hotel");
+  await input.press("Enter");
+
+  const badge = page.getByRole("button", { name: 'Collapse subtasks of "Plan trip"' });
+  await expect(badge).toContainText("0/2");
+
+  await page.getByRole("checkbox", { name: 'Mark subtask "Book flight" as complete' }).check();
+  await expect(badge).toContainText("1/2");
+  await expect(page.getByRole("checkbox", { name: 'Mark "Plan trip" as complete' })).not.toBeChecked();
+
+  await page.getByRole("checkbox", { name: 'Mark subtask "Book hotel" as complete' }).check();
+  await expect(badge).toContainText("2/2");
+  await expect(page.getByRole("checkbox", { name: 'Mark "Plan trip" as active' })).toBeChecked();
+
+  await page.getByRole("button", { name: 'Delete subtask "Book hotel"' }).click();
+  await expect(badge).toContainText("1/1");
+
+  await page.reload();
+  await expect(page.getByRole("button", { name: 'Expand subtasks of "Plan trip"' })).toContainText("1/1");
+});
