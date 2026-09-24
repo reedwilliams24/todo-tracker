@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { isValidTitle, type TodoDraft, type TodoPriority } from "@todo/shared";
+import { DEFAULT_PRIORITY, isValidTitle, type TodoDraft, type TodoPriority } from "@todo/shared";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState<TodoPriority>("medium");
+  const [priority, setPriority] = useState<TodoPriority>(DEFAULT_PRIORITY);
   const [dueDate, setDueDate] = useState("");
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -16,7 +16,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
     onAdd({ title, priority, dueDate: dueDate || undefined });
     setTitle("");
     setDueDate("");
-    setPriority("medium");
+    setPriority(DEFAULT_PRIORITY);
   }
 
   return (

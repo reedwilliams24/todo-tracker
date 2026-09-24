@@ -1,4 +1,6 @@
-import type { Todo, TodoDraft, TodoFilter } from "./types";
+import type { Todo, TodoDraft, TodoFilter, TodoPriority } from "./types";
+
+export const DEFAULT_PRIORITY: TodoPriority = "medium";
 
 export const PRIORITY_ORDER: Record<Todo["priority"], number> = {
   high: 0,
@@ -27,7 +29,7 @@ export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
     title: draft.title.trim(),
     notes: draft.notes?.trim() || undefined,
     completed: false,
-    priority: draft.priority ?? "medium",
+    priority: draft.priority ?? DEFAULT_PRIORITY,
     dueDate: draft.dueDate,
     createdAt: timestamp,
     updatedAt: timestamp,

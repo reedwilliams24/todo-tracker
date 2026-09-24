@@ -1,13 +1,19 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { isValidDueDate, isValidTitle, type TodoDraft, type TodoPriority } from "@todo/shared";
+import {
+  DEFAULT_PRIORITY,
+  isValidDueDate,
+  isValidTitle,
+  type TodoDraft,
+  type TodoPriority,
+} from "@todo/shared";
 import { colors } from "../theme";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState<TodoPriority>("medium");
+  const [priority, setPriority] = useState<TodoPriority>(DEFAULT_PRIORITY);
   const [dueDate, setDueDate] = useState("");
 
   const dateOk = isValidDueDate(dueDate);
@@ -18,7 +24,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
     onAdd({ title, priority, dueDate: dueDate || undefined });
     setTitle("");
     setDueDate("");
-    setPriority("medium");
+    setPriority(DEFAULT_PRIORITY);
   }
 
   return (
