@@ -81,6 +81,15 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         </button>
       )}
 
+      {todo.tags?.map((tag) => (
+        <span
+          key={tag}
+          className="rounded-full bg-black/5 px-2 py-0.5 text-xs opacity-80 dark:bg-white/10"
+        >
+          #{tag}
+        </span>
+      ))}
+
       {todo.dueDate && (
         <span data-testid={TEST_IDS.itemDueDate(todo.title)} className="text-xs opacity-60">
           {todo.dueDate}

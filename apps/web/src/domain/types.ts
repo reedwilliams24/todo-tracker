@@ -7,6 +7,7 @@ export type Todo = {
   completed: boolean;
   priority: TodoPriority;
   dueDate?: string;
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
 };
@@ -18,4 +19,5 @@ export type TodoDraft = {
   notes?: string;
   priority?: TodoPriority;
   dueDate?: string;
+  tags?: string[];
 };
