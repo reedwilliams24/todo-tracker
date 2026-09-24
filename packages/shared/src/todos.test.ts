@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { countRemaining, createTodo, filterTodos, isValidTitle, sortTodos, toggleTodo } from "./todos";
+import {
+  countRemaining,
+  createTodo,
+  filterTodos,
+  isValidTitle,
+  searchTodos,
+  sortTodos,
+  toggleTodo,
+} from "./todos";
 
 const draft = { title: "  Write tests  " };
 
@@ -29,6 +37,31 @@ describe("filterTodos", () => {
     expect(filterTodos(todos, "active")).toEqual([active]);
     expect(filterTodos(todos, "completed")).toEqual([done]);
     expect(filterTodos(todos, "all")).toHaveLength(2);
+  });
+});
+
+describe("searchTodos", () => {
+  const milk = createTodo({ title: "Buy Milk", notes: "oat, from the corner shop" });
+  const dog = createTodo({ title: "Walk the dog" });
+  const todos = [milk, dog];
+
+  it("matches case-insensitively on title", () => {
+    expect(searchTodos(todos, "MILK")).toEqual([milk]);
+    expect(searchTodos(todos, "the")).toEqual([milk, dog]);
+  });
+
+  it("matches on notes", () => {
+    expect(searchTodos(todos, "corner")).toEqual([milk]);
+  });
+
+  it("returns everything for an empty or whitespace query", () => {
+    expect(searchTodos(todos, "")).toEqual(todos);
+    expect(searchTodos(todos, "   ")).toEqual(todos);
+  });
+
+  it("trims the query and returns nothing on no match", () => {
+    expect(searchTodos(todos, " dog ")).toEqual([dog]);
+    expect(searchTodos(todos, "cat")).toEqual([]);
   });
 });
 
