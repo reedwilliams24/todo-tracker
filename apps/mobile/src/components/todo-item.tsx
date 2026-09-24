@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { isValidTitle, type Todo } from "@todo/shared";
-import { colors, priorityColors } from "../theme";
+import { useStyles, useTheme, priorityColors, type ThemeColors } from "../theme";
 
 type TodoItemProps = {
   todo: Todo;
@@ -13,6 +13,7 @@ type TodoItemProps = {
 export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
+  const styles = useStyles(makeStyles);
 
   function commit() {
     if (isValidTitle(draftTitle) && draftTitle.trim() !== todo.title) {
@@ -23,7 +24,8 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
     setEditing(false);
   }
 
-  const priority = priorityColors[todo.priority];
+  const { theme } = useTheme();
+  const priority = priorityColors[theme][todo.priority];
 
   return (
     <View style={styles.row}>
@@ -74,7 +76,8 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
