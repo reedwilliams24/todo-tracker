@@ -14,6 +14,7 @@
     "spec:record": "pnpm --filter @todo/spec record",
     "spec:generate": "pnpm --filter @todo/spec generate",
     "spec:check": "pnpm --filter @todo/spec record --check && pnpm --filter @todo/spec generate --check",
-    "spec:parity": "pnpm --filter @todo/spec parity"
+    "spec:parity": "pnpm --filter @todo/spec parity",
+    "db:migrate": "supabase db push"
   }
 }

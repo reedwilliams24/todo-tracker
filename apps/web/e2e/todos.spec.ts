@@ -191,3 +191,8 @@ test("undo restores deleted and completed todos in their original position", asy
   await toast.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByRole("listitem")).toHaveCount(3);
 });
+
+test("stays local-only when Supabase is not configured", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Email me a link" })).toHaveCount(0);
+});
