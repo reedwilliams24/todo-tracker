@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import { isValidTitle, type Todo } from "@todo/shared";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
-  high: "bg-red-500/15 text-red-600 dark:text-red-400",
-  medium: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  low: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  high: "bg-red-500/15 text-red-700 dark:text-red-400",
+  medium: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
+  low: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
 };
 
 type TodoItemProps = {
@@ -72,13 +72,13 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           onDoubleClick={startEditing}
           aria-label={`Edit "${todo.title}"`}
           title="Double-click to edit"
-          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
+          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-70" : ""}`}
         >
           {todo.title}
         </button>
       )}
 
-      {todo.dueDate && <span className="text-xs opacity-60">{todo.dueDate}</span>}
+      {todo.dueDate && <span className="text-xs opacity-70">{todo.dueDate}</span>}
 
       <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
         {todo.priority}
@@ -88,7 +88,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         type="button"
         onClick={() => onRemove(todo.id)}
         aria-label={`Delete "${todo.title}"`}
-        className="rounded-lg px-2 py-1 text-sm opacity-50 transition hover:opacity-100"
+        className="rounded-lg px-2 py-1 text-sm opacity-70 transition hover:opacity-100"
       >
         ×
       </button>
