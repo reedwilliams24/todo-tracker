@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   createTodo,
   toggleTodo as toggleTodoItem,
-  updateTodo,
+  updateTodoText,
   type Todo,
   type TodoDraft,
 } from "@todo/shared";
@@ -40,11 +40,7 @@ export function useTodos() {
   }, []);
 
   const rename = useCallback((id: string, title: string) => {
-    setTodos((current) =>
-      current.map((todo) =>
-        todo.id === id ? updateTodo(todo, { title: title.trim() }) : todo,
-      ),
-    );
+    setTodos((current) => updateTodoText(current, id, title));
   }, []);
 
   const remove = useCallback((id: string) => {

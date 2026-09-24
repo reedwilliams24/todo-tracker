@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { isValidTitle, type Todo } from "@todo/shared";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
@@ -19,8 +19,22 @@ type TodoItemProps = {
 export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
+  const cancelled = useRef(false);
+
+  function startEditing() {
+    cancelled.current = false;
+    setDraftTitle(todo.title);
+    setEditing(true);
+  }
+
+  function cancel() {
+    cancelled.current = true;
+    setDraftTitle(todo.title);
+    setEditing(false);
+  }
 
   function commit() {
+    if (cancelled.current) return;
     if (isValidTitle(draftTitle) && draftTitle.trim() !== todo.title) {
       onRename(todo.id, draftTitle);
     } else {
@@ -47,10 +61,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           onBlur={commit}
           onKeyDown={(event) => {
             if (event.key === "Enter") commit();
-            if (event.key === "Escape") {
-              setDraftTitle(todo.title);
-              setEditing(false);
-            }
+            if (event.key === "Escape") cancel();
           }}
           aria-label="Edit title"
           className="flex-1 rounded-lg bg-transparent px-1 py-1 outline-none"
@@ -58,7 +69,9 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
       ) : (
         <button
           type="button"
-          onClick={() => setEditing(true)}
+          onDoubleClick={startEditing}
+          aria-label={`Edit "${todo.title}"`}
+          title="Double-click to edit"
           className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
         >
           {todo.title}

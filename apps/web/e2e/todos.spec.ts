@@ -55,6 +55,39 @@ test("deletes a todo", async ({ page }) => {
   await expect(page.getByRole("listitem")).toHaveCount(1);
 });
 
+test("edits a todo inline and persists the change", async ({ page }) => {
+  await addTodo(page, "Old title");
+
+  await page.getByRole("button", { name: 'Edit "Old title"' }).dblclick();
+  const editor = page.getByLabel("Edit title");
+  await expect(editor).toBeFocused();
+
+  await editor.fill("   ");
+  await editor.press("Enter");
+  await expect(page.getByRole("button", { name: 'Edit "Old title"' })).toBeVisible();
+
+  await page.getByRole("button", { name: 'Edit "Old title"' }).dblclick();
+  await page.getByLabel("Edit title").fill("Discarded");
+  await page.getByLabel("Edit title").press("Escape");
+  await expect(page.getByRole("button", { name: 'Edit "Old title"' })).toBeVisible();
+
+  await page.getByRole("button", { name: 'Edit "Old title"' }).dblclick();
+  await page.getByLabel("Edit title").fill("New title");
+  await page.getByLabel("Edit title").press("Enter");
+  await expect(page.getByRole("button", { name: 'Edit "New title"' })).toBeVisible();
+  await expect(page.getByRole("listitem")).toHaveCount(1);
+
+  await expect
+    .poll(async () =>
+      page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY),
+    )
+    .toContain("New title");
+
+  await page.reload();
+  await expect(page.getByRole("button", { name: 'Edit "New title"' })).toBeVisible();
+  await expect(page.getByText("Old title")).toBeHidden();
+});
+
 test("filters todos by all, active and completed", async ({ page }) => {
   await addTodo(page, "Active task");
   await addTodo(page, "Done task");
