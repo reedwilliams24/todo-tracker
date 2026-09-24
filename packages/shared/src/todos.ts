@@ -91,7 +91,13 @@ export function searchTodos(todos: readonly Todo[], query: string): Todo[] {
   );
 }
 
-export function sortTodos(todos: readonly Todo[]): Todo[] {
+export type TodoSort = "priority" | "manual";
+
+export const SORTS: TodoSort[] = ["priority", "manual"];
+
+/** "manual" keeps the stored list order (see reorderTodos); "priority" is the default smart sort. */
+export function sortTodos(todos: readonly Todo[], sort: TodoSort = "priority"): Todo[] {
+  if (sort === "manual") return [...todos];
   return [...todos].sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
     const byPriority = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];

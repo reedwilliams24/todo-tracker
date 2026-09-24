@@ -1,14 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   countRemaining,
   filterTodos,
   searchTodos,
   sortTodos,
+  SORTS,
+  type TodoSort,
   type TodoFilter,
 } from "@todo/shared";
 import { useTodos } from "@/hooks/use-todos";
+import { useSort } from "@todo/shared/react";
+import { localSortStorage } from "@/lib/storage";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
@@ -16,15 +20,59 @@ import { VoiceCapture } from "@/components/voice-capture";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted } =
-    useTodos();
+  const {
+    todos,
+    hydrated,
+    addTodo,
+    addMany,
+    toggle,
+    rename,
+    remove,
+    removeMany,
+    reorder,
+    clearCompleted,
+  } = useTodos();
+  const [sort, setSort] = useSort(localSortStorage);
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const typing =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement;
+      if (event.key === "/" && !typing) {
+        event.preventDefault();
+        searchRef.current?.focus();
+      } else if (event.key === "Escape" && (!typing || target === searchRef.current)) {
+        setQuery("");
+        searchRef.current?.blur();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const visible = useMemo(
-    () => sortTodos(searchTodos(filterTodos(todos, filter), query)),
-    [todos, filter, query],
+    () => sortTodos(searchTodos(filterTodos(todos, filter), query), sort),
+    [todos, filter, query, sort],
   );
+
+  function dropOn(targetId: string) {
+    if (draggingId && draggingId !== targetId) {
+      reorder(
+        visible.map((todo) => todo.id),
+        draggingId,
+        targetId,
+      );
+      setSort("manual");
+    }
+    setDraggingId(null);
+  }
   const searching = query.trim().length > 0;
   const remaining = countRemaining(todos);
   const hasCompleted = todos.length > remaining;
@@ -36,13 +84,11 @@ export function TodoApp() {
 
       <div className="relative">
         <input
+          ref={searchRef}
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") setQuery("");
-          }}
-          placeholder="Search todos…"
+          placeholder="Search todos…  ( / )"
           aria-label="Search todos"
           className="w-full rounded-xl border [&::-webkit-search-cancel-button]:appearance-none border-black/10 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-white/5 dark:focus:border-white/40"
         />
@@ -77,7 +123,23 @@ export function TodoApp() {
             </button>
           ))}
         </div>
-        {hasCompleted && (
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-1 opacity-70">
+            Sort
+            <select
+              value={sort}
+              onChange={(event) => setSort(event.target.value as TodoSort)}
+              aria-label="Sort todos"
+              className="rounded-lg bg-transparent capitalize outline-none"
+            >
+              {SORTS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+          {hasCompleted && (
           <button
             type="button"
             onClick={clearCompleted}
@@ -86,6 +148,7 @@ export function TodoApp() {
             Clear completed
           </button>
         )}
+        </div>
       </div>
 
       {!hydrated ? (
@@ -107,6 +170,16 @@ export function TodoApp() {
               onToggle={toggle}
               onRename={rename}
               onRemove={remove}
+              drag={
+                !searching
+                  ? {
+                      dragging: draggingId === todo.id,
+                      onDragStart: setDraggingId,
+                      onDrop: dropOn,
+                      onDragEnd: () => setDraggingId(null),
+                    }
+                  : undefined
+              }
             />
           ))}
         </ul>

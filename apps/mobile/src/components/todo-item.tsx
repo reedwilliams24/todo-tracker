@@ -8,9 +8,11 @@ type TodoItemProps = {
   onToggle: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onRemove: (id: string) => void;
+  /** Long-press lifts this row; tapping another row drops it there. */
+  move?: { lifted: boolean; dropTarget: boolean; onLift: (id: string) => void; onDrop: (targetId: string) => void };
 };
 
-export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onRename, onRemove, move }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
 
@@ -26,7 +28,13 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
   const priority = priorityColors[todo.priority];
 
   return (
-    <View style={styles.row}>
+    <Pressable
+      accessibilityLabel={move?.dropTarget ? `Move here, above "${todo.title}"` : undefined}
+      onLongPress={move ? () => move.onLift(todo.id) : undefined}
+      onPress={move?.dropTarget ? () => move.onDrop(todo.id) : undefined}
+      delayLongPress={300}
+      style={[styles.row, move?.lifted && styles.rowLifted, move?.dropTarget && styles.rowDropTarget]}
+    >
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: todo.completed }}
@@ -48,7 +56,12 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           style={styles.editInput}
         />
       ) : (
-        <Pressable onPress={() => setEditing(true)} style={styles.titleButton}>
+        <Pressable
+          onPress={move?.dropTarget ? () => move.onDrop(todo.id) : () => setEditing(true)}
+          onLongPress={move ? () => move.onLift(todo.id) : undefined}
+          delayLongPress={300}
+          style={styles.titleButton}
+        >
           <Text numberOfLines={1} style={[styles.title, todo.completed && styles.titleDone]}>
             {todo.title}
           </Text>
@@ -70,7 +83,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
       >
         <Text style={styles.deleteText}>×</Text>
       </Pressable>
-    </View>
+    </Pressable>
   );
 }
 
@@ -86,6 +99,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
+  rowLifted: { opacity: 0.5, borderColor: colors.foreground, borderStyle: "dashed" },
+  rowDropTarget: { borderColor: colors.foreground },
   checkbox: {
     width: 20,
     height: 20,
