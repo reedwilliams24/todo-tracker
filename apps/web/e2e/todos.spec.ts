@@ -191,3 +191,12 @@ test("undo restores deleted and completed todos in their original position", asy
   await toast.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByRole("listitem")).toHaveCount(3);
 });
+
+test("adds todos from ?add= params, de-duplicated, and cleans the URL", async ({ page }) => {
+  await page.goto("/?add=Buy%20milk&add=buy%20milk&add=Call%20mom");
+  await expect(page.getByRole("listitem")).toHaveCount(2);
+  await expect(page.getByRole("listitem").filter({ hasText: "Buy milk" })).toBeVisible();
+  await expect(page).toHaveURL(/\/$/);
+  await page.reload();
+  await expect(page.getByRole("listitem")).toHaveCount(2);
+});
