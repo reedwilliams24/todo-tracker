@@ -5,6 +5,7 @@ import {
   filterTodos,
   isValidTitle,
   searchTodos,
+  sortByPriority,
   sortTodos,
   toggleTodo,
   updateTodoText,
@@ -114,5 +115,21 @@ describe("isValidTitle", () => {
   it("rejects blank titles", () => {
     expect(isValidTitle("   ")).toBe(false);
     expect(isValidTitle("ok")).toBe(true);
+  });
+});
+
+describe("sortByPriority", () => {
+  it("orders high, medium, low with completed last", () => {
+    const now = new Date("2024-01-01T00:00:00.000Z");
+    const low = createTodo({ title: "low", priority: "low" }, now);
+    const medium = createTodo({ title: "medium" }, now);
+    const high = createTodo({ title: "high", priority: "high" }, now);
+    const doneHigh = toggleTodo(createTodo({ title: "done", priority: "high" }, now));
+    expect(sortByPriority([low, doneHigh, medium, high]).map((t) => t.title)).toEqual([
+      "high",
+      "medium",
+      "low",
+      "done",
+    ]);
   });
 });
