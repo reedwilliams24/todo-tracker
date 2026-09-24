@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "./list";
+import {
+  addTodos,
+  bulkDelete,
+  bulkToggle,
+  clearCompletedInList,
+  countCompleted,
+  removeFromList,
+  renameInList,
+  toggleInList,
+} from "./list";
 import { parseStoredTodos, serializeTodos } from "./storage";
 import { createTodo, isValidDueDate } from "./todos";
 
@@ -24,6 +33,25 @@ describe("list operations", () => {
     const done = toggleInList([createTodo({ title: "b" })], "nope");
     const list = [a, { ...done[0]!, completed: true }];
     expect(clearCompletedInList(list)).toEqual([a]);
+    expect(countCompleted(list)).toBe(1);
+  });
+
+  it("bulkToggle completes a mixed selection, then reactivates an all-complete one", () => {
+    const a = createTodo({ title: "a" });
+    const b = createTodo({ title: "b" });
+    const c = createTodo({ title: "c" });
+    const once = bulkToggle([a, b, c], [a.id, b.id]);
+    expect(once.map((t) => t.completed)).toEqual([true, true, false]);
+    const twice = bulkToggle(once, [a.id, b.id]);
+    expect(twice.map((t) => t.completed)).toEqual([false, false, false]);
+    expect(bulkToggle([a, b, c], [])).toEqual([a, b, c]);
+  });
+
+  it("bulkDelete removes every selected id", () => {
+    const a = createTodo({ title: "a" });
+    const b = createTodo({ title: "b" });
+    const c = createTodo({ title: "c" });
+    expect(bulkDelete([a, b, c], [a.id, c.id])).toEqual([b]);
   });
 });
 
