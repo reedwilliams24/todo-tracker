@@ -68,7 +68,7 @@ export function TodoApp() {
             onClick={() => setQuery("")}
             aria-label="Clear search"
             data-testid={TEST_IDS.searchClear}
-            className="absolute inset-y-0 right-2 px-2 text-sm opacity-50 transition hover:opacity-100"
+            className="absolute inset-y-0 right-2 px-2 text-sm opacity-70 transition hover:opacity-100"
           >
             ×
           </button>
@@ -126,9 +126,9 @@ export function TodoApp() {
       </div>
 
       {!hydrated ? (
-        <p className="py-10 text-center text-sm opacity-60">Loading…</p>
+        <p className="py-10 text-center text-sm opacity-70">Loading…</p>
       ) : visible.length === 0 ? (
-        <p data-testid={TEST_IDS.empty} className="py-10 text-center text-sm opacity-60">
+        <p data-testid={TEST_IDS.empty} className="py-10 text-center text-sm opacity-70">
           {todos.length === 0
             ? "No todos yet. Add your first one above."
             : searching
@@ -136,7 +136,7 @@ export function TodoApp() {
               : `No ${filter} todos.`}
         </p>
       ) : (
-        <ul data-testid={TEST_IDS.list} className="flex flex-col gap-2">
+        <ul data-testid={TEST_IDS.list} className="flex flex-col gap-2" aria-label="Todos">
           {visible.map((todo) => (
             <TodoItem
               key={todo.id}
@@ -149,7 +149,7 @@ export function TodoApp() {
         </ul>
       )}
 
-      <p data-testid={TEST_IDS.remaining} className="text-xs opacity-60">
+      <p data-testid={TEST_IDS.remaining} className="text-xs opacity-70" aria-live="polite">
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </p>
 
