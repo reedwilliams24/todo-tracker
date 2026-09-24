@@ -3,6 +3,27 @@
 A todo tracker for web, iOS and Android — shared domain logic lives in a
 workspace package so all clients stay in sync.
 
+## Try the latest build
+
+Every merge to `main` ships automatically to the platforms it touches
+([#39](https://github.com/reedwilliams24/todo-tracker/issues/39)):
+
+| Changed paths | What deploys |
+| --- | --- |
+| `apps/web/**` only | Web → Vercel production ([`deploy-web.yml`](.github/workflows/deploy-web.yml)) |
+| `apps/mobile/**` only | Mobile alpha → EAS build; Android APK to Firebase App Distribution, iOS via EAS internal ([`deploy-mobile.yml`](.github/workflows/deploy-mobile.yml)) |
+| `packages/shared/**` or root config (`package.json`, lockfile, workspace) | Both |
+
+- **Web:** https://todo-tracker.vercel.app <!-- replace with the production URL Vercel assigns after the first deploy -->
+- **Android alpha:** ask the owner to add your email to the `alpha` tester group in Firebase App Distribution; you'll get an invite email with the install link, and new builds notify you automatically.
+- **iOS alpha:** register your device with `eas device:create` (owner runs it, or shares the QR link), then install from the build link in the "Mobile alpha" workflow run / EAS dashboard.
+
+Both workflows are inert until their repository secrets/variables are set (web:
+`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, var `VERCEL_ENABLED=true`;
+mobile: `EXPO_TOKEN`, `FIREBASE_ANDROID_APP_ID`, `FIREBASE_SERVICE_ACCOUNT`, var
+`MOBILE_ALPHA_ENABLED=true`). Check the Actions tab to confirm a merge only triggered
+the workflow(s) for the platform it changed.
+
 ## Structure
 
 ```
