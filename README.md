@@ -10,18 +10,18 @@ Every merge to `main` ships automatically to the platforms it touches
 
 | Changed paths | What deploys |
 | --- | --- |
-| `apps/web/**` only | Web → Vercel production ([`deploy-web.yml`](.github/workflows/deploy-web.yml)) |
-| `apps/mobile/**` only | Mobile alpha → EAS build; Android APK to Firebase App Distribution, iOS via EAS internal ([`deploy-mobile.yml`](.github/workflows/deploy-mobile.yml)) |
-| `packages/shared/**` or root config (`package.json`, lockfile, workspace) | Both |
+| `apps/web/**` | Web → Vercel production ([`deploy-web.yml`](.github/workflows/deploy-web.yml)) |
+| `apps/android/**` | Android alpha → release APK to Firebase App Distribution ([`deploy-mobile.yml`](.github/workflows/deploy-mobile.yml)) |
+| `apps/ios/**` | iOS alpha → TestFlight ([`deploy-mobile.yml`](.github/workflows/deploy-mobile.yml)) |
+| `spec/**` | Both native apps |
+| `packages/shared/**` or root config (`package.json`, lockfile, workspace) | Web |
 
 - **Web:** https://todo-tracker.vercel.app <!-- replace with the production URL Vercel assigns after the first deploy -->
 - **Android alpha:** ask the owner to add your email to the `alpha` tester group in Firebase App Distribution; you'll get an invite email with the install link, and new builds notify you automatically.
-- **iOS alpha:** register your device with `eas device:create` (owner runs it, or shares the QR link), then install from the build link in the "Mobile alpha" workflow run / EAS dashboard.
+- **iOS alpha:** ask the owner to add you as a TestFlight tester; install the TestFlight app and accept the invite. New builds show up there.
 
-Both workflows are inert until their repository secrets/variables are set (web:
-`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, var `VERCEL_ENABLED=true`;
-mobile: `EXPO_TOKEN`, `FIREBASE_ANDROID_APP_ID`, `FIREBASE_SERVICE_ACCOUNT`, var
-`MOBILE_ALPHA_ENABLED=true`). Check the Actions tab to confirm a merge only triggered
+Both workflows are inert until their repository secrets/variables are set (see
+[Deploying](#deploying)). Check the Actions tab to confirm a merge only triggered
 the workflow(s) for the platform it changed.
 
 ## Structure
@@ -129,3 +129,40 @@ One-time setup (nothing is committed):
 2. Add repository secrets: `VERCEL_TOKEN` (Account → Tokens), `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`
    (from `.vercel/project.json` after `vercel link`).
 3. Add repository variable `VERCEL_ENABLED=true` to switch the workflow on.
+
+### Mobile alpha (Firebase App Distribution + TestFlight)
+
+`.github/workflows/deploy-mobile.yml` runs on every push to `main` that touches `apps/android/**`,
+`apps/ios/**` or `spec/**` (or on a manual "Run workflow"). A `changes` job routes the build: Android-only
+changes skip iOS and the other way round; `spec/**` builds both.
+
+- **Android** (ubuntu): `./gradlew :core:test :app:assembleRelease`, then uploads
+  `app-release.apk` to Firebase App Distribution tester group `alpha` with `firebase-tools`. The release
+  build type signs with the debug key (see `apps/android/app/build.gradle.kts`); CI restores a fixed
+  keystore from `ANDROID_DEBUG_KEYSTORE` so every build installs over the last one.
+- **iOS** (macos-latest): `swift test` for the fixtures, `xcodegen generate`, `xcodebuild archive` with
+  manual signing (team and profile are read from the provisioning profile; build number = workflow run
+  number), `-exportArchive` to an App Store Connect IPA, then `xcrun altool --upload-app` to TestFlight
+  with an App Store Connect API key. It has its own switch because TestFlight needs a paid Apple
+  Developer account.
+
+One-time setup (nothing is committed):
+
+1. Firebase: create a project, add an Android app with package `com.reedwilliams24.todotracker`, enable
+   App Distribution, create tester group `alpha`, and create a service account with the
+   "Firebase App Distribution Admin" role (download its JSON key).
+2. Android signing keystore (keep a copy; losing it means testers must uninstall once):
+   `keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -validity 10000 -dname "CN=Android Debug,O=Android,C=US"`,
+   then `base64 -w0 debug.keystore`.
+3. Repository secrets for Android: `FIREBASE_APP_ID` (`1:…:android:…`, Project settings → Your apps),
+   `FIREBASE_SERVICE_ACCOUNT` (the service-account JSON), `ANDROID_DEBUG_KEYSTORE` (base64 from step 2).
+4. Repository variable `MOBILE_ALPHA_ENABLED=true` to switch the workflow on (Android only).
+5. iOS, once there is a paid Apple Developer account: register bundle id `com.reedwilliams24.todotracker`
+   and create the app in App Store Connect; create an Apple Distribution certificate (export it as `.p12`
+   with a password) and an App Store provisioning profile for the bundle id; create an App Store Connect
+   API key (Users and Access → Integrations, role "App Manager"). The app also needs an `AppIcon` asset
+   catalog before App Store Connect will accept an upload.
+6. Repository secrets for iOS: `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_PRIVATE_KEY` (contents of the `.p8`),
+   `IOS_DIST_CERT_P12_BASE64` (`base64 -i cert.p12`), `IOS_DIST_CERT_PASSWORD`,
+   `IOS_PROVISIONING_PROFILE_BASE64` (`base64 -i profile.mobileprovision`); then repository variable
+   `IOS_TESTFLIGHT_ENABLED=true`.
