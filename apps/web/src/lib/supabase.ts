@@ -16,5 +16,16 @@ export function todoTable(client: SupabaseClient<Database>): TodoTable {
     list: (userId) => client.from("todos").select("*").eq("user_id", userId),
     upsert: (rows) => client.from("todos").upsert(rows),
     remove: (userId, ids) => client.from("todos").delete().eq("user_id", userId).in("id", ids),
+    onChange: (userId, callback) => {
+      const channel = client
+        .channel(`todos:${userId}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "todos", filter: `user_id=eq.${userId}` },
+          callback,
+        )
+        .subscribe();
+      return () => void client.removeChannel(channel);
+    },
   });
 }
