@@ -1,3 +1,4 @@
+import { scheduleNext } from "./recurrence";
 import { createTodo, toggleTodo, updateTodoText } from "./todos";
 import type { Todo, TodoDraft } from "./types";
 
@@ -6,8 +7,14 @@ export function addTodos(todos: readonly Todo[], drafts: readonly TodoDraft[]): 
   return { todos: [...created, ...todos], created };
 }
 
-export function toggleInList(todos: readonly Todo[], id: string): Todo[] {
-  return todos.map((todo) => (todo.id === id ? toggleTodo(todo) : todo));
+/** Toggles a todo; completing a recurring todo inserts its next occurrence right after it. */
+export function toggleInList(todos: readonly Todo[], id: string, now: Date = new Date()): Todo[] {
+  return todos.flatMap((todo) => {
+    if (todo.id !== id) return [todo];
+    const toggled = toggleTodo(todo, now);
+    const next = toggled.completed ? scheduleNext(toggled, now) : undefined;
+    return next ? [toggled, next] : [toggled];
+  });
 }
 
 export function renameInList(todos: readonly Todo[], id: string, title: string): Todo[] {
