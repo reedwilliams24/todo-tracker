@@ -1,5 +1,13 @@
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StatusBar as NativeStatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { TodoApp } from "./src/components/todo-app";
 import { colors } from "./src/theme";
 
@@ -22,7 +30,11 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background,
+    paddingTop: Platform.OS === "android" ? NativeStatusBar.currentHeight : 0,
+  },
   main: { flex: 1, padding: 16, gap: 16, maxWidth: 640, width: "100%", alignSelf: "center" },
   header: { gap: 4 },
   heading: { fontSize: 24, fontWeight: "600", color: colors.foreground },

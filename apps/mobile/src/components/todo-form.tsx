@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { isValidTitle, type TodoDraft, type TodoPriority } from "@todo/shared";
+import { isValidDueDate, isValidTitle, type TodoDraft, type TodoPriority } from "@todo/shared";
 import { colors } from "../theme";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TodoPriority>("medium");
   const [dueDate, setDueDate] = useState("");
 
-  const dateOk = dueDate === "" || DATE_PATTERN.test(dueDate);
+  const dateOk = isValidDueDate(dueDate);
   const canAdd = isValidTitle(title) && dateOk;
 
   function submit() {

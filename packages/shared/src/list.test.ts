@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "./list";
 import { parseStoredTodos, serializeTodos } from "./storage";
-import { createTodo } from "./todos";
+import { createTodo, isValidDueDate } from "./todos";
 
 describe("list operations", () => {
   it("prepends new todos and returns the created ones", () => {
@@ -24,6 +24,17 @@ describe("list operations", () => {
     const done = toggleInList([createTodo({ title: "b" })], "nope");
     const list = [a, { ...done[0]!, completed: true }];
     expect(clearCompletedInList(list)).toEqual([a]);
+  });
+});
+
+describe("isValidDueDate", () => {
+  it("accepts empty or real calendar dates only", () => {
+    expect(isValidDueDate("")).toBe(true);
+    expect(isValidDueDate(undefined)).toBe(true);
+    expect(isValidDueDate("2026-02-28")).toBe(true);
+    expect(isValidDueDate("2026-02-30")).toBe(false);
+    expect(isValidDueDate("2026-13-01")).toBe(false);
+    expect(isValidDueDate("tomorrow")).toBe(false);
   });
 });
 
