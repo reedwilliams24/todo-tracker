@@ -67,7 +67,12 @@ export function updateTodoText(
 }
 
 export function toggleTodo(todo: Todo, now: Date = new Date()): Todo {
-  return updateTodo(todo, { completed: !todo.completed }, now);
+  const completed = !todo.completed;
+  return updateTodo(
+    todo,
+    { completed, completedAt: completed ? now.toISOString() : undefined },
+    now,
+  );
 }
 
 export function filterTodos(todos: readonly Todo[], filter: TodoFilter): Todo[] {

@@ -12,6 +12,7 @@ import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
+import { StatsPanel } from "@/components/stats-panel";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
@@ -115,6 +116,8 @@ export function TodoApp() {
       <p className="text-xs opacity-60">
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </p>
+
+      <StatsPanel todos={todos} />
     </section>
   );
 }

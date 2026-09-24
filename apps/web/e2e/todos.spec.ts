@@ -164,3 +164,19 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("stats panel counts completions and a one-day streak", async ({ page }) => {
+  await page.getByLabel("Todo title").fill("Stretch");
+  await page.getByRole("button", { name: "Add" }).click();
+  await page.getByRole("checkbox", { name: 'Mark "Stretch" as complete' }).check();
+
+  await page.getByRole("button", { name: "Stats Show" }).click();
+  await expect(page.getByTestId("stat-total")).toHaveText("1");
+  await expect(page.getByTestId("stat-current")).toHaveText("1d");
+  await expect(page.getByTestId("stat-longest")).toHaveText("1d");
+  await expect(page.getByLabel("Completed per day, last 30 days").getByRole("listitem")).toHaveCount(30);
+
+  await page.reload();
+  await page.getByRole("button", { name: "Stats Show" }).click();
+  await expect(page.getByTestId("stat-total")).toHaveText("1");
+});

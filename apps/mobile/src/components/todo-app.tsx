@@ -3,6 +3,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
 import { useTodos } from "../hooks/use-todos";
 import { colors } from "../theme";
+import { StatsPanel } from "./stats-panel";
 import { TodoForm } from "./todo-form";
 import { TodoItem } from "./todo-item";
 
@@ -67,6 +68,8 @@ export function TodoApp() {
       <Text style={styles.remaining}>
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </Text>
+
+      <StatsPanel todos={todos} />
     </View>
   );
 }
