@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   EMPTY_TODO_FORM,
+  parseTags,
   isValidDueDate,
   isValidTitle,
   toTodoDraft,
@@ -12,9 +13,18 @@ import { colors } from "../theme";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
-export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
+type TodoFormProps = { onAdd: (draft: TodoDraft) => void; existingTags?: readonly string[] };
+
+export function TodoForm({ onAdd, existingTags = [] }: TodoFormProps) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate } = form;
+  const { title, priority, dueDate, tags } = form;
+
+  const typed = parseTags(tags);
+  const suggestions = existingTags.filter((t) => !typed.includes(t)).slice(0, 6);
+
+  function appendTag(tag: string) {
+    setForm((f) => ({ ...f, tags: [...parseTags(f.tags), tag].join(", ") }));
+  }
 
   const dateOk = isValidDueDate(dueDate);
   const canAdd = isValidTitle(title) && dateOk;
@@ -67,6 +77,25 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           style={[styles.dateInput, !dateOk && styles.dateInvalid]}
         />
       </View>
+      <TextInput
+        value={tags}
+        onChangeText={(value) => setForm((f) => ({ ...f, tags: value }))}
+        placeholder="Tags, comma-separated"
+        placeholderTextColor={colors.muted}
+        accessibilityLabel="Tags"
+        autoCapitalize="none"
+        autoCorrect={false}
+        style={styles.dateInput}
+      />
+      {suggestions.length > 0 && (
+        <View style={styles.suggestions} accessibilityLabel="Tag suggestions">
+          {suggestions.map((tag) => (
+            <Pressable key={tag} accessibilityRole="button" onPress={() => appendTag(tag)} style={styles.suggestion}>
+              <Text style={styles.suggestionText}>#{tag}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
       <Pressable
         accessibilityRole="button"
         disabled={!canAdd}
@@ -112,6 +141,15 @@ const styles = StyleSheet.create({
     color: colors.foreground,
   },
   dateInvalid: { borderColor: "#dc2626" },
+  suggestions: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
+  suggestion: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  suggestionText: { fontSize: 12, color: colors.muted },
   addButton: {
     alignSelf: "flex-end",
     backgroundColor: colors.foreground,

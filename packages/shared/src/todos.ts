@@ -3,12 +3,52 @@ import type { Todo, TodoDraft, TodoFilter, TodoPriority } from "./types";
 export const DEFAULT_PRIORITY: TodoPriority = "medium";
 
 /** Controlled-input state for the add-todo form; dueDate is "" when unset. */
-export type TodoFormState = { title: string; priority: TodoPriority; dueDate: string };
+export type TodoFormState = {
+  title: string;
+  priority: TodoPriority;
+  dueDate: string;
+  /** Raw comma-separated tag text; see parseTags. */
+  tags: string;
+};
 
-export const EMPTY_TODO_FORM: TodoFormState = { title: "", priority: DEFAULT_PRIORITY, dueDate: "" };
+export const EMPTY_TODO_FORM: TodoFormState = {
+  title: "",
+  priority: DEFAULT_PRIORITY,
+  dueDate: "",
+  tags: "",
+};
 
 export function toTodoDraft(form: TodoFormState): TodoDraft {
-  return { title: form.title, priority: form.priority, dueDate: form.dueDate || undefined };
+  const tags = parseTags(form.tags);
+  return {
+    title: form.title,
+    priority: form.priority,
+    dueDate: form.dueDate || undefined,
+    tags: tags.length ? tags : undefined,
+  };
+}
+
+/** Normalises tag text: split on commas, trim, lowercase, strip a leading "#", dedupe. */
+export function parseTags(input: string): string[] {
+  const seen = new Set<string>();
+  for (const raw of input.split(",")) {
+    const tag = raw.trim().replace(/^#/, "").toLowerCase();
+    if (tag) seen.add(tag);
+  }
+  return [...seen];
+}
+
+/** Every distinct tag in use, sorted alphabetically. */
+export function allTags(todos: readonly Todo[]): string[] {
+  const seen = new Set<string>();
+  for (const todo of todos) for (const tag of todo.tags ?? []) seen.add(tag);
+  return [...seen].sort();
+}
+
+/** Todos carrying `tag`; a null/empty tag returns everything. */
+export function filterByTag(todos: readonly Todo[], tag: string | null): Todo[] {
+  if (!tag) return [...todos];
+  return todos.filter((todo) => todo.tags?.includes(tag) ?? false);
 }
 
 export const PRIORITY_ORDER: Record<Todo["priority"], number> = {
@@ -40,6 +80,7 @@ export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
     completed: false,
     priority: draft.priority ?? DEFAULT_PRIORITY,
     dueDate: draft.dueDate,
+    tags: draft.tags?.length ? parseTags(draft.tags.join(",")) : undefined,
     createdAt: timestamp,
     updatedAt: timestamp,
   };

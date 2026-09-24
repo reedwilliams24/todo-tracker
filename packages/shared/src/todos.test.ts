@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  allTags,
   countRemaining,
+  filterByTag,
+  parseTags,
   createTodo,
   filterTodos,
   isValidTitle,
@@ -114,5 +117,28 @@ describe("isValidTitle", () => {
   it("rejects blank titles", () => {
     expect(isValidTitle("   ")).toBe(false);
     expect(isValidTitle("ok")).toBe(true);
+  });
+});
+
+describe("tags", () => {
+  it("parseTags trims, lowercases, strips # and dedupes", () => {
+    expect(parseTags(" Work, #home ,work,, ")).toEqual(["work", "home"]);
+    expect(parseTags("")).toEqual([]);
+  });
+
+  it("createTodo normalises draft tags and omits empty lists", () => {
+    expect(createTodo({ title: "a", tags: ["Home", "#home"] }).tags).toEqual(["home"]);
+    expect(createTodo({ title: "a", tags: [] }).tags).toBeUndefined();
+    expect(createTodo({ title: "a" }).tags).toBeUndefined();
+  });
+
+  it("allTags and filterByTag", () => {
+    const a = createTodo({ title: "a", tags: ["work", "urgent"] });
+    const b = createTodo({ title: "b", tags: ["home"] });
+    const c = createTodo({ title: "c" });
+    expect(allTags([a, b, c])).toEqual(["home", "urgent", "work"]);
+    expect(filterByTag([a, b, c], "work")).toEqual([a]);
+    expect(filterByTag([a, b, c], null)).toEqual([a, b, c]);
+    expect(filterByTag([a, b, c], "nope")).toEqual([]);
   });
 });
