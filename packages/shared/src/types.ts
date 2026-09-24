@@ -1,5 +1,11 @@
 export type TodoPriority = "low" | "medium" | "high";
 
+export type Subtask = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
 export type Todo = {
   id: string;
   title: string;
@@ -7,6 +13,7 @@ export type Todo = {
   completed: boolean;
   priority: TodoPriority;
   dueDate?: string;
+  subtasks?: Subtask[];
   createdAt: string;
   updatedAt: string;
 };

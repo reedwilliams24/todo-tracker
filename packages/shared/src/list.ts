@@ -22,3 +22,7 @@ export function removeFromList(todos: readonly Todo[], ids: readonly string[]): 
 export function clearCompletedInList(todos: readonly Todo[]): Todo[] {
   return todos.filter((todo) => !todo.completed);
 }
+
+export function updateInList(todos: readonly Todo[], id: string, update: (todo: Todo) => Todo): Todo[] {
+  return todos.map((todo) => (todo.id === id ? update(todo) : todo));
+}

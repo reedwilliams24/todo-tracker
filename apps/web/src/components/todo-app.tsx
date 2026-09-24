@@ -16,8 +16,20 @@ import { VoiceCapture } from "@/components/voice-capture";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted } =
-    useTodos();
+  const {
+    todos,
+    hydrated,
+    addTodo,
+    addMany,
+    toggle,
+    rename,
+    remove,
+    removeMany,
+    clearCompleted,
+    addSubtask,
+    toggleSubtask,
+    removeSubtask,
+  } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
 
@@ -107,6 +119,9 @@ export function TodoApp() {
               onToggle={toggle}
               onRename={rename}
               onRemove={remove}
+              onAddSubtask={addSubtask}
+              onToggleSubtask={toggleSubtask}
+              onRemoveSubtask={removeSubtask}
             />
           ))}
         </ul>

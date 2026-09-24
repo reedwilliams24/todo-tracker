@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "../list";
+import {
+  addTodos,
+  clearCompletedInList,
+  removeFromList,
+  renameInList,
+  toggleInList,
+  updateInList,
+} from "../list";
+import { addSubtask, removeSubtask, toggleSubtask } from "../subtasks";
 import type { TodoStorage } from "../storage";
 import type { Todo, TodoDraft } from "../types";
 
@@ -53,9 +61,34 @@ export function useTodos(storage: TodoStorage) {
     setTodos((current) => removeFromList(current, ids));
   }, []);
 
+  const addSubtaskTo = useCallback((id: string, title: string) => {
+    setTodos((current) => updateInList(current, id, (todo) => addSubtask(todo, title)));
+  }, []);
+
+  const toggleSubtaskOf = useCallback((id: string, subtaskId: string) => {
+    setTodos((current) => updateInList(current, id, (todo) => toggleSubtask(todo, subtaskId)));
+  }, []);
+
+  const removeSubtaskOf = useCallback((id: string, subtaskId: string) => {
+    setTodos((current) => updateInList(current, id, (todo) => removeSubtask(todo, subtaskId)));
+  }, []);
+
   const clearCompleted = useCallback(() => {
     setTodos(clearCompletedInList);
   }, []);
 
-  return { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted };
+  return {
+    todos,
+    hydrated,
+    addTodo,
+    addMany,
+    toggle,
+    rename,
+    remove,
+    removeMany,
+    clearCompleted,
+    addSubtask: addSubtaskTo,
+    toggleSubtask: toggleSubtaskOf,
+    removeSubtask: removeSubtaskOf,
+  };
 }
