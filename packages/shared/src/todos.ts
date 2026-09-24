@@ -6,10 +6,16 @@ export const PRIORITY_ORDER: Record<Todo["priority"], number> = {
   low: 2,
 };
 
+export function generateId(): string {
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi && typeof cryptoApi.randomUUID === "function") return cryptoApi.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
   const timestamp = now.toISOString();
   return {
-    id: globalThis.crypto.randomUUID(),
+    id: generateId(),
     title: draft.title.trim(),
     notes: draft.notes?.trim() || undefined,
     completed: false,

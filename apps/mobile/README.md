@@ -1,15 +1,13 @@
-# Mobile app (placeholder)
+# mobile
 
-The mobile client will live here (planned: Expo + React Native).
-
-It will consume the same domain logic and types as the web app from
-`@todo/shared`, so keep platform-agnostic logic in that package rather than in
-`apps/web`.
-
-## Planned setup
+Expo (React Native, TypeScript) client for Todo Tracker. All todo logic and the
+storage contract come from `@todo/shared`; this package only holds React Native
+UI and the AsyncStorage adapter (`src/lib/storage.ts`).
 
 ```bash
-pnpm dlx create-expo-app@latest . --template blank-typescript
+pnpm --filter mobile start      # Expo dev server; press i / a or scan with Expo Go
+pnpm --filter mobile ios
+pnpm --filter mobile android
+pnpm --filter mobile lint
+pnpm --filter mobile typecheck
 ```
-
-Then add `"@todo/shared": "workspace:*"` to its dependencies.

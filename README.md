@@ -1,19 +1,22 @@
 # todo-tracker
 
-A todo tracker. Web first, mobile later — shared domain logic lives in a
-workspace package so both clients stay in sync.
+A todo tracker for web, iOS and Android — shared domain logic lives in a
+workspace package so all clients stay in sync.
 
 ## Structure
 
 ```
 apps/web        Next.js 15 (App Router) + Tailwind web client
-apps/mobile     placeholder for the future React Native client
-packages/shared platform-agnostic types + todo logic (@todo/shared)
+apps/mobile     Expo (React Native) iOS + Android client
+packages/shared platform-agnostic types, todo logic, storage contract and
+                the `useTodos` hook (@todo/shared, @todo/shared/react)
 ```
 
-Storage is local-first: todos persist to `localStorage`, so there is no backend
-or database to run yet. Swapping in an API later means replacing the storage
-layer in `apps/web/src/lib/storage.ts` and keeping `@todo/shared` unchanged.
+Storage is local-first: todos persist to `localStorage` on web and
+`AsyncStorage` on mobile, so there is no backend or database to run yet. Both
+adapters implement the `TodoStorage` interface from `@todo/shared`; swapping in
+an API later means adding another adapter (`apps/web/src/lib/storage.ts`,
+`apps/mobile/src/lib/storage.ts`) and keeping `@todo/shared` unchanged.
 
 ## Voice input
 
@@ -49,6 +52,17 @@ Requires Node 20+ and pnpm 10.
 pnpm install
 pnpm dev          # web app on http://localhost:3000
 ```
+
+### Mobile
+
+```bash
+pnpm --filter mobile start      # Expo dev server
+pnpm --filter mobile ios        # iOS simulator (macOS + Xcode)
+pnpm --filter mobile android    # Android emulator / device
+```
+
+From the dev server you can also scan the QR code with
+[Expo Go](https://expo.dev/go). Voice input is web-only for now.
 
 ## Checks
 
