@@ -1,6 +1,8 @@
+import { SORTS, type TodoSort } from "./todos";
 import type { Todo } from "./types";
 
 export const STORAGE_KEY = "todo-tracker:todos:v1";
+export const SORT_STORAGE_KEY = "todo-tracker:sort:v1";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -22,4 +24,8 @@ export function parseStoredTodos(raw: string | null | undefined): Todo[] {
   } catch {
     return [];
   }
+}
+
+export function parseStoredSort(raw: string | null | undefined): TodoSort {
+  return SORTS.includes(raw as TodoSort) ? (raw as TodoSort) : "priority";
 }

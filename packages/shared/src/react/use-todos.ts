@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "../list";
+import {
+  addTodos,
+  clearCompletedInList,
+  moveVisibleTodo,
+  removeFromList,
+  renameInList,
+  toggleInList,
+} from "../list";
 import type { TodoStorage } from "../storage";
 import type { Todo, TodoDraft } from "../types";
 import { createUndoEntry, describeUndo, isUndoExpired, UNDO_TIMEOUT_MS, type UndoEntry } from "../undo";
@@ -89,6 +96,10 @@ export function useTodos(storage: TodoStorage) {
     [applyUndoable],
   );
 
+  const reorder = useCallback((visibleIds: readonly string[], id: string, targetId: string) => {
+    setTodos((current) => moveVisibleTodo(current, visibleIds, id, targetId));
+  }, []);
+
   const clearCompleted = useCallback(() => {
     setTodos((current) => {
       const next = clearCompletedInList(current);
@@ -110,5 +121,6 @@ export function useTodos(storage: TodoStorage) {
     clearCompleted,
     undoable,
     undo,
+    reorder,
   };
 }
