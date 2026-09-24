@@ -5,6 +5,7 @@ import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/s
 import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
+import { VoiceCapture } from "@/components/voice-capture";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
@@ -19,6 +20,7 @@ export function TodoApp() {
   return (
     <section className="flex flex-col gap-4">
       <TodoForm onAdd={addTodo} />
+      <VoiceCapture onAdd={addTodo} />
 
       <div className="flex items-center justify-between gap-3 text-sm">
         <div className="flex gap-1" role="tablist" aria-label="Filter todos">
