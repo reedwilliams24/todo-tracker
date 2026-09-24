@@ -27,7 +27,7 @@ export function TodoForm({ onAdd, existingTags = [] }: TodoFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-2 rounded-xl border border-black/10 bg-white/60 p-3 sm:flex-row sm:items-center dark:border-white/15 dark:bg-white/5"
+      className="flex flex-col gap-2 rounded-xl border border-black/10 bg-white/60 p-3 sm:flex-row sm:flex-wrap sm:items-center dark:border-white/15 dark:bg-white/5"
     >
       <input
         value={title}
@@ -64,7 +64,7 @@ export function TodoForm({ onAdd, existingTags = [] }: TodoFormProps) {
         placeholder="Tags, comma-separated"
         aria-label="Tags"
         autoComplete="off"
-        className="w-full rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm sm:w-40 dark:border-white/15"
+        className="w-full rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm sm:w-36 dark:border-white/15"
       />
       <datalist id="todo-tag-suggestions">
         {existingTags.map((tag) => (
