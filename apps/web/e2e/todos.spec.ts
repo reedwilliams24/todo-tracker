@@ -164,3 +164,35 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("keyboard shortcuts focus and clear search", async ({ page }) => {
+  await addTodo(page, "Alpha");
+  await page.locator("body").click();
+  await page.keyboard.press("/");
+  const search = page.getByRole("searchbox", { name: "Search todos" });
+  await expect(search).toBeFocused();
+  await page.keyboard.type("alp");
+  await expect(search).toHaveValue("alp");
+  await page.keyboard.press("Escape");
+  await expect(search).toHaveValue("");
+  await expect(search).not.toBeFocused();
+});
+
+test("drag-to-reorder switches to manual sort and persists across reload", async ({ page }) => {
+  await addTodo(page, "First");
+  await addTodo(page, "Second");
+  await addTodo(page, "Third");
+  const items = page.getByRole("listitem");
+  await expect(items).toHaveText([/First/, /Second/, /Third/]);
+
+  await items.nth(2).dragTo(items.nth(0));
+  await expect(page.getByRole("combobox", { name: "Sort todos" })).toHaveValue("manual");
+  await expect(items).toHaveText([/Third/, /First/, /Second/]);
+
+  await page.reload();
+  await expect(page.getByRole("combobox", { name: "Sort todos" })).toHaveValue("manual");
+  await expect(page.getByRole("listitem")).toHaveText([/Third/, /First/, /Second/]);
+
+  await page.getByRole("combobox", { name: "Sort todos" }).selectOption("priority");
+  await expect(page.getByRole("listitem")).toHaveText([/First/, /Second/, /Third/]);
+});
