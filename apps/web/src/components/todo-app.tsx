@@ -8,6 +8,7 @@ import {
   sortTodos,
   type TodoFilter,
 } from "@todo/shared";
+import { useSharedText } from "@/hooks/use-shared-text";
 import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
@@ -20,6 +21,7 @@ export function TodoApp() {
     useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
+  useSharedText(hydrated, todos, addMany);
 
   const visible = useMemo(
     () => sortTodos(searchTodos(filterTodos(todos, filter), query)),
