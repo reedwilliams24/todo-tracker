@@ -58,3 +58,13 @@ pnpm typecheck
 pnpm test
 pnpm build
 ```
+
+### Required CI checks
+
+`main` is protected: a PR can only be merged once the `lint`, `typecheck`,
+`test`, `build` and `e2e` jobs from `.github/workflows/ci.yml` have passed on
+the latest commit, and the branch is up to date with `main`. Pending or failing
+checks block the merge button.
+
+The rule is applied with `scripts/protect-main.sh` (needs repo admin). Keep the
+job names in that script in sync with the workflow.
