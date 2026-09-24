@@ -164,3 +164,35 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("export JSON downloads and import supports merge/replace with validation errors", async ({ page }) => {
+  await addTodo(page, "Existing");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export JSON" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^todos-\d{4}-\d{2}-\d{2}\.json$/);
+
+  const now = new Date().toISOString();
+  const good = { id: "imp-1", title: "Imported", completed: false, priority: "low", createdAt: now, updatedAt: now };
+  const bad = { id: "imp-2", title: "Broken", completed: "yes", priority: "low", createdAt: now };
+  await page.getByLabel("Import todos from JSON").setInputFiles({
+    name: "todos.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify({ version: 1, todos: [good, bad] })),
+  });
+  const dialog = page.getByRole("dialog", { name: "Confirm import" });
+  await expect(dialog).toContainText("Found 1 valid todo and 1 problem");
+  await expect(dialog).toContainText("completed must be true/false");
+  await dialog.getByRole("button", { name: "Merge into current list" }).click();
+  await expect(page.getByRole("listitem")).toHaveText([/Existing/, /Imported/]);
+
+  await page.getByLabel("Import todos from JSON").setInputFiles({
+    name: "todos.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify([{ ...good, id: "imp-3", title: "Only one" }])),
+  });
+  await page.getByRole("button", { name: "Replace current list" }).click();
+  await expect(page.getByRole("listitem")).toHaveText([/Only one/]);
+  await page.reload();
+  await expect(page.getByRole("listitem")).toHaveText([/Only one/]);
+});

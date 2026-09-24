@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "../list";
+import { applyImport, type ImportMode } from "../transfer";
 import type { TodoStorage } from "../storage";
 import type { Todo, TodoDraft } from "../types";
 
@@ -53,9 +54,24 @@ export function useTodos(storage: TodoStorage) {
     setTodos((current) => removeFromList(current, ids));
   }, []);
 
+  const importTodos = useCallback((imported: readonly Todo[], mode: ImportMode) => {
+    setTodos((current) => applyImport(current, imported, mode));
+  }, []);
+
   const clearCompleted = useCallback(() => {
     setTodos(clearCompletedInList);
   }, []);
 
-  return { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted };
+  return {
+    todos,
+    hydrated,
+    addTodo,
+    addMany,
+    toggle,
+    rename,
+    remove,
+    removeMany,
+    clearCompleted,
+    importTodos,
+  };
 }
