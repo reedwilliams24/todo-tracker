@@ -5,7 +5,7 @@ export const colors = {
   card: "#ffffff",
   border: "rgba(0,0,0,0.1)",
   foreground: "#171717",
-  muted: "rgba(23,23,23,0.6)",
+  muted: "rgba(23,23,23,0.7)",
 };
 
 export const priorityColors: Record<TodoPriority, { bg: string; text: string }> = {

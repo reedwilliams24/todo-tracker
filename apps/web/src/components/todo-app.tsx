@@ -51,7 +51,7 @@ export function TodoApp() {
             type="button"
             onClick={() => setQuery("")}
             aria-label="Clear search"
-            className="absolute inset-y-0 right-2 px-2 text-sm opacity-50 transition hover:opacity-100"
+            className="absolute inset-y-0 right-2 px-2 text-sm opacity-70 transition hover:opacity-100"
           >
             ×
           </button>
@@ -89,9 +89,9 @@ export function TodoApp() {
       </div>
 
       {!hydrated ? (
-        <p className="py-10 text-center text-sm opacity-60">Loading…</p>
+        <p className="py-10 text-center text-sm opacity-70">Loading…</p>
       ) : visible.length === 0 ? (
-        <p className="py-10 text-center text-sm opacity-60">
+        <p className="py-10 text-center text-sm opacity-70">
           {todos.length === 0
             ? "No todos yet. Add your first one above."
             : searching
@@ -99,7 +99,7 @@ export function TodoApp() {
               : `No ${filter} todos.`}
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2" aria-label="Todos">
           {visible.map((todo) => (
             <TodoItem
               key={todo.id}
@@ -112,7 +112,7 @@ export function TodoApp() {
         </ul>
       )}
 
-      <p className="text-xs opacity-60">
+      <p className="text-xs opacity-70" aria-live="polite">
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </p>
     </section>

@@ -48,7 +48,13 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           style={styles.editInput}
         />
       ) : (
-        <Pressable onPress={() => setEditing(true)} style={styles.titleButton}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Edit "${todo.title}"`}
+          accessibilityHint="Opens the title for editing"
+          onPress={() => setEditing(true)}
+          style={styles.titleButton}
+        >
           <Text numberOfLines={1} style={[styles.title, todo.completed && styles.titleDone]}>
             {todo.title}
           </Text>
@@ -99,7 +105,7 @@ const styles = StyleSheet.create({
   checkmark: { color: colors.card, fontSize: 12, lineHeight: 14 },
   titleButton: { flex: 1 },
   title: { fontSize: 16, color: colors.foreground },
-  titleDone: { textDecorationLine: "line-through", opacity: 0.5 },
+  titleDone: { textDecorationLine: "line-through", opacity: 0.7 },
   editInput: { flex: 1, fontSize: 16, paddingVertical: 4, color: colors.foreground },
   dueDate: { fontSize: 12, color: colors.muted },
   badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
