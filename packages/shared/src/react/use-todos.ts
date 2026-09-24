@@ -27,6 +27,11 @@ export function useTodos(storage: TodoStorage) {
     if (hydrated) void storage.save(todos);
   }, [storage, hydrated, todos]);
 
+  useEffect(() => {
+    if (!hydrated || !storage.subscribe) return;
+    return storage.subscribe(setTodos);
+  }, [storage, hydrated]);
+
   const addTodo = useCallback((draft: TodoDraft) => {
     setTodos((current) => addTodos(current, [draft]).todos);
   }, []);
