@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { TodoDraft } from "@todo/shared";
+import type { TodoDraft, TodoPriority } from "@todo/shared";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { parseTodosFromTranscript, type ParseResult } from "@/lib/parse-todos";
 
@@ -11,12 +11,20 @@ const SOURCE_LABEL: Record<ParseResult["source"], string> = {
   offline: "parsed in your browser",
 };
 
+const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
+
+type Suggestion = TodoDraft & { id: string };
+
 export function VoiceCapture({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const speech = useSpeechRecognition();
   const [manualTranscript, setManualTranscript] = useState("");
   const [parsing, setParsing] = useState(false);
   const [result, setResult] = useState<ParseResult | null>(null);
-  const [drafts, setDrafts] = useState<TodoDraft[]>([]);
+  const [drafts, setDrafts] = useState<Suggestion[]>([]);
+
+  function updateDraft(id: string, patch: Partial<TodoDraft>) {
+    setDrafts((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  }
 
   const transcript = speech.listening || speech.transcript ? speech.transcript : manualTranscript;
   const canParse = transcript.trim().length > 0 && !parsing;
@@ -26,14 +34,16 @@ export function VoiceCapture({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
     try {
       const parsed = await parseTodosFromTranscript(transcript);
       setResult(parsed);
-      setDrafts(parsed.todos);
+      setDrafts(parsed.todos.map((todo) => ({ ...todo, id: crypto.randomUUID() })));
     } finally {
       setParsing(false);
     }
   }
 
   function handleConfirm() {
-    drafts.forEach(onAdd);
+    drafts.forEach((draft) =>
+      onAdd({ title: draft.title, notes: draft.notes, priority: draft.priority, dueDate: draft.dueDate }),
+    );
     discard();
   }
 
@@ -113,26 +123,39 @@ export function VoiceCapture({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
               </p>
               <ul className="flex flex-col gap-2">
                 {drafts.map((draft, index) => (
-                  <li key={`${draft.title}-${index}`} className="flex items-center gap-2">
+                  <li key={draft.id} className="flex flex-wrap items-center gap-2">
                     <input
                       value={draft.title}
-                      onChange={(event) =>
-                        setDrafts((current) =>
-                          current.map((item, itemIndex) =>
-                            itemIndex === index ? { ...item, title: event.target.value } : item,
-                          ),
-                        )
-                      }
+                      onChange={(event) => updateDraft(draft.id, { title: event.target.value })}
                       aria-label={`Suggested todo ${index + 1}`}
-                      className="flex-1 rounded-lg border border-black/10 bg-transparent px-2 py-1 text-sm dark:border-white/15"
+                      className="min-w-40 flex-1 rounded-lg border border-black/10 bg-transparent px-2 py-1 text-sm dark:border-white/15"
                     />
-                    {draft.dueDate && <span className="text-xs opacity-60">{draft.dueDate}</span>}
-                    {draft.priority && (
-                      <span className="text-xs capitalize opacity-60">{draft.priority}</span>
-                    )}
+                    <select
+                      value={draft.priority ?? "medium"}
+                      onChange={(event) =>
+                        updateDraft(draft.id, { priority: event.target.value as TodoPriority })
+                      }
+                      aria-label={`Priority for suggested todo ${index + 1}`}
+                      className="rounded-lg border border-black/10 bg-transparent px-2 py-1 text-xs capitalize dark:border-white/15"
+                    >
+                      {PRIORITIES.map((option) => (
+                        <option key={option} value={option} className="text-foreground">
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="date"
+                      value={draft.dueDate ?? ""}
+                      onChange={(event) =>
+                        updateDraft(draft.id, { dueDate: event.target.value || undefined })
+                      }
+                      aria-label={`Due date for suggested todo ${index + 1}`}
+                      className="rounded-lg border border-black/10 bg-transparent px-2 py-1 text-xs dark:border-white/15"
+                    />
                     <button
                       type="button"
-                      onClick={() => setDrafts((current) => current.filter((_, i) => i !== index))}
+                      onClick={() => setDrafts((current) => current.filter((item) => item.id !== draft.id))}
                       aria-label={`Discard suggestion "${draft.title}"`}
                       className="px-1 text-sm opacity-50 hover:opacity-100"
                     >

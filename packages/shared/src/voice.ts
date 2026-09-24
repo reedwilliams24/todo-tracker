@@ -20,7 +20,7 @@ const WEEKDAYS = [
 ] as const;
 
 const LEADING_FILLER =
-  /^(?:(?:um|uh|ok|okay|so|hey|please|remind me to|i need to|i have to|i want to|remember to|add (?:a )?(?:todo|task|item)(?: to| for)?|create (?:a )?(?:todo|task)(?: to| for)?|make (?:a )?note to|let's|lets)(?:\s+|$))+/i;
+  /^(?:(?:um|uh|ok|okay|so|hey|please|remind me to|i need to|i have to|i want to|remember to|add (?:a )?(?:todo|task|item)(?: to| for)?|create (?:a )?(?:todo|task)(?: to| for)?|make (?:a )?note to|let's|lets)(?:[\s,.!?]+|$))+/i;
 
 const LEADING_PUNCTUATION = /^[\s.,!?]+/;
 

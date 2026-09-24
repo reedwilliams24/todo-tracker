@@ -48,6 +48,7 @@ describe("parseTranscript", () => {
 
   it("drops empty segments", () => {
     expect(parseTranscript("um, and then , uh", monday)).toEqual([]);
+    expect(parseTranscript("um, uh, and then", monday)).toEqual([]);
   });
 });
 
