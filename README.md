@@ -88,3 +88,12 @@ job names in that script in sync with the workflow.
 Every change is expected to land on all three platforms (web, iOS, Android).
 The PR template has a Before/After table per platform; fill each one in or mark
 it "N/A — not affected" with a one-line reason.
+||||||| parent of 0de6376 (chore: document jsx-no-bind policy and turn it off explicitly in web + mobile ESLint)
+
+## Code style
+
+Inline arrow functions as JSX handlers (`onClick={() => remove(id)}`) are
+fine. `react/jsx-no-bind` is explicitly off in both apps' ESLint configs: none
+of our components are wrapped in `React.memo`, so stable handler identity would
+not avoid any re-render, and React 19 / the React Compiler make this a
+non-issue. Revisit only if a list gets large enough to need memoized rows.
