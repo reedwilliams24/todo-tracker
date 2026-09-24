@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
 import { useTodos } from "../hooks/use-todos";
-import { colors } from "../theme";
+import { useStyles, type ThemeColors } from "../theme";
 import { TodoForm } from "./todo-form";
 import { TodoItem } from "./todo-item";
 
@@ -11,6 +11,7 @@ const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 export function TodoApp() {
   const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
+  const styles = useStyles(makeStyles);
 
   const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
   const remaining = countRemaining(todos);
@@ -71,7 +72,8 @@ export function TodoApp() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: { flex: 1, gap: 16 },
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   filters: { flexDirection: "row", gap: 4 },

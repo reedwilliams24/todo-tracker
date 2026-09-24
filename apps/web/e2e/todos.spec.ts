@@ -164,3 +164,22 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("theme preference toggles dark class and persists", async ({ page }) => {
+  const html = page.locator("html");
+  await expect(html).not.toHaveClass(/dark/);
+
+  await page.getByRole("radio", { name: "Dark" }).click();
+  await expect(html).toHaveClass(/dark/);
+  await expect(page.getByRole("radio", { name: "Dark" })).toHaveAttribute("aria-checked", "true");
+
+  await page.reload();
+  await expect(html).toHaveClass(/dark/);
+
+  await page.getByRole("radio", { name: "Light" }).click();
+  await expect(html).not.toHaveClass(/dark/);
+
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.getByRole("radio", { name: "System" }).click();
+  await expect(html).toHaveClass(/dark/);
+});
