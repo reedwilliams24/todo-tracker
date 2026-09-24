@@ -8,9 +8,11 @@ type TodoItemProps = {
   onToggle: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onRemove: (id: string) => void;
+  /** When provided the row is in multi-select mode: the checkbox selects instead of completing. */
+  selection?: { selected: boolean; onSelect: (id: string) => void };
 };
 
-export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onRename, onRemove, selection }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
 
@@ -24,6 +26,28 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
   }
 
   const priority = priorityColors[todo.priority];
+
+  if (selection) {
+    return (
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: selection.selected }}
+        accessibilityLabel={`Select "${todo.title}"`}
+        onPress={() => selection.onSelect(todo.id)}
+        style={[styles.row, selection.selected && styles.rowSelected]}
+      >
+        <View style={[styles.checkbox, selection.selected && styles.checkboxChecked]}>
+          {selection.selected && <Text style={styles.checkmark}>✓</Text>}
+        </View>
+        <Text numberOfLines={1} style={[styles.title, styles.titleButton, todo.completed && styles.titleDone]}>
+          {todo.title}
+        </Text>
+        <View style={[styles.badge, { backgroundColor: priority.bg }]}>
+          <Text style={[styles.badgeText, { color: priority.text }]}>{todo.priority}</Text>
+        </View>
+      </Pressable>
+    );
+  }
 
   return (
     <View style={styles.row}>
@@ -86,6 +110,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
+  rowSelected: { borderColor: colors.foreground },
   checkbox: {
     width: 20,
     height: 20,

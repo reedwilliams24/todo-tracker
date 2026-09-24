@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "../list";
+import {
+  addTodos,
+  bulkToggle,
+  clearCompletedInList,
+  removeFromList,
+  renameInList,
+  toggleInList,
+} from "../list";
 import type { TodoStorage } from "../storage";
 import type { Todo, TodoDraft } from "../types";
 
@@ -41,6 +48,10 @@ export function useTodos(storage: TodoStorage) {
     setTodos((current) => toggleInList(current, id));
   }, []);
 
+  const toggleMany = useCallback((ids: string[]) => {
+    setTodos((current) => bulkToggle(current, ids));
+  }, []);
+
   const rename = useCallback((id: string, title: string) => {
     setTodos((current) => renameInList(current, id, title));
   }, []);
@@ -57,5 +68,16 @@ export function useTodos(storage: TodoStorage) {
     setTodos(clearCompletedInList);
   }, []);
 
-  return { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted };
+  return {
+    todos,
+    hydrated,
+    addTodo,
+    addMany,
+    toggle,
+    toggleMany,
+    rename,
+    remove,
+    removeMany,
+    clearCompleted,
+  };
 }
