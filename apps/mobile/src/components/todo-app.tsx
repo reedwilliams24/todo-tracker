@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
+import { useAuth } from "../hooks/use-auth";
 import { useTodos } from "../hooks/use-todos";
+import { AuthPanel } from "./auth-panel";
 import { colors } from "../theme";
 import { TodoForm } from "./todo-form";
 import { TodoItem } from "./todo-item";
@@ -9,7 +11,8 @@ import { TodoItem } from "./todo-item";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted } = useTodos();
+  const auth = useAuth();
+  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted } = useTodos(auth.user);
   const [filter, setFilter] = useState<TodoFilter>("all");
 
   const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
@@ -18,6 +21,7 @@ export function TodoApp() {
 
   return (
     <View style={styles.container}>
+      <AuthPanel {...auth} />
       <TodoForm onAdd={addTodo} />
 
       <View style={styles.toolbar}>

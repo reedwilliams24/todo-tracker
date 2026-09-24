@@ -8,7 +8,9 @@ import {
   sortTodos,
   type TodoFilter,
 } from "@todo/shared";
+import { useAuth } from "@/hooks/use-auth";
 import { useTodos } from "@/hooks/use-todos";
+import { AuthPanel } from "@/components/auth-panel";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
@@ -16,8 +18,9 @@ import { VoiceCapture } from "@/components/voice-capture";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
+  const auth = useAuth();
   const { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted } =
-    useTodos();
+    useTodos(auth.user);
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
 
@@ -31,6 +34,7 @@ export function TodoApp() {
 
   return (
     <section className="flex flex-col gap-4">
+      <AuthPanel {...auth} />
       <TodoForm onAdd={addTodo} />
       <VoiceCapture todos={todos} onAddMany={addMany} onUndo={removeMany} />
 

@@ -164,3 +164,8 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("stays local-only when Supabase is not configured", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Email me a link" })).toHaveCount(0);
+});
