@@ -8,7 +8,7 @@ import {
   type TodoDraft,
   type TodoPriority,
 } from "@todo/shared";
-import { colors } from "../theme";
+import { borderWidth, colors, fontSize, fontWeight, radius, spacing } from "../theme";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
@@ -81,44 +81,44 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
 
 const styles = StyleSheet.create({
   card: {
-    gap: 8,
-    borderRadius: 12,
-    borderWidth: 1,
+    gap: spacing[2],
+    borderRadius: radius.lg,
+    borderWidth: borderWidth.thin,
     borderColor: colors.border,
     backgroundColor: colors.card,
-    padding: 12,
+    padding: spacing[3],
   },
-  input: { fontSize: 16, paddingHorizontal: 8, paddingVertical: 8, color: colors.foreground },
-  row: { flexDirection: "row", alignItems: "center", gap: 8 },
+  input: { fontSize: fontSize.base, paddingHorizontal: spacing[2], paddingVertical: spacing[2], color: colors.foreground },
+  row: { flexDirection: "row", alignItems: "center", gap: spacing[2] },
   segments: {
     flexDirection: "row",
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radius.md,
     overflow: "hidden",
   },
-  segment: { paddingHorizontal: 10, paddingVertical: 6 },
+  segment: { paddingHorizontal: spacing[2.5], paddingVertical: spacing[1.5] },
   segmentSelected: { backgroundColor: colors.foreground },
-  segmentText: { fontSize: 13, textTransform: "capitalize", color: colors.foreground },
+  segmentText: { fontSize: fontSize.sm, textTransform: "capitalize", color: colors.foreground },
   segmentTextSelected: { color: colors.card },
   dateInput: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    fontSize: 13,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing[2],
+    paddingVertical: spacing[1.5],
+    fontSize: fontSize.sm,
     color: colors.foreground,
   },
-  dateInvalid: { borderColor: "#dc2626" },
+  dateInvalid: { borderColor: colors.danger },
   addButton: {
     alignSelf: "flex-end",
     backgroundColor: colors.foreground,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[2],
   },
-  addText: { color: colors.card, fontSize: 14, fontWeight: "500" },
+  addText: { color: colors.card, fontSize: fontSize.sm, fontWeight: fontWeight.medium },
   disabled: { opacity: 0.4 },
 });
