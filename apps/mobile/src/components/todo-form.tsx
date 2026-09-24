@@ -8,11 +8,13 @@ import {
   type TodoDraft,
   type TodoPriority,
 } from "@todo/shared";
+import { useT } from "../hooks/use-t";
 import { colors } from "../theme";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
+  const t = useT();
   const [form, setForm] = useState(EMPTY_TODO_FORM);
   const { title, priority, dueDate } = form;
 
@@ -30,15 +32,15 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
       <TextInput
         value={title}
         onChangeText={(value) => setForm((f) => ({ ...f, title: value }))}
-        placeholder="What needs doing?"
+        placeholder={t("form.title.placeholder")}
         placeholderTextColor={colors.muted}
-        accessibilityLabel="Todo title"
+        accessibilityLabel={t("form.title.label")}
         onSubmitEditing={submit}
         returnKeyType="done"
         style={styles.input}
       />
       <View style={styles.row}>
-        <View style={styles.segments} accessibilityLabel="Priority" accessibilityRole="radiogroup">
+        <View style={styles.segments} accessibilityLabel={t("form.priority.label")} accessibilityRole="radiogroup">
           {PRIORITIES.map((option) => {
             const selected = option === priority;
             return (
@@ -50,7 +52,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
                 style={[styles.segment, selected && styles.segmentSelected]}
               >
                 <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
-                  {option}
+                  {t(`priority.${option}`)}
                 </Text>
               </Pressable>
             );
@@ -59,9 +61,9 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         <TextInput
           value={dueDate}
           onChangeText={(value) => setForm((f) => ({ ...f, dueDate: value }))}
-          placeholder="YYYY-MM-DD"
+          placeholder={t("form.dueDate.placeholder")}
           placeholderTextColor={colors.muted}
-          accessibilityLabel="Due date"
+          accessibilityLabel={t("form.dueDate.label")}
           autoCapitalize="none"
           keyboardType="numbers-and-punctuation"
           style={[styles.dateInput, !dateOk && styles.dateInvalid]}
@@ -73,7 +75,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         onPress={submit}
         style={[styles.addButton, !canAdd && styles.disabled]}
       >
-        <Text style={styles.addText}>Add</Text>
+        <Text style={styles.addText}>{t("form.add")}</Text>
       </Pressable>
     </View>
   );
@@ -99,7 +101,7 @@ const styles = StyleSheet.create({
   },
   segment: { paddingHorizontal: 10, paddingVertical: 6 },
   segmentSelected: { backgroundColor: colors.foreground },
-  segmentText: { fontSize: 13, textTransform: "capitalize", color: colors.foreground },
+  segmentText: { fontSize: 13, color: colors.foreground },
   segmentTextSelected: { color: colors.card },
   dateInput: {
     flex: 1,

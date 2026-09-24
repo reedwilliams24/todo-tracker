@@ -23,7 +23,7 @@ test("adds a todo", async ({ page }) => {
 
   const item = page.getByRole("listitem").filter({ hasText: "Buy milk" });
   await expect(item).toBeVisible();
-  await expect(item).toContainText("high");
+  await expect(item).toContainText("High");
   await expect(page.getByLabel("Todo title")).toHaveValue("");
   await expect(page.getByText("1 task remaining")).toBeVisible();
 });
@@ -163,4 +163,14 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(item).toBeVisible();
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
+});
+
+test("copy comes from the shared catalog with pluralised remaining count", async ({ page }) => {
+  await expect(page.getByText("0 tasks remaining")).toBeVisible();
+  await page.getByLabel("Todo title").fill("One");
+  await page.getByRole("button", { name: "Add" }).click();
+  await expect(page.getByText("1 task remaining")).toBeVisible();
+  await page.getByLabel("Todo title").fill("Two");
+  await page.getByRole("button", { name: "Add" }).click();
+  await expect(page.getByText("2 tasks remaining")).toBeVisible();
 });
