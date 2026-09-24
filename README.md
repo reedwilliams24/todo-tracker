@@ -99,8 +99,9 @@ sign-in panel (email magic link / 6-digit code, Google, Apple) and stores todos 
 - mobile: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (see `apps/mobile/.env.example`)
 
 Only the anon key ships to clients; access is enforced by row-level security (users see their own rows).
-The service-role key must never be set in an app env. On first sign-in on a device, the signed-out local
-list is merged into the account (`withFirstSignInMigration` in `@todo/shared`).
+The service-role key must never be set in an app env. Signed-in storage is offline-first (`createOfflineFirstStorage` in `@todo/shared`): edits land in the
+device cache immediately and are pushed when reachable; the first sync folds the signed-out local list into
+the account. Concurrent edits from two devices merge per field (last writer wins), and deletes win over edits.
 
 Schema lives in `supabase/migrations`. Apply with the Supabase CLI: `supabase link --project-ref <ref>`
 once, then `pnpm db:migrate`. Enable the Google/Apple providers and add `todotracker://auth` plus the web
