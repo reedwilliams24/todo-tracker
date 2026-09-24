@@ -164,3 +164,19 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("quick-add shorthand previews and applies due date, priority", async ({ page }) => {
+  const input = page.getByLabel("Todo title");
+  await input.fill("call mom tomorrow #family !p1");
+  const preview = page.getByTestId("quick-add-preview");
+  await expect(preview).toContainText("Will add: call mom");
+  await expect(preview).toContainText("Due 20");
+  await expect(preview).toContainText("high priority");
+  await expect(preview).toContainText("#family");
+  await page.getByRole("button", { name: "Add" }).click();
+  const item = page.getByRole("listitem").filter({ hasText: "call mom" });
+  await expect(item).toBeVisible();
+  await expect(item).toContainText("high");
+  await expect(item).toContainText(/\d{4}-\d{2}-\d{2}/);
+  await expect(preview).toBeHidden();
+});
