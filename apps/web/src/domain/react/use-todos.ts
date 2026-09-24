@@ -2,7 +2,8 @@ import { useCallback, useEffect, useReducer, useState } from "react";
 import { addTodos } from "../list";
 import type { TodoStorage } from "../storage";
 import { INITIAL_TODO_STATE, reduceTodos, type TodoAction, type TodoState } from "../store";
-import type { TodoDraft } from "../types";
+import { type ImportMode } from "../transfer";
+import type { Todo, TodoDraft } from "../types";
 import { UNDO_TIMEOUT_MS } from "../undo";
 
 function reducer(state: TodoState, action: TodoAction): TodoState {
@@ -52,6 +53,10 @@ export function useTodos(storage: TodoStorage) {
   const removeMany = useCallback((ids: string[]) => dispatch({ type: "remove", ids }), []);
   const clearCompleted = useCallback(() => dispatch({ type: "clearCompleted" }), []);
   const undo = useCallback(() => dispatch({ type: "undo" }), []);
+  const importTodos = useCallback(
+    (imported: readonly Todo[], mode: ImportMode) => dispatch({ type: "import", todos: [...imported], mode }),
+    [],
+  );
 
   return {
     todos,
@@ -65,5 +70,6 @@ export function useTodos(storage: TodoStorage) {
     clearCompleted,
     undoable,
     undo,
+    importTodos,
   };
 }

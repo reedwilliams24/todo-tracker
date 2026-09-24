@@ -1,4 +1,5 @@
 import { clearCompletedInList, removeFromList, renameInList, toggleInList } from "./list";
+import { applyImport, type ImportMode } from "./transfer";
 import type { Todo } from "./types";
 import { createUndoEntry, describeUndo, isUndoExpired, type UndoEntry } from "./undo";
 
@@ -12,6 +13,7 @@ export type TodoAction =
   | { type: "rename"; id: string; title: string }
   | { type: "remove"; ids: string[] }
   | { type: "clearCompleted" }
+  | { type: "import"; todos: Todo[]; mode: ImportMode }
   | { type: "undo" }
   | { type: "expireUndo" };
 
@@ -45,6 +47,8 @@ export function reduceTodos(state: TodoState, action: TodoAction, now: Date = ne
       if (removed === 0) return state;
       return { todos: next, undoable: snapshot(describeUndo("delete", removed)) };
     }
+    case "import":
+      return { todos: applyImport(todos, action.todos, action.mode), undoable: null };
     case "undo":
       return state.undoable ? { todos: [...state.undoable.before], undoable: null } : state;
     case "expireUndo":
