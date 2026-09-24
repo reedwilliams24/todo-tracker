@@ -4,17 +4,23 @@ import {
   EMPTY_TODO_FORM,
   isValidDueDate,
   isValidTitle,
+  RECURRENCES,
+  RECURRENCE_LABELS,
   toTodoDraft,
+  type Recurrence,
   type TodoDraft,
   type TodoPriority,
 } from "@todo/shared";
+
 import { colors } from "../theme";
+
+const REPEAT_OPTIONS: (Recurrence | "")[] = ["", ...RECURRENCES];
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate } = form;
+  const { title, priority, dueDate, recurrence } = form;
 
   const dateOk = isValidDueDate(dueDate);
   const canAdd = isValidTitle(title) && dateOk;
@@ -67,6 +73,24 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           style={[styles.dateInput, !dateOk && styles.dateInvalid]}
         />
       </View>
+      <View style={styles.segments} accessibilityLabel="Repeat" accessibilityRole="radiogroup">
+        {REPEAT_OPTIONS.map((option) => {
+          const selected = option === recurrence;
+          return (
+            <Pressable
+              key={option || "none"}
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              onPress={() => setForm((f) => ({ ...f, recurrence: option }))}
+              style={[styles.segment, selected && styles.segmentSelected]}
+            >
+              <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
+                {option ? RECURRENCE_LABELS[option] : "No repeat"}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <Pressable
         accessibilityRole="button"
         disabled={!canAdd}
@@ -92,6 +116,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 8 },
   segments: {
     flexDirection: "row",
+    alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
