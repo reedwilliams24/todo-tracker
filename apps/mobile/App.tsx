@@ -9,9 +9,11 @@ import {
   View,
 } from "react-native";
 import { TodoApp } from "./src/components/todo-app";
+import { useT } from "./src/hooks/use-t";
 import { colors } from "./src/theme";
 
 export default function App() {
+  const t = useT();
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
@@ -19,8 +21,8 @@ export default function App() {
         style={styles.main}
       >
         <View style={styles.header}>
-          <Text style={styles.heading}>Todo Tracker</Text>
-          <Text style={styles.subheading}>A tiny local-first todo list.</Text>
+          <Text style={styles.heading}>{t("app.title")}</Text>
+          <Text style={styles.subheading}>{t("app.tagline.mobile")}</Text>
         </View>
         <TodoApp />
       </KeyboardAvoidingView>
