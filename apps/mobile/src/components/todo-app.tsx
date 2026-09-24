@@ -5,12 +5,23 @@ import { useTodos } from "../hooks/use-todos";
 import { colors } from "../theme";
 import { TodoForm } from "./todo-form";
 import { TodoItem } from "./todo-item";
+import { DataTransfer } from "./data-transfer";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted, undoable, undo } =
-    useTodos();
+  const {
+    todos,
+    hydrated,
+    addTodo,
+    toggle,
+    rename,
+    remove,
+    clearCompleted,
+    undoable,
+    undo,
+    importTodos,
+  } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
 
   const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
@@ -77,6 +88,8 @@ export function TodoApp() {
           </Pressable>
         </View>
       )}
+
+      <DataTransfer todos={todos} onImport={importTodos} />
     </View>
   );
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "../list";
+import { applyImport, type ImportMode } from "../transfer";
 import type { TodoStorage } from "../storage";
 import type { Todo, TodoDraft } from "../types";
 import { createUndoEntry, describeUndo, isUndoExpired, UNDO_TIMEOUT_MS, type UndoEntry } from "../undo";
@@ -89,6 +90,10 @@ export function useTodos(storage: TodoStorage) {
     [applyUndoable],
   );
 
+  const importTodos = useCallback((imported: readonly Todo[], mode: ImportMode) => {
+    setTodos((current) => applyImport(current, imported, mode));
+  }, []);
+
   const clearCompleted = useCallback(() => {
     setTodos((current) => {
       const next = clearCompletedInList(current);
@@ -110,5 +115,6 @@ export function useTodos(storage: TodoStorage) {
     clearCompleted,
     undoable,
     undo,
+    importTodos,
   };
 }

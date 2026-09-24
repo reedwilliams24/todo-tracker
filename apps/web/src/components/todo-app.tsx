@@ -12,6 +12,7 @@ import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
+import { DataTransfer } from "@/components/data-transfer";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
@@ -28,6 +29,7 @@ export function TodoApp() {
     clearCompleted,
     undoable,
     undo,
+    importTodos,
   } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
@@ -139,6 +141,8 @@ export function TodoApp() {
           </button>
         </div>
       )}
+
+      <DataTransfer todos={todos} onImport={importTodos} />
     </section>
   );
 }
