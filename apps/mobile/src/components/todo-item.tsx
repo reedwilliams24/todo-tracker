@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { isValidTitle, type Todo } from "@todo/shared";
+import { isOverdue, isValidTitle, type Todo } from "@todo/shared";
 import { colors, priorityColors } from "../theme";
 
 type TodoItemProps = {
@@ -24,9 +24,10 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
   }
 
   const priority = priorityColors[todo.priority];
+  const overdue = isOverdue(todo);
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, overdue && styles.rowOverdue]}>
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: todo.completed }}
@@ -55,7 +56,14 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         </Pressable>
       )}
 
-      {todo.dueDate && <Text style={styles.dueDate}>{todo.dueDate}</Text>}
+      {todo.dueDate && (
+        <Text
+          style={[styles.dueDate, overdue && styles.dueDateOverdue]}
+          accessibilityLabel={overdue ? `Overdue, was due ${todo.dueDate}` : `Due ${todo.dueDate}`}
+        >
+          {overdue ? `Overdue · ${todo.dueDate}` : todo.dueDate}
+        </Text>
+      )}
 
       <View style={[styles.badge, { backgroundColor: priority.bg }]}>
         <Text style={[styles.badgeText, { color: priority.text }]}>{todo.priority}</Text>
@@ -86,6 +94,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
+  rowOverdue: { borderColor: "rgba(239,68,68,0.4)" },
   checkbox: {
     width: 20,
     height: 20,
@@ -102,6 +111,7 @@ const styles = StyleSheet.create({
   titleDone: { textDecorationLine: "line-through", opacity: 0.5 },
   editInput: { flex: 1, fontSize: 16, paddingVertical: 4, color: colors.foreground },
   dueDate: { fontSize: 12, color: colors.muted },
+  dueDateOverdue: { color: "#dc2626", fontWeight: "500" },
   badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   badgeText: { fontSize: 12, textTransform: "capitalize" },
   delete: { paddingHorizontal: 6, paddingVertical: 2 },

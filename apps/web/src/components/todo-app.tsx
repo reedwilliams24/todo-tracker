@@ -5,8 +5,10 @@ import {
   countRemaining,
   filterTodos,
   searchTodos,
+  SORTS,
   sortTodos,
   type TodoFilter,
+  type TodoSort,
 } from "@todo/shared";
 import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
@@ -20,10 +22,11 @@ export function TodoApp() {
     useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<TodoSort>("priority");
 
   const visible = useMemo(
-    () => sortTodos(searchTodos(filterTodos(todos, filter), query)),
-    [todos, filter, query],
+    () => sortTodos(searchTodos(filterTodos(todos, filter), query), sort),
+    [todos, filter, query, sort],
   );
   const searching = query.trim().length > 0;
   const remaining = countRemaining(todos);
@@ -77,15 +80,32 @@ export function TodoApp() {
             </button>
           ))}
         </div>
-        {hasCompleted && (
-          <button
-            type="button"
-            onClick={clearCompleted}
-            className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
-          >
-            Clear completed
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-1 opacity-70">
+            Sort
+            <select
+              value={sort}
+              onChange={(event) => setSort(event.target.value as TodoSort)}
+              aria-label="Sort todos"
+              className="rounded-lg border border-black/10 bg-transparent px-2 py-1 capitalize dark:border-white/15"
+            >
+              {SORTS.map((option) => (
+                <option key={option} value={option} className="text-foreground">
+                  {option === "due" ? "due date" : option}
+                </option>
+              ))}
+            </select>
+          </label>
+          {hasCompleted && (
+            <button
+              type="button"
+              onClick={clearCompleted}
+              className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
+            >
+              Clear completed
+            </button>
+          )}
+        </div>
       </div>
 
       {!hydrated ? (
