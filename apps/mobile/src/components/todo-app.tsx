@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
 import { useTodos } from "../hooks/use-todos";
-import { colors } from "../theme";
+import { colors, fontSize, radius, spacing } from "../theme";
 import { TodoForm } from "./todo-form";
 import { TodoItem } from "./todo-item";
 
@@ -72,15 +72,15 @@ export function TodoApp() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, gap: 16 },
-  toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-  filters: { flexDirection: "row", gap: 4 },
-  filter: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4 },
+  container: { flex: 1, gap: spacing[4] },
+  toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing[3] },
+  filters: { flexDirection: "row", gap: spacing[1] },
+  filter: { borderRadius: radius.full, paddingHorizontal: spacing[3], paddingVertical: spacing[1] },
   filterSelected: { backgroundColor: colors.foreground },
-  filterText: { fontSize: 14, textTransform: "capitalize", color: colors.foreground, opacity: 0.7 },
+  filterText: { fontSize: fontSize.sm, textTransform: "capitalize", color: colors.foreground, opacity: 0.7 },
   filterTextSelected: { color: colors.card, opacity: 1 },
-  clear: { fontSize: 14, color: colors.foreground, opacity: 0.7 },
-  empty: { paddingVertical: 40, textAlign: "center", fontSize: 14, color: colors.muted },
-  list: { gap: 8 },
-  remaining: { fontSize: 12, color: colors.muted },
+  clear: { fontSize: fontSize.sm, color: colors.foreground, opacity: 0.7 },
+  empty: { paddingVertical: spacing[10], textAlign: "center", fontSize: fontSize.sm, color: colors.muted },
+  list: { gap: spacing[2] },
+  remaining: { fontSize: fontSize.xs, color: colors.muted },
 });

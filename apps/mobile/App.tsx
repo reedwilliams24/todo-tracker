@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { TodoApp } from "./src/components/todo-app";
-import { colors } from "./src/theme";
+import { colors, fontSize, fontWeight, spacing } from "./src/theme";
 
 export default function App() {
   return (
@@ -35,8 +35,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     paddingTop: Platform.OS === "android" ? NativeStatusBar.currentHeight : 0,
   },
-  main: { flex: 1, padding: 16, gap: 16, maxWidth: 640, width: "100%", alignSelf: "center" },
-  header: { gap: 4 },
-  heading: { fontSize: 24, fontWeight: "600", color: colors.foreground },
-  subheading: { fontSize: 14, color: colors.muted },
+  main: { flex: 1, padding: spacing[4], gap: spacing[4], maxWidth: 640, width: "100%", alignSelf: "center" },
+  header: { gap: spacing[1] },
+  heading: { fontSize: fontSize["2xl"], fontWeight: fontWeight.semibold, color: colors.foreground },
+  subheading: { fontSize: fontSize.sm, color: colors.muted },
 });
