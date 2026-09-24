@@ -1,4 +1,15 @@
-import type { Todo, TodoDraft, TodoFilter } from "./types";
+import type { Todo, TodoDraft, TodoFilter, TodoPriority } from "./types";
+
+export const DEFAULT_PRIORITY: TodoPriority = "medium";
+
+/** Controlled-input state for the add-todo form; dueDate is "" when unset. */
+export type TodoFormState = { title: string; priority: TodoPriority; dueDate: string };
+
+export const EMPTY_TODO_FORM: TodoFormState = { title: "", priority: DEFAULT_PRIORITY, dueDate: "" };
+
+export function toTodoDraft(form: TodoFormState): TodoDraft {
+  return { title: form.title, priority: form.priority, dueDate: form.dueDate || undefined };
+}
 
 export const PRIORITY_ORDER: Record<Todo["priority"], number> = {
   high: 0,
@@ -6,14 +17,28 @@ export const PRIORITY_ORDER: Record<Todo["priority"], number> = {
   low: 2,
 };
 
+/** Accepts an empty value or a real calendar date in YYYY-MM-DD form. */
+export function isValidDueDate(value: string | undefined): boolean {
+  if (!value) return true;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+export function generateId(): string {
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi && typeof cryptoApi.randomUUID === "function") return cryptoApi.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
   const timestamp = now.toISOString();
   return {
-    id: globalThis.crypto.randomUUID(),
+    id: generateId(),
     title: draft.title.trim(),
     notes: draft.notes?.trim() || undefined,
     completed: false,
-    priority: draft.priority ?? "medium",
+    priority: draft.priority ?? DEFAULT_PRIORITY,
     dueDate: draft.dueDate,
     createdAt: timestamp,
     updatedAt: timestamp,
