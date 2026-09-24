@@ -88,3 +88,31 @@ job names in that script in sync with the workflow.
 Every change is expected to land on all three platforms (web, iOS, Android).
 The PR template has a Before/After table per platform; fill each one in or mark
 it "N/A — not affected" with a one-line reason.
+||||||| parent of 057e11d (ci: EAS alpha builds on main; Android APK to Firebase App Distribution, iOS via EAS internal)
+
+### Mobile alpha (EAS + Firebase App Distribution)
+
+`.github/workflows/deploy-mobile.yml` runs on every push to `main` that touches `apps/mobile/**`,
+`packages/shared/**`, or the root package/lockfile/workspace config (web-only merges skip it). It uses the
+`alpha` profile in `apps/mobile/eas.json` (internal distribution, auto-incremented build number):
+
+- **Android**: EAS builds an APK, the workflow downloads it and uploads it to Firebase App Distribution
+  tester group `alpha`. Testers get an email with an install link.
+- **iOS**: EAS builds an ad-hoc IPA and distributes it itself (EAS internal distribution) - testers install
+  from the build link on expo.dev after registering their device with `eas device:create`. We use EAS
+  rather than Firebase for iOS because ad-hoc provisioning already lives in EAS; a second upload adds a
+  step without adding devices.
+
+One-time setup (nothing is committed):
+
+1. `cd apps/mobile && eas init` (writes `extra.eas.projectId` into `app.json`; commit that), then
+   `eas credentials` once to set up Apple signing and let EAS generate the Android keystore.
+2. Firebase: create a project, add an Android app with package `com.reedwilliams24.todotracker`, enable
+   App Distribution, create tester group `alpha`, and create a service account with the
+   "Firebase App Distribution Admin" role.
+3. Repository secrets: `EXPO_TOKEN` (expo.dev → Access tokens), `FIREBASE_ANDROID_APP_ID`
+   (`1:...:android:...`), `FIREBASE_SERVICE_ACCOUNT` (the service-account JSON).
+4. Repository variable `MOBILE_ALPHA_ENABLED=true` to switch the workflow on.
+
+Installing as a tester: Android - open the Firebase email on the device, install the APK (allow unknown
+sources). iOS - `eas device:create` (or the QR link an admin sends), then open the EAS build link.
