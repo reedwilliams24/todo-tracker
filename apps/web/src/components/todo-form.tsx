@@ -4,7 +4,10 @@ import { useState } from "react";
 import {
   EMPTY_TODO_FORM,
   isValidTitle,
+  RECURRENCES,
+  RECURRENCE_LABELS,
   toTodoDraft,
+  type Recurrence,
   type TodoDraft,
   type TodoPriority,
 } from "@todo/shared";
@@ -13,7 +16,7 @@ const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate } = form;
+  const { title, priority, dueDate, recurrence } = form;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,6 +58,23 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         aria-label="Due date"
         className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
       />
+      <select
+        value={recurrence}
+        onChange={(event) =>
+          setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))
+        }
+        aria-label="Repeat"
+        className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
+      >
+        <option value="" className="text-foreground">
+          No repeat
+        </option>
+        {RECURRENCES.map((option) => (
+          <option key={option} value={option} className="text-foreground">
+            {RECURRENCE_LABELS[option]}
+          </option>
+        ))}
+      </select>
       <button
         type="submit"
         disabled={!isValidTitle(title)}
