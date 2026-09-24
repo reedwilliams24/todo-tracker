@@ -5,11 +5,26 @@
 ## Before / After
 
 <!--
-Required for any user-visible change. Pick the format that fits:
+Required for any user-visible change. Every change is expected to apply to
+all three platforms; fill in one table per platform, or mark it
+"N/A — not affected: <reason>" (e.g. "web-only CI change").
 - Static/visual change (layout, styling, copy) -> screenshots
 - Interaction/flow change (clicking, typing, animations, state changes) -> a short video or GIF
-Drag media into the cells below or replace the table with a "N/A — no UI change" note.
 -->
+
+### Web
+
+| Before | After |
+| ------ | ----- |
+|        |       |
+
+### iOS
+
+| Before | After |
+| ------ | ----- |
+|        |       |
+
+### Android
 
 | Before | After |
 | ------ | ----- |
@@ -24,4 +39,5 @@ Drag media into the cells below or replace the table with a "N/A — no UI chang
 ## Checklist
 
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass
-- [ ] Before/After media attached (or marked N/A)
+- [ ] Change applied to all affected platforms (web / iOS / Android)
+- [ ] Before/After media attached for each platform (or marked N/A with a reason)

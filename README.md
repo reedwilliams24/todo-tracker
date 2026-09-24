@@ -82,3 +82,9 @@ checks block the merge button.
 
 The rule is applied with `scripts/protect-main.sh` (needs repo admin). Keep the
 job names in that script in sync with the workflow.
+
+## Pull requests
+
+Every change is expected to land on all three platforms (web, iOS, Android).
+The PR template has a Before/After table per platform; fill each one in or mark
+it "N/A — not affected" with a one-line reason.
