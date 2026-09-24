@@ -164,3 +164,29 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("tags todos and filters by tag chips", async ({ page }) => {
+  await page.getByLabel("Todo title").fill("Email boss");
+  await page.getByLabel("Tags").fill("Work, #urgent");
+  await page.getByRole("button", { name: "Add" }).click();
+  await addTodo(page, "Water plants");
+
+  const emailItem = page.getByRole("listitem").filter({ hasText: "Email boss" });
+  await expect(emailItem.getByText("#work")).toBeVisible();
+  await expect(emailItem.getByText("#urgent")).toBeVisible();
+
+  const chips = page.getByRole("group", { name: "Filter by tag" });
+  await chips.getByRole("button", { name: "#work" }).click();
+  await expect(chips.getByRole("button", { name: "#work" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("listitem")).toHaveCount(1);
+  await expect(emailItem).toBeVisible();
+
+  await page.getByRole("tablist", { name: "Filter todos" }).getByRole("tab", { name: "completed" }).click();
+  await expect(page.getByText("No completed todos tagged #work.")).toBeVisible();
+  await page.getByRole("tablist", { name: "Filter todos" }).getByRole("tab", { name: "all" }).click();
+
+  await chips.getByRole("button", { name: "#work" }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(2);
+
+  await expect(page.locator("#todo-tag-suggestions option")).toHaveCount(2);
+});

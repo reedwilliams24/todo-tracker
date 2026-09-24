@@ -78,6 +78,15 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         </button>
       )}
 
+      {todo.tags?.map((tag) => (
+        <span
+          key={tag}
+          className="rounded-full bg-black/5 px-2 py-0.5 text-xs opacity-80 dark:bg-white/10"
+        >
+          #{tag}
+        </span>
+      ))}
+
       {todo.dueDate && <span className="text-xs opacity-60">{todo.dueDate}</span>}
 
       <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
