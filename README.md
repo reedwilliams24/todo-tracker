@@ -88,3 +88,23 @@ job names in that script in sync with the workflow.
 Every change is expected to land on all three platforms (web, iOS, Android).
 The PR template has a Before/After table per platform; fill each one in or mark
 it "N/A — not affected" with a one-line reason.
+||||||| parent of d77f77d (ci: deploy web to Vercel on main (path-filtered) with PR previews)
+
+## Deploying
+
+### Web (Vercel)
+
+Production: _not yet deployed — URL goes here after the first `main` deploy._
+
+`.github/workflows/deploy-web.yml` deploys `apps/web` with the Vercel CLI: production on every push to
+`main`, a preview (commented on the PR) for pull requests. It only runs when `apps/web/**`,
+`packages/shared/**`, or the root package/lockfile/workspace config change — mobile-only changes skip it.
+Vercel's own Git integration is disabled in `vercel.json` so the workflow is the single deploy path.
+
+One-time setup (nothing is committed):
+
+1. Create a Vercel project from the repo root (`vercel link` locally, or in the dashboard). Root directory
+   stays the repo root; `vercel.json` points the build at `apps/web`.
+2. Add repository secrets: `VERCEL_TOKEN` (Account → Tokens), `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`
+   (from `.vercel/project.json` after `vercel link`).
+3. Add repository variable `VERCEL_ENABLED=true` to switch the workflow on.
