@@ -1,22 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { DEFAULT_PRIORITY, isValidTitle, type TodoDraft, type TodoPriority } from "@todo/shared";
+import {
+  EMPTY_TODO_FORM,
+  isValidTitle,
+  toTodoDraft,
+  type TodoDraft,
+  type TodoPriority,
+} from "@todo/shared";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
-  const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState<TodoPriority>(DEFAULT_PRIORITY);
-  const [dueDate, setDueDate] = useState("");
+  const [form, setForm] = useState(EMPTY_TODO_FORM);
+  const { title, priority, dueDate } = form;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isValidTitle(title)) return;
-    onAdd({ title, priority, dueDate: dueDate || undefined });
-    setTitle("");
-    setDueDate("");
-    setPriority(DEFAULT_PRIORITY);
+    onAdd(toTodoDraft(form));
+    setForm(EMPTY_TODO_FORM);
   }
 
   return (
@@ -26,14 +29,16 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
     >
       <input
         value={title}
-        onChange={(event) => setTitle(event.target.value)}
+        onChange={(event) => setForm((f) => ({ ...f, title: event.target.value }))}
         placeholder="What needs doing?"
         aria-label="Todo title"
         className="flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50"
       />
       <select
         value={priority}
-        onChange={(event) => setPriority(event.target.value as TodoPriority)}
+        onChange={(event) =>
+          setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))
+        }
         aria-label="Priority"
         className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm capitalize dark:border-white/15"
       >
@@ -46,7 +51,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
       <input
         type="date"
         value={dueDate}
-        onChange={(event) => setDueDate(event.target.value)}
+        onChange={(event) => setForm((f) => ({ ...f, dueDate: event.target.value }))}
         aria-label="Due date"
         className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
       />

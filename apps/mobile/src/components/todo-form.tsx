@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import {
-  DEFAULT_PRIORITY,
+  EMPTY_TODO_FORM,
   isValidDueDate,
   isValidTitle,
+  toTodoDraft,
   type TodoDraft,
   type TodoPriority,
 } from "@todo/shared";
@@ -12,26 +13,23 @@ import { colors } from "../theme";
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
-  const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState<TodoPriority>(DEFAULT_PRIORITY);
-  const [dueDate, setDueDate] = useState("");
+  const [form, setForm] = useState(EMPTY_TODO_FORM);
+  const { title, priority, dueDate } = form;
 
   const dateOk = isValidDueDate(dueDate);
   const canAdd = isValidTitle(title) && dateOk;
 
   function submit() {
     if (!canAdd) return;
-    onAdd({ title, priority, dueDate: dueDate || undefined });
-    setTitle("");
-    setDueDate("");
-    setPriority(DEFAULT_PRIORITY);
+    onAdd(toTodoDraft(form));
+    setForm(EMPTY_TODO_FORM);
   }
 
   return (
     <View style={styles.card}>
       <TextInput
         value={title}
-        onChangeText={setTitle}
+        onChangeText={(value) => setForm((f) => ({ ...f, title: value }))}
         placeholder="What needs doing?"
         placeholderTextColor={colors.muted}
         accessibilityLabel="Todo title"
@@ -48,7 +46,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
                 key={option}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
-                onPress={() => setPriority(option)}
+                onPress={() => setForm((f) => ({ ...f, priority: option }))}
                 style={[styles.segment, selected && styles.segmentSelected]}
               >
                 <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
@@ -60,7 +58,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         </View>
         <TextInput
           value={dueDate}
-          onChangeText={setDueDate}
+          onChangeText={(value) => setForm((f) => ({ ...f, dueDate: value }))}
           placeholder="YYYY-MM-DD"
           placeholderTextColor={colors.muted}
           accessibilityLabel="Due date"

@@ -2,6 +2,15 @@ import type { Todo, TodoDraft, TodoFilter, TodoPriority } from "./types";
 
 export const DEFAULT_PRIORITY: TodoPriority = "medium";
 
+/** Controlled-input state for the add-todo form; dueDate is "" when unset. */
+export type TodoFormState = { title: string; priority: TodoPriority; dueDate: string };
+
+export const EMPTY_TODO_FORM: TodoFormState = { title: "", priority: DEFAULT_PRIORITY, dueDate: "" };
+
+export function toTodoDraft(form: TodoFormState): TodoDraft {
+  return { title: form.title, priority: form.priority, dueDate: form.dueDate || undefined };
+}
+
 export const PRIORITY_ORDER: Record<Todo["priority"], number> = {
   high: 0,
   medium: 1,
