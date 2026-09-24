@@ -17,9 +17,11 @@ layer in `apps/web/src/lib/storage.ts` and keeping `@todo/shared` unchanged.
 
 ## Voice input
 
-The mic button dictates todos: the browser's Web Speech API produces a
-transcript, `POST /api/parse-todos` turns it into structured drafts, and you
-review/edit them before they are added.
+Hit the mic, say what you need to do, and stop talking: after five seconds of
+silence the browser's Web Speech API transcript goes to `POST /api/parse-todos`
+and the resulting todos are added straight to the list, with an Undo. The model
+also assigns each todo a priority, calibrated against your open todos; a due
+date is only set if you actually said one.
 
 Parsing uses a local [Ollama](https://ollama.com) model, with a regex parser in
 `@todo/shared` as the fallback whenever Ollama is unreachable or returns

@@ -27,6 +27,12 @@ export function useTodos() {
     setTodos((current) => [createTodo(draft), ...current]);
   }, []);
 
+  const addMany = useCallback((drafts: TodoDraft[]) => {
+    const created = drafts.map((draft) => createTodo(draft));
+    setTodos((current) => [...created, ...current]);
+    return created;
+  }, []);
+
   const toggle = useCallback((id: string) => {
     setTodos((current) =>
       current.map((todo) => (todo.id === id ? toggleTodoItem(todo) : todo)),
@@ -45,9 +51,14 @@ export function useTodos() {
     setTodos((current) => current.filter((todo) => todo.id !== id));
   }, []);
 
+  const removeMany = useCallback((ids: string[]) => {
+    const doomed = new Set(ids);
+    setTodos((current) => current.filter((todo) => !doomed.has(todo.id)));
+  }, []);
+
   const clearCompleted = useCallback(() => {
     setTodos((current) => current.filter((todo) => !todo.completed));
   }, []);
 
-  return { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted };
+  return { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted };
 }

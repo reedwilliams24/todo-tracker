@@ -2,6 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+type Options = {
+  lang?: string;
+  /** Stop listening after this much silence; the final transcript is passed to `onSilence`. */
+  silenceMs?: number;
+  onSilence?: (transcript: string) => void;
+};
+
 type SpeechState = {
   supported: boolean;
   listening: boolean;
@@ -9,15 +16,29 @@ type SpeechState = {
   error: string | null;
 };
 
-export function useSpeechRecognition(lang = "en-US") {
+export function useSpeechRecognition({
+  lang = "en-US",
+  silenceMs = 5000,
+  onSilence,
+}: Options = {}) {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const finalTranscriptRef = useRef("");
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSilenceRef = useRef(onSilence);
+  onSilenceRef.current = onSilence;
   const [state, setState] = useState<SpeechState>({
     supported: false,
     listening: false,
     transcript: "",
     error: null,
   });
+
+  const clearSilenceTimer = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition;
@@ -31,7 +52,21 @@ export function useSpeechRecognition(lang = "en-US") {
     recognition.interimResults = true;
     recognition.lang = lang;
 
+    const armSilenceTimer = () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = setTimeout(() => {
+        silenceTimerRef.current = null;
+        recognition.stop();
+        setState((current) => ({ ...current, listening: false }));
+        const spoken = finalTranscriptRef.current.trim();
+        if (spoken) onSilenceRef.current?.(spoken);
+      }, silenceMs);
+    };
+
+    recognition.onspeechstart = armSilenceTimer;
+
     recognition.onresult = (event) => {
+      armSilenceTimer();
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
         const result = event.results[i];
@@ -49,6 +84,8 @@ export function useSpeechRecognition(lang = "en-US") {
     };
 
     recognition.onerror = (event) => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
       setState((current) => ({
         ...current,
         listening: false,
@@ -69,13 +106,16 @@ export function useSpeechRecognition(lang = "en-US") {
     setState((current) => ({ ...current, supported: true }));
 
     return () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
       recognition.onresult = null;
       recognition.onerror = null;
       recognition.onend = null;
+      recognition.onspeechstart = null;
       recognition.abort();
       recognitionRef.current = null;
     };
-  }, [lang]);
+  }, [lang, silenceMs]);
 
   const start = useCallback(() => {
     const recognition = recognitionRef.current;
@@ -90,14 +130,16 @@ export function useSpeechRecognition(lang = "en-US") {
   }, []);
 
   const stop = useCallback(() => {
+    clearSilenceTimer();
     recognitionRef.current?.stop();
     setState((current) => ({ ...current, listening: false }));
-  }, []);
+  }, [clearSilenceTimer]);
 
   const reset = useCallback(() => {
+    clearSilenceTimer();
     finalTranscriptRef.current = "";
     setState((current) => ({ ...current, transcript: "", error: null }));
-  }, []);
+  }, [clearSilenceTimer]);
 
   return { ...state, start, stop, reset };
 }

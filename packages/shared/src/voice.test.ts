@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { cleanTitle, coerceDrafts, extractDueDate, extractPriority, parseTranscript } from "./voice";
+import {
+  cleanTitle,
+  coerceDrafts,
+  extractDueDate,
+  extractPriority,
+  parseTranscript,
+  reconcileDrafts,
+} from "./voice";
 
 const monday = new Date("2024-05-06T12:00:00.000Z");
 
@@ -49,6 +56,34 @@ describe("parseTranscript", () => {
   it("drops empty segments", () => {
     expect(parseTranscript("um, and then , uh", monday)).toEqual([]);
     expect(parseTranscript("um, uh, and then", monday)).toEqual([]);
+  });
+});
+
+describe("reconcileDrafts", () => {
+  it("recovers tasks the model dropped, keeping model wording and metadata", () => {
+    const heuristic = [{ title: "buy milk" }, { title: "call the dentist" }, { title: "file my taxes" }];
+    const llm = [
+      { title: "Buy milk", priority: "low" as const },
+      { title: "Call the dentist", priority: "high" as const, dueDate: "2024-05-07" },
+    ];
+
+    expect(reconcileDrafts(heuristic, llm)).toEqual([
+      { title: "Buy milk", priority: "low" },
+      { title: "Call the dentist", priority: "high", dueDate: "2024-05-07" },
+      { title: "file my taxes" },
+    ]);
+  });
+
+  it("keeps model-only tasks and does not duplicate matched ones", () => {
+    const merged = reconcileDrafts(
+      [{ title: "water the plants and feed the cat" }],
+      [{ title: "Water the plants" }, { title: "Feed the cat" }],
+    );
+    expect(merged).toEqual([{ title: "Water the plants" }, { title: "Feed the cat" }]);
+  });
+
+  it("falls back to the heuristic drafts when the model returned nothing", () => {
+    expect(reconcileDrafts([{ title: "buy milk" }], [])).toEqual([{ title: "buy milk" }]);
   });
 });
 

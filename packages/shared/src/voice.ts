@@ -100,6 +100,60 @@ export function parseTranscript(transcript: string, now: Date = new Date()): Tod
     .filter((draft) => isValidTitle(draft.title));
 }
 
+const STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "for",
+  "my",
+  "me",
+  "the",
+  "to",
+  "up",
+  "with",
+]);
+
+function contentWords(title: string): Set<string> {
+  return new Set(
+    title
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((word) => word.length > 1 && !STOPWORDS.has(word)),
+  );
+}
+
+function describesSameTask(a: string, b: string): boolean {
+  const left = contentWords(a);
+  for (const word of contentWords(b)) {
+    if (left.has(word)) return true;
+  }
+  return false;
+}
+
+/**
+ * Merges model output with the regex parse of the same transcript, keeping the
+ * model's wording and metadata but recovering tasks it dropped — small models
+ * routinely lose the last clause of a run-on sentence.
+ */
+export function reconcileDrafts(heuristic: TodoDraft[], llm: TodoDraft[]): TodoDraft[] {
+  if (llm.length === 0) return heuristic;
+
+  const unmatched = new Set(llm);
+  const merged: TodoDraft[] = [];
+
+  for (const draft of heuristic) {
+    const match = [...unmatched].find((candidate) => describesSameTask(candidate.title, draft.title));
+    if (match) {
+      unmatched.delete(match);
+      merged.push(match);
+    } else {
+      merged.push(draft);
+    }
+  }
+
+  return [...merged, ...llm.filter((draft) => unmatched.has(draft))];
+}
+
 function isPriority(value: unknown): value is TodoPriority {
   return value === "low" || value === "medium" || value === "high";
 }

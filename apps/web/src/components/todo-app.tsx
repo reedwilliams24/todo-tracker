@@ -10,7 +10,8 @@ import { VoiceCapture } from "@/components/voice-capture";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted } = useTodos();
+  const { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted } =
+    useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
 
   const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
@@ -20,7 +21,7 @@ export function TodoApp() {
   return (
     <section className="flex flex-col gap-4">
       <TodoForm onAdd={addTodo} />
-      <VoiceCapture onAdd={addTodo} />
+      <VoiceCapture todos={todos} onAddMany={addMany} onUndo={removeMany} />
 
       <div className="flex items-center justify-between gap-3 text-sm">
         <div className="flex gap-1" role="tablist" aria-label="Filter todos">
