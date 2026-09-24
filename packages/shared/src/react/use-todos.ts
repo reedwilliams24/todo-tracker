@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "../list";
+import {
+  addTodos,
+  clearCompletedInList,
+  removeFromList,
+  renameInList,
+  toggleInList,
+  updateInList,
+} from "../list";
+import { addSubtask, removeSubtask, toggleSubtask } from "../subtasks";
 import type { TodoStorage } from "../storage";
 import type { Todo, TodoDraft } from "../types";
 import { createUndoEntry, describeUndo, isUndoExpired, UNDO_TIMEOUT_MS, type UndoEntry } from "../undo";
@@ -89,6 +97,18 @@ export function useTodos(storage: TodoStorage) {
     [applyUndoable],
   );
 
+  const addSubtaskTo = useCallback((id: string, title: string) => {
+    setTodos((current) => updateInList(current, id, (todo) => addSubtask(todo, title)));
+  }, []);
+
+  const toggleSubtaskOf = useCallback((id: string, subtaskId: string) => {
+    setTodos((current) => updateInList(current, id, (todo) => toggleSubtask(todo, subtaskId)));
+  }, []);
+
+  const removeSubtaskOf = useCallback((id: string, subtaskId: string) => {
+    setTodos((current) => updateInList(current, id, (todo) => removeSubtask(todo, subtaskId)));
+  }, []);
+
   const clearCompleted = useCallback(() => {
     setTodos((current) => {
       const next = clearCompletedInList(current);
@@ -110,5 +130,8 @@ export function useTodos(storage: TodoStorage) {
     clearCompleted,
     undoable,
     undo,
+    addSubtask: addSubtaskTo,
+    toggleSubtask: toggleSubtaskOf,
+    removeSubtask: removeSubtaskOf,
   };
 }
