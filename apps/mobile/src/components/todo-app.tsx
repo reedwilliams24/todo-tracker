@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
+import { useT } from "../hooks/use-t";
 import { useTodos } from "../hooks/use-todos";
 import { colors, fontSize, radius, spacing } from "../theme";
 import { TodoForm } from "./todo-form";
@@ -9,8 +10,18 @@ import { TodoItem } from "./todo-item";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted, undoable, undo } =
-    useTodos();
+  const {
+    todos,
+    hydrated,
+    addTodo,
+    toggle,
+    rename,
+    remove,
+    clearCompleted,
+    undoable,
+    undo,
+  } = useTodos();
+  const t = useT();
   const [filter, setFilter] = useState<TodoFilter>("all");
 
   const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
@@ -22,7 +33,7 @@ export function TodoApp() {
       <TodoForm onAdd={addTodo} />
 
       <View style={styles.toolbar}>
-        <View style={styles.filters} accessibilityRole="tablist" accessibilityLabel="Filter todos">
+        <View style={styles.filters} accessibilityRole="tablist" accessibilityLabel={t("filter.label")}>
           {FILTERS.map((option) => {
             const selected = filter === option;
             return (
@@ -34,7 +45,7 @@ export function TodoApp() {
                 style={[styles.filter, selected && styles.filterSelected]}
               >
                 <Text style={[styles.filterText, selected && styles.filterTextSelected]}>
-                  {option}
+                  {t(`filter.${option}`)}
                 </Text>
               </Pressable>
             );
@@ -42,16 +53,18 @@ export function TodoApp() {
         </View>
         {hasCompleted && (
           <Pressable accessibilityRole="button" onPress={clearCompleted}>
-            <Text style={styles.clear}>Clear completed</Text>
+            <Text style={styles.clear}>{t("list.clearCompleted")}</Text>
           </Pressable>
         )}
       </View>
 
       {!hydrated ? (
-        <Text style={styles.empty}>Loading…</Text>
+        <Text style={styles.empty}>{t("list.loading")}</Text>
       ) : visible.length === 0 ? (
         <Text style={styles.empty}>
-          {todos.length === 0 ? "No todos yet. Add your first one above." : `No ${filter} todos.`}
+          {todos.length === 0
+            ? t("list.empty")
+            : t("list.emptyFiltered", { filter: t(`filter.${filter}`).toLowerCase() })}
         </Text>
       ) : (
         <FlatList
@@ -66,7 +79,7 @@ export function TodoApp() {
       )}
 
       <Text style={styles.remaining}>
-        {remaining} {remaining === 1 ? "task" : "tasks"} remaining
+        {t("list.remaining", { count: remaining })}
       </Text>
 
       {undoable && (
@@ -87,7 +100,7 @@ const styles = StyleSheet.create({
   filters: { flexDirection: "row", gap: spacing[1] },
   filter: { borderRadius: radius.full, paddingHorizontal: spacing[3], paddingVertical: spacing[1] },
   filterSelected: { backgroundColor: colors.foreground },
-  filterText: { fontSize: fontSize.sm, textTransform: "capitalize", color: colors.foreground, opacity: 0.7 },
+  filterText: { fontSize: fontSize.sm, color: colors.foreground, opacity: 0.7 },
   filterTextSelected: { color: colors.card, opacity: 1 },
   clear: { fontSize: fontSize.sm, color: colors.foreground, opacity: 0.7 },
   empty: { paddingVertical: spacing[10], textAlign: "center", fontSize: fontSize.sm, color: colors.muted },
