@@ -1,0 +1,66 @@
+import type { Todo, TodoDraft, TodoFilter } from "./types";
+
+export const PRIORITY_ORDER: Record<Todo["priority"], number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+};
+
+export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
+  const timestamp = now.toISOString();
+  return {
+    id: globalThis.crypto.randomUUID(),
+    title: draft.title.trim(),
+    notes: draft.notes?.trim() || undefined,
+    completed: false,
+    priority: draft.priority ?? "medium",
+    dueDate: draft.dueDate,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+}
+
+export function updateTodo(
+  todo: Todo,
+  patch: Partial<Omit<Todo, "id" | "createdAt">>,
+  now: Date = new Date(),
+): Todo {
+  return { ...todo, ...patch, updatedAt: now.toISOString() };
+}
+
+export function toggleTodo(todo: Todo, now: Date = new Date()): Todo {
+  return updateTodo(todo, { completed: !todo.completed }, now);
+}
+
+export function filterTodos(todos: readonly Todo[], filter: TodoFilter): Todo[] {
+  switch (filter) {
+    case "active":
+      return todos.filter((todo) => !todo.completed);
+    case "completed":
+      return todos.filter((todo) => todo.completed);
+    default:
+      return [...todos];
+  }
+}
+
+export function sortTodos(todos: readonly Todo[]): Todo[] {
+  return [...todos].sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    const byPriority = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+    if (byPriority !== 0) return byPriority;
+    if (a.dueDate !== b.dueDate) {
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return a.dueDate < b.dueDate ? -1 : 1;
+    }
+    return a.createdAt < b.createdAt ? -1 : 1;
+  });
+}
+
+export function countRemaining(todos: readonly Todo[]): number {
+  return todos.reduce((total, todo) => (todo.completed ? total : total + 1), 0);
+}
+
+export function isValidTitle(title: string): boolean {
+  return title.trim().length > 0 && title.trim().length <= 200;
+}
