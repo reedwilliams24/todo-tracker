@@ -21,6 +21,11 @@
 
 body {
   background: var(--background);
-  color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
+
+body,
+body * {
+  color: var(--color-blue-600);
+}
+
