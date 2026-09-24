@@ -1,4 +1,4 @@
-import type { Todo, TodoDraft, TodoFilter, TodoPriority } from "./types";
+import type { Todo, TodoDraft, TodoFilter, TodoPriority, TodoSort } from "./types";
 
 export const DEFAULT_PRIORITY: TodoPriority = "medium";
 
@@ -91,17 +91,53 @@ export function searchTodos(todos: readonly Todo[], query: string): Todo[] {
   );
 }
 
-export function sortTodos(todos: readonly Todo[]): Todo[] {
+/** Local calendar date of `now` in YYYY-MM-DD form, matching how dueDate is stored. */
+export function toDateKey(now: Date): string {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/** True for an incomplete todo whose due date is before today (local time). */
+export function isOverdue(todo: Todo, now: Date = new Date()): boolean {
+  return !todo.completed && !!todo.dueDate && todo.dueDate < toDateKey(now);
+}
+
+function compareDue(a: Todo, b: Todo): number {
+  if (a.dueDate === b.dueDate) return 0;
+  if (!a.dueDate) return 1;
+  if (!b.dueDate) return -1;
+  return a.dueDate < b.dueDate ? -1 : 1;
+}
+
+function compareCreated(a: Todo, b: Todo): number {
+  return a.createdAt < b.createdAt ? -1 : 1;
+}
+
+/** Due date ascending (undated last), then priority, then creation; completed sink. */
+export function sortByDue(todos: readonly Todo[]): Todo[] {
+  return [...todos].sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    const byDue = compareDue(a, b);
+    if (byDue !== 0) return byDue;
+    const byPriority = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+    if (byPriority !== 0) return byPriority;
+    return compareCreated(a, b);
+  });
+}
+
+export const SORTS: TodoSort[] = ["priority", "due"];
+
+export function sortTodos(todos: readonly Todo[], sort: TodoSort = "priority"): Todo[] {
+  if (sort === "due") return sortByDue(todos);
   return [...todos].sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
     const byPriority = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
     if (byPriority !== 0) return byPriority;
-    if (a.dueDate !== b.dueDate) {
-      if (!a.dueDate) return 1;
-      if (!b.dueDate) return -1;
-      return a.dueDate < b.dueDate ? -1 : 1;
-    }
-    return a.createdAt < b.createdAt ? -1 : 1;
+    const byDue = compareDue(a, b);
+    if (byDue !== 0) return byDue;
+    return compareCreated(a, b);
   });
 }
 

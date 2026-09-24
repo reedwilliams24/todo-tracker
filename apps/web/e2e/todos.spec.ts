@@ -164,3 +164,34 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("highlights overdue todos and sorts by due date", async ({ page }) => {
+  async function addWithDue(title: string, priority: string, dueDate: string) {
+    await page.getByLabel("Todo title").fill(title);
+    await page.getByLabel("Priority").selectOption(priority);
+    await page.getByLabel("Due date").fill(dueDate);
+    await page.getByRole("button", { name: "Add" }).click();
+    await expect(page.getByRole("listitem").filter({ hasText: title })).toBeVisible();
+  }
+
+  await addWithDue("Yesterday low", "low", "2000-01-02");
+  await addWithDue("Far future high", "high", "2999-12-31");
+  await addTodo(page, "Undated high");
+  await page.getByLabel("Priority").selectOption("medium");
+
+  const overdue = page.getByRole("listitem").filter({ hasText: "Yesterday low" });
+  await expect(overdue.getByLabel("Overdue, was due 2000-01-02")).toBeVisible();
+  await expect(
+    page.getByRole("listitem").filter({ hasText: "Far future high" }).getByLabel("Due 2999-12-31"),
+  ).toBeVisible();
+
+  const titles = () => page.getByRole("listitem").getByRole("button", { name: /^Edit / }).allInnerTexts();
+  await expect.poll(titles).toEqual(["Far future high", "Undated high", "Yesterday low"]);
+
+  await page.getByLabel("Sort todos").selectOption("due");
+  await expect.poll(titles).toEqual(["Yesterday low", "Far future high", "Undated high"]);
+
+  await page.getByRole("checkbox", { name: 'Mark "Yesterday low" as complete' }).check();
+  await expect(overdue.getByLabel("Overdue, was due 2000-01-02")).toBeHidden();
+  await expect(overdue.getByLabel("Due 2000-01-02")).toBeVisible();
+});
