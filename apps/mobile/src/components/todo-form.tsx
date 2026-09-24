@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   EMPTY_TODO_FORM,
+  hasQuickAddMeta,
   isValidDueDate,
   isValidTitle,
-  toTodoDraft,
+  parseQuickAdd,
+  quickAddToDraft,
   type TodoDraft,
   type TodoPriority,
 } from "@todo/shared";
@@ -16,12 +18,13 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
   const { title, priority, dueDate } = form;
 
+  const parsed = useMemo(() => parseQuickAdd(title), [title]);
   const dateOk = isValidDueDate(dueDate);
-  const canAdd = isValidTitle(title) && dateOk;
+  const canAdd = isValidTitle(parsed.title) && dateOk;
 
   function submit() {
     if (!canAdd) return;
-    onAdd(toTodoDraft(form));
+    onAdd(quickAddToDraft(parsed, priority, dueDate));
     setForm(EMPTY_TODO_FORM);
   }
 
@@ -30,13 +33,21 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
       <TextInput
         value={title}
         onChangeText={(value) => setForm((f) => ({ ...f, title: value }))}
-        placeholder="What needs doing?"
+        placeholder="What needs doing? e.g. call mom tomorrow #family !p1"
         placeholderTextColor={colors.muted}
         accessibilityLabel="Todo title"
         onSubmitEditing={submit}
         returnKeyType="done"
         style={styles.input}
       />
+      {hasQuickAddMeta(parsed) && (
+        <Text style={styles.preview} accessibilityLiveRegion="polite">
+          Will add: {parsed.title || "…"}
+          {parsed.dueDate ? `  ·  Due ${parsed.dueDate}` : ""}
+          {parsed.priority ? `  ·  ${parsed.priority} priority` : ""}
+          {parsed.tags.map((tag) => `  ·  #${tag}`).join("")}
+        </Text>
+      )}
       <View style={styles.row}>
         <View style={styles.segments} accessibilityLabel="Priority" accessibilityRole="radiogroup">
           {PRIORITIES.map((option) => {
@@ -90,6 +101,7 @@ const styles = StyleSheet.create({
   },
   input: { fontSize: 16, paddingHorizontal: 8, paddingVertical: 8, color: colors.foreground },
   row: { flexDirection: "row", alignItems: "center", gap: 8 },
+  preview: { fontSize: 12, paddingHorizontal: 8, color: colors.muted },
   segments: {
     flexDirection: "row",
     borderWidth: 1,
