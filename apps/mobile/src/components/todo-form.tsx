@@ -2,19 +2,23 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import {
   EMPTY_TODO_FORM,
+  REMINDER_LABELS,
+  REMINDER_OFFSETS,
   isValidDueDate,
   isValidTitle,
   toTodoDraft,
+  type ReminderOffset,
   type TodoDraft,
   type TodoPriority,
 } from "@todo/shared";
 import { colors } from "../theme";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
+const REMINDERS: (ReminderOffset | "")[] = ["", ...REMINDER_OFFSETS];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate } = form;
+  const { title, priority, dueDate, reminder } = form;
 
   const dateOk = isValidDueDate(dueDate);
   const canAdd = isValidTitle(title) && dateOk;
@@ -67,6 +71,26 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           style={[styles.dateInput, !dateOk && styles.dateInvalid]}
         />
       </View>
+      {dueDate.length > 0 && (
+        <View style={styles.segments} accessibilityLabel="Reminder" accessibilityRole="radiogroup">
+          {REMINDERS.map((option) => {
+            const selected = option === reminder;
+            return (
+              <Pressable
+                key={option}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                onPress={() => setForm((f) => ({ ...f, reminder: option }))}
+                style={[styles.segment, selected && styles.segmentSelected]}
+              >
+                <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
+                  {option ? REMINDER_LABELS[option] : "No reminder"}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
       <Pressable
         accessibilityRole="button"
         disabled={!canAdd}

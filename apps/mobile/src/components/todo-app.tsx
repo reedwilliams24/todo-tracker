@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
+import { useReminders } from "../hooks/use-reminders";
 import { useTodos } from "../hooks/use-todos";
 import { colors } from "../theme";
 import { TodoForm } from "./todo-form";
@@ -10,6 +11,7 @@ const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
   const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted } = useTodos();
+  useReminders(todos);
   const [filter, setFilter] = useState<TodoFilter>("all");
 
   const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);

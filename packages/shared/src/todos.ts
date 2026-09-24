@@ -1,14 +1,29 @@
-import type { Todo, TodoDraft, TodoFilter, TodoPriority } from "./types";
+import type { ReminderOffset, Todo, TodoDraft, TodoFilter, TodoPriority } from "./types";
 
 export const DEFAULT_PRIORITY: TodoPriority = "medium";
 
 /** Controlled-input state for the add-todo form; dueDate is "" when unset. */
-export type TodoFormState = { title: string; priority: TodoPriority; dueDate: string };
+export type TodoFormState = {
+  title: string;
+  priority: TodoPriority;
+  dueDate: string;
+  reminder: ReminderOffset | "";
+};
 
-export const EMPTY_TODO_FORM: TodoFormState = { title: "", priority: DEFAULT_PRIORITY, dueDate: "" };
+export const EMPTY_TODO_FORM: TodoFormState = {
+  title: "",
+  priority: DEFAULT_PRIORITY,
+  dueDate: "",
+  reminder: "",
+};
 
 export function toTodoDraft(form: TodoFormState): TodoDraft {
-  return { title: form.title, priority: form.priority, dueDate: form.dueDate || undefined };
+  return {
+    title: form.title,
+    priority: form.priority,
+    dueDate: form.dueDate || undefined,
+    reminder: form.dueDate && form.reminder ? form.reminder : undefined,
+  };
 }
 
 export const PRIORITY_ORDER: Record<Todo["priority"], number> = {
@@ -40,6 +55,7 @@ export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
     completed: false,
     priority: draft.priority ?? DEFAULT_PRIORITY,
     dueDate: draft.dueDate,
+    reminder: draft.dueDate ? draft.reminder : undefined,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
