@@ -29,7 +29,7 @@ export function AuthPanel({
     return (
       <View style={[styles.card, styles.row]}>
         <Text style={styles.muted} numberOfLines={1}>
-          Signed in as {user.email ?? user.id} · syncing across devices
+          Signed in as {user.email ?? user.id} · syncs when online
         </Text>
         <Pressable accessibilityRole="button" onPress={() => run(signOut())}>
           <Text style={styles.link}>Sign out</Text>

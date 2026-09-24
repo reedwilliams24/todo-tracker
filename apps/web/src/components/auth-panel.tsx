@@ -13,7 +13,7 @@ export function AuthPanel({ enabled, ready, user, signInWithEmail, signInWithPro
   if (user) {
     return (
       <div className="flex items-center justify-between gap-3 rounded-xl border border-black/10 bg-white/60 px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5">
-        <span className="truncate opacity-80">Signed in as {user.email ?? user.id} · syncing across devices</span>
+        <span className="truncate opacity-80">Signed in as {user.email ?? user.id} · syncs when online</span>
         <button type="button" onClick={() => void signOut()} className="underline opacity-70 hover:opacity-100">
           Sign out
         </button>
