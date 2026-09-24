@@ -12,6 +12,7 @@ import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
+import { StatsPanel } from "@/components/stats-panel";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
@@ -139,6 +140,8 @@ export function TodoApp() {
           </button>
         </div>
       )}
+
+      <StatsPanel todos={todos} />
     </section>
   );
 }
