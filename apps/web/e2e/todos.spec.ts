@@ -191,3 +191,13 @@ test("undo restores deleted and completed todos in their original position", asy
   await toast.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByRole("listitem")).toHaveCount(3);
 });
+
+test("serves an installable web app manifest", async ({ page, request }) => {
+  await page.goto("/");
+  const href = await page.locator('link[rel="manifest"]').getAttribute("href");
+  expect(href).toBe("/manifest.webmanifest");
+  const manifest = await (await request.get("/manifest.webmanifest")).json();
+  expect(manifest.display).toBe("standalone");
+  expect(manifest.icons.some((icon: { sizes: string }) => icon.sizes === "512x512")).toBe(true);
+  expect((await request.get("/sw.js")).ok()).toBe(true);
+});
