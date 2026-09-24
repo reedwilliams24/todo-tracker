@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { isValidTitle, type Todo } from "@todo/shared";
+import { isOverdue, isValidTitle, type Todo } from "@todo/shared";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
   high: "bg-red-500/15 text-red-600 dark:text-red-400",
@@ -43,8 +43,14 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
     setEditing(false);
   }
 
+  const overdue = isOverdue(todo);
+
   return (
-    <li className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/60 px-3 py-2 dark:border-white/15 dark:bg-white/5">
+    <li
+      className={`flex items-center gap-3 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
+        overdue ? "border-red-500/40" : "border-black/10 dark:border-white/15"
+      }`}
+    >
       <input
         type="checkbox"
         checked={todo.completed}
@@ -78,7 +84,14 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         </button>
       )}
 
-      {todo.dueDate && <span className="text-xs opacity-60">{todo.dueDate}</span>}
+      {todo.dueDate && (
+        <span
+          className={`text-xs ${overdue ? "font-medium text-red-600 dark:text-red-400" : "opacity-60"}`}
+          aria-label={overdue ? `Overdue, was due ${todo.dueDate}` : `Due ${todo.dueDate}`}
+        >
+          {overdue ? `Overdue · ${todo.dueDate}` : todo.dueDate}
+        </span>
+      )}
 
       <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
         {todo.priority}

@@ -1,6 +1,13 @@
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
+import {
+  countRemaining,
+  filterTodos,
+  SORTS,
+  sortTodos,
+  type TodoFilter,
+  type TodoSort,
+} from "@todo/shared";
 import { useTodos } from "../hooks/use-todos";
 import { colors, fontSize, radius, spacing } from "../theme";
 import { TodoForm } from "./todo-form";
@@ -12,8 +19,12 @@ export function TodoApp() {
   const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted, undoable, undo } =
     useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
+  const [sort, setSort] = useState<TodoSort>("priority");
 
-  const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
+  const visible = useMemo(
+    () => sortTodos(filterTodos(todos, filter), sort),
+    [todos, filter, sort],
+  );
   const remaining = countRemaining(todos);
   const hasCompleted = todos.length > remaining;
 
@@ -40,11 +51,31 @@ export function TodoApp() {
             );
           })}
         </View>
-        {hasCompleted && (
-          <Pressable accessibilityRole="button" onPress={clearCompleted}>
-            <Text style={styles.clear}>Clear completed</Text>
-          </Pressable>
-        )}
+        <View style={styles.toolbarRight}>
+          <View style={styles.filters} accessibilityRole="radiogroup" accessibilityLabel="Sort todos">
+            {SORTS.map((option) => {
+              const selected = sort === option;
+              return (
+                <Pressable
+                  key={option}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  onPress={() => setSort(option)}
+                  style={[styles.filter, selected && styles.filterSelected]}
+                >
+                  <Text style={[styles.filterText, selected && styles.filterTextSelected]}>
+                    {option === "due" ? "due date" : option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {hasCompleted && (
+            <Pressable accessibilityRole="button" onPress={clearCompleted}>
+              <Text style={styles.clear}>Clear completed</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {!hydrated ? (
@@ -84,6 +115,7 @@ export function TodoApp() {
 const styles = StyleSheet.create({
   container: { flex: 1, gap: spacing[4] },
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing[3] },
+  toolbarRight: { flexDirection: "row", alignItems: "center", gap: spacing[3] },
   filters: { flexDirection: "row", gap: spacing[1] },
   filter: { borderRadius: radius.full, paddingHorizontal: spacing[3], paddingVertical: spacing[1] },
   filterSelected: { backgroundColor: colors.foreground },
