@@ -40,7 +40,7 @@ export function TodoApp() {
           })}
         </View>
         {hasCompleted && (
-          <Pressable accessibilityRole="button" onPress={clearCompleted}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Clear completed" onPress={clearCompleted}>
             <Text style={styles.clear}>Clear completed</Text>
           </Pressable>
         )}
@@ -64,7 +64,7 @@ export function TodoApp() {
         />
       )}
 
-      <Text style={styles.remaining}>
+      <Text style={styles.remaining} accessibilityLiveRegion="polite">
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </Text>
     </View>
