@@ -43,6 +43,16 @@ export function filterTodos(todos: readonly Todo[], filter: TodoFilter): Todo[] 
   }
 }
 
+export function searchTodos(todos: readonly Todo[], query: string): Todo[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return [...todos];
+  return todos.filter(
+    (todo) =>
+      todo.title.toLowerCase().includes(needle) ||
+      (todo.notes?.toLowerCase().includes(needle) ?? false),
+  );
+}
+
 export function sortTodos(todos: readonly Todo[]): Todo[] {
   return [...todos].sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
