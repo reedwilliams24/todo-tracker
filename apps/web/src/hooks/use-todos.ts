@@ -2,26 +2,26 @@
 
 import { useMemo } from "react";
 import { useTodos as useSharedTodos } from "@todo/shared/react";
-import {
-  createCloudTodoStorage,
-  withFirstSignInMigration,
-  type TodoStorage,
-} from "@todo/shared";
+import { createOfflineFirstStorage, type TodoStorage } from "@todo/shared";
 import { localTodoStorage } from "@/lib/storage";
 import { supabase, todoTable } from "@/lib/supabase";
 import type { AuthUser } from "@/hooks/use-auth";
 
 function accountStorage(user: AuthUser): TodoStorage {
   if (!supabase) return localTodoStorage;
-  const key = `todo-tracker:migrated:${user.id}`;
-  return withFirstSignInMigration(
-    createCloudTodoStorage(todoTable(supabase), user.id),
-    localTodoStorage,
-    {
-      get: () => window.localStorage.getItem(key) === "1",
-      set: () => window.localStorage.setItem(key, "1"),
+  return createOfflineFirstStorage({
+    table: todoTable(supabase),
+    userId: user.id,
+    store: {
+      get: (key) => window.localStorage.getItem(key),
+      set: (key, value) => window.localStorage.setItem(key, value),
     },
-  );
+    seed: localTodoStorage,
+    onOnline: (callback) => {
+      window.addEventListener("online", callback);
+      return () => window.removeEventListener("online", callback);
+    },
+  });
 }
 
 export function useTodos(user: AuthUser | null = null) {
