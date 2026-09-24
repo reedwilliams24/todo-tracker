@@ -55,6 +55,39 @@ test("deletes a todo", async ({ page }) => {
   await expect(page.getByRole("listitem")).toHaveCount(1);
 });
 
+test("edits a todo inline and persists the change", async ({ page }) => {
+  await addTodo(page, "Old title");
+
+  await page.getByRole("button", { name: 'Edit "Old title"' }).dblclick();
+  const editor = page.getByLabel("Edit title");
+  await expect(editor).toBeFocused();
+
+  await editor.fill("   ");
+  await editor.press("Enter");
+  await expect(page.getByRole("button", { name: 'Edit "Old title"' })).toBeVisible();
+
+  await page.getByRole("button", { name: 'Edit "Old title"' }).dblclick();
+  await page.getByLabel("Edit title").fill("Discarded");
+  await page.getByLabel("Edit title").press("Escape");
+  await expect(page.getByRole("button", { name: 'Edit "Old title"' })).toBeVisible();
+
+  await page.getByRole("button", { name: 'Edit "Old title"' }).dblclick();
+  await page.getByLabel("Edit title").fill("New title");
+  await page.getByLabel("Edit title").press("Enter");
+  await expect(page.getByRole("button", { name: 'Edit "New title"' })).toBeVisible();
+  await expect(page.getByRole("listitem")).toHaveCount(1);
+
+  await expect
+    .poll(async () =>
+      page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY),
+    )
+    .toContain("New title");
+
+  await page.reload();
+  await expect(page.getByRole("button", { name: 'Edit "New title"' })).toBeVisible();
+  await expect(page.getByText("Old title")).toBeHidden();
+});
+
 test("filters todos by all, active and completed", async ({ page }) => {
   await addTodo(page, "Active task");
   await addTodo(page, "Done task");
@@ -78,6 +111,40 @@ test("filters todos by all, active and completed", async ({ page }) => {
   await expect(page.getByRole("listitem")).toHaveCount(1);
   await filters.getByRole("tab", { name: "completed" }).click();
   await expect(page.getByText("No completed todos.")).toBeVisible();
+});
+
+test("searches todos and combines with the status filter", async ({ page }) => {
+  await addTodo(page, "Buy Milk");
+  await addTodo(page, "Walk the dog");
+  await addTodo(page, "Feed the dog");
+  await page.getByRole("checkbox", { name: 'Mark "Feed the dog" as complete' }).check();
+
+  const search = page.getByLabel("Search todos");
+  await search.fill("DOG");
+  await expect(page.getByRole("listitem")).toHaveCount(2);
+  await expect(page.getByRole("listitem").filter({ hasText: "Buy Milk" })).toBeHidden();
+
+  const filters = page.getByRole("tablist", { name: "Filter todos" });
+  await filters.getByRole("tab", { name: "active" }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(1);
+  await expect(page.getByRole("listitem").filter({ hasText: "Walk the dog" })).toBeVisible();
+
+  await search.fill("milk");
+  await expect(page.getByRole("listitem")).toHaveCount(1);
+  await expect(page.getByRole("listitem").filter({ hasText: "Buy Milk" })).toBeVisible();
+
+  await search.fill("zzz");
+  await expect(page.getByRole("listitem")).toHaveCount(0);
+  await expect(page.getByText("No active todos match “zzz”.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Clear search" }).click();
+  await expect(search).toHaveValue("");
+  await expect(page.getByRole("listitem")).toHaveCount(2);
+
+  await search.fill("milk");
+  await search.press("Escape");
+  await expect(search).toHaveValue("");
+  await expect(page.getByRole("listitem")).toHaveCount(2);
 });
 
 test("persists todos across page reload via localStorage", async ({ page }) => {

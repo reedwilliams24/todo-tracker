@@ -1,4 +1,4 @@
-import { createTodo, toggleTodo, updateTodo } from "./todos";
+import { createTodo, toggleTodo, updateTodoText } from "./todos";
 import type { Todo, TodoDraft } from "./types";
 
 export function addTodos(todos: readonly Todo[], drafts: readonly TodoDraft[]): { todos: Todo[]; created: Todo[] } {
@@ -11,7 +11,7 @@ export function toggleInList(todos: readonly Todo[], id: string): Todo[] {
 }
 
 export function renameInList(todos: readonly Todo[], id: string, title: string): Todo[] {
-  return todos.map((todo) => (todo.id === id ? updateTodo(todo, { title: title.trim() }) : todo));
+  return updateTodoText(todos, id, title);
 }
 
 export function removeFromList(todos: readonly Todo[], ids: readonly string[]): Todo[] {

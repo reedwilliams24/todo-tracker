@@ -42,6 +42,19 @@ export function updateTodo(
   return { ...todo, ...patch, updatedAt: now.toISOString() };
 }
 
+export function updateTodoText(
+  todos: readonly Todo[],
+  id: string,
+  text: string,
+  now: Date = new Date(),
+): Todo[] {
+  if (!isValidTitle(text)) return [...todos];
+  const title = text.trim();
+  return todos.map((todo) =>
+    todo.id === id && todo.title !== title ? updateTodo(todo, { title }, now) : todo,
+  );
+}
+
 export function toggleTodo(todo: Todo, now: Date = new Date()): Todo {
   return updateTodo(todo, { completed: !todo.completed }, now);
 }
@@ -55,6 +68,16 @@ export function filterTodos(todos: readonly Todo[], filter: TodoFilter): Todo[] 
     default:
       return [...todos];
   }
+}
+
+export function searchTodos(todos: readonly Todo[], query: string): Todo[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return [...todos];
+  return todos.filter(
+    (todo) =>
+      todo.title.toLowerCase().includes(needle) ||
+      (todo.notes?.toLowerCase().includes(needle) ?? false),
+  );
 }
 
 export function sortTodos(todos: readonly Todo[]): Todo[] {
