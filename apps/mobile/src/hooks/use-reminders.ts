@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
+import { isRunningInExpoGo } from "expo";
 import { planReminders, type Todo } from "@todo/shared";
 
 type NotificationsModule = typeof import("expo-notifications");
@@ -9,9 +10,10 @@ const CHANNEL_ID = "due-reminders";
 /**
  * expo-notifications throws at import time inside Expo Go on Android (push
  * support was removed from Expo Go in SDK 53), so it is loaded lazily and the
- * hook degrades to a no-op when the module is unavailable.
+ * hook degrades to a no-op there and whenever the module is unavailable.
  */
 function loadNotifications(): NotificationsModule | null {
+  if (Platform.OS === "android" && isRunningInExpoGo()) return null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mod = require("expo-notifications") as NotificationsModule;
