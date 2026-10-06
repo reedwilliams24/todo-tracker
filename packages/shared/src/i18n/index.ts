@@ -48,11 +48,19 @@ function parseBranches(source: string): Map<string, string> {
   return options;
 }
 
+/** Hermes (React Native) ships without Intl.PluralRules; fall back to English rules. */
+function pluralCategory(locale: string, count: number): string {
+  if (typeof Intl !== "undefined" && typeof Intl.PluralRules === "function") {
+    return new Intl.PluralRules(locale).select(count);
+  }
+  return count === 1 ? "one" : "other";
+}
+
 function selectPlural(locale: string, count: number, branches: string): string {
   const options = parseBranches(branches);
   const exact = options.get(`=${count}`);
   if (exact !== undefined) return exact;
-  const category = new Intl.PluralRules(locale).select(count);
+  const category = pluralCategory(locale, count);
   return options.get(category) ?? options.get("other") ?? "";
 }
 
