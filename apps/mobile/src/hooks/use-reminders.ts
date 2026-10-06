@@ -1,20 +1,37 @@
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
-import * as Notifications from "expo-notifications";
 import { planReminders, type Todo } from "@todo/shared";
+
+type NotificationsModule = typeof import("expo-notifications");
 
 const CHANNEL_ID = "due-reminders";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+/**
+ * expo-notifications throws at import time inside Expo Go on Android (push
+ * support was removed from Expo Go in SDK 53), so it is loaded lazily and the
+ * hook degrades to a no-op when the module is unavailable.
+ */
+function loadNotifications(): NotificationsModule | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("expo-notifications") as NotificationsModule;
+    mod.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
+    });
+    return mod;
+  } catch {
+    return null;
+  }
+}
 
-async function ensurePermission(): Promise<boolean> {
+const Notifications = loadNotifications();
+
+async function ensurePermission(Notifications: NotificationsModule): Promise<boolean> {
   const current = await Notifications.getPermissionsAsync();
   if (current.granted) return true;
   const requested = await Notifications.requestPermissionsAsync();
@@ -29,6 +46,7 @@ export function useReminders(todos: readonly Todo[]) {
   const granted = useRef<Promise<boolean> | null>(null);
 
   useEffect(() => {
+    if (!Notifications) return;
     if (!granted.current) {
       granted.current = (async () => {
         if (Platform.OS === "android") {
@@ -37,7 +55,7 @@ export function useReminders(todos: readonly Todo[]) {
             importance: Notifications.AndroidImportance.DEFAULT,
           });
         }
-        return ensurePermission();
+        return ensurePermission(Notifications);
       })();
     }
     let cancelled = false;
