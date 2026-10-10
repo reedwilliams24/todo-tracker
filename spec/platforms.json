@@ -2,19 +2,19 @@
   "$comment": "Which implementation passes which part of the spec. CI's parity job prints this matrix and fails if a feature listed here has no fixture file, or a fixture file has no row. Values: pass | missing | n/a.",
   "platforms": ["web", "ios", "android"],
   "fixtures": {
-    "todo": { "web": "pass", "ios": "pass", "android": "missing" },
-    "list": { "web": "pass", "ios": "pass", "android": "missing" },
-    "undo": { "web": "pass", "ios": "pass", "android": "missing" },
-    "storage": { "web": "pass", "ios": "pass", "android": "missing" },
-    "voice": { "web": "pass", "ios": "pass", "android": "missing" }
+    "todo": { "web": "pass", "ios": "pass", "android": "pass" },
+    "list": { "web": "pass", "ios": "pass", "android": "pass" },
+    "undo": { "web": "pass", "ios": "pass", "android": "pass" },
+    "storage": { "web": "pass", "ios": "pass", "android": "pass" },
+    "voice": { "web": "pass", "ios": "pass", "android": "pass" }
   },
   "scenarios": {
-    "add-todo": { "web": "pass", "ios": "pass", "android": "missing" },
-    "complete-and-reopen": { "web": "pass", "ios": "pass", "android": "missing" },
-    "delete-and-undo": { "web": "pass", "ios": "pass", "android": "missing" },
-    "rename-persists": { "web": "pass", "ios": "pass", "android": "missing" },
-    "sort-by-priority": { "web": "pass", "ios": "pass", "android": "missing" },
-    "filter-and-clear-completed": { "web": "pass", "ios": "pass", "android": "missing" },
+    "add-todo": { "web": "pass", "ios": "pass", "android": "pass" },
+    "complete-and-reopen": { "web": "pass", "ios": "pass", "android": "pass" },
+    "delete-and-undo": { "web": "pass", "ios": "pass", "android": "pass" },
+    "rename-persists": { "web": "pass", "ios": "pass", "android": "pass" },
+    "sort-by-priority": { "web": "pass", "ios": "pass", "android": "pass" },
+    "filter-and-clear-completed": { "web": "pass", "ios": "pass", "android": "pass" },
     "search": { "web": "pass", "ios": "n/a", "android": "n/a" }
   }
 }

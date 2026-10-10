@@ -8,6 +8,7 @@ Guide for humans and AI agents working in this repo.
 - `apps/mobile`: Expo / React Native client. It is being replaced by native apps (`apps/ios` in Swift/SwiftUI, `apps/android` in Kotlin/Compose; REED-27).
 - `packages/shared`: TypeScript domain logic (todos, list ops, undo reducer `store.ts`, storage format, voice parser) and the generated `TEST_IDS`. Web and Expo use it directly.
 - `packages/spec`: conformance tooling. It holds the fixture cases, the TS runner, code generation, and the parity matrix.
+- `apps/android`: native Android app (Kotlin/Compose, Room). `:core` is the pure Kotlin domain port plus the JUnit fixture runner. `:app` is the UI. See [`apps/android/README.md`](apps/android/README.md).
 - `spec/`: the language-neutral contract every platform must satisfy. Start with [`spec/README.md`](spec/README.md).
 
 Every product change applies to web, iOS and Android unless the ticket says otherwise. Native apps reimplement the logic in Swift and Kotlin. They don't share code; they share `spec/`.
@@ -23,6 +24,7 @@ pnpm spec:check           # fixtures and generated files are up to date
 pnpm spec:parity          # web/iOS/Android parity matrix
 pnpm build
 pnpm --filter web e2e     # Playwright, incl. spec/scenarios/core.json
+(cd apps/android && ./gradlew :core:test :app:assembleDebug)  # Kotlin fixtures + APK
 ```
 
 iOS (macOS + Xcode): `swift test` in `apps/ios/TodoCore` runs the fixtures; see [`apps/ios/README.md`](apps/ios/README.md) for the app.
