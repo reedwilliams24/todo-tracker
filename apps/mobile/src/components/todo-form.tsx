@@ -8,12 +8,14 @@ import {
   type TodoDraft,
   type TodoPriority,
 } from "@todo/shared";
-import { borderWidth, colors, fontSize, fontWeight, radius, spacing } from "../theme";
+import { useStyles, useTheme, type ThemeColors } from "../theme";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
+  const { colors } = useTheme();
+  const styles = useStyles(makeStyles);
   const { title, priority, dueDate } = form;
 
   const dateOk = isValidDueDate(dueDate);
@@ -79,7 +81,8 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   card: {
     gap: spacing[2],
     borderRadius: radius.lg,
