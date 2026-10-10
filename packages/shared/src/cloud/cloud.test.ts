@@ -93,3 +93,29 @@ describe("withFirstSignInMigration", () => {
     expect((await storage.load()).map((todo) => todo.title)).toEqual(["remote"]);
   });
 });
+
+describe("cloud subscribe", () => {
+  it("reloads from the table when another device changes a row", async () => {
+    const remote = createTodo({ title: "remote" });
+    const { table, rows } = fakeTable([toRow(remote, "u1")]);
+    let fire: () => void = () => {};
+    table.onChange = (_userId, callback) => {
+      fire = callback;
+      return () => {};
+    };
+    const storage = createCloudTodoStorage(table, "u1");
+    await storage.load();
+
+    const added = createTodo({ title: "from phone" });
+    rows.set(added.id, toRow(added, "u1"));
+    const seen = new Promise<string[]>((resolve) =>
+      storage.subscribe!((todos) => resolve(todos.map((t) => t.title).sort())),
+    );
+    fire();
+    expect(await seen).toEqual(["from phone", "remote"]);
+
+    // Reload updated `known`, so a follow-up save is a no-op.
+    await storage.save([remote, added]);
+    expect(rows.size).toBe(2);
+  });
+});

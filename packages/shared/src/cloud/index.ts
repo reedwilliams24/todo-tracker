@@ -16,6 +16,8 @@ export type TodoTable = {
   list(userId: string): Promise<TodoRow[]>;
   upsert(rows: TodoRow[]): Promise<void>;
   remove(userId: string, ids: string[]): Promise<void>;
+  /** Fires whenever any of the user's rows change server-side. */
+  onChange?(userId: string, callback: () => void): () => void;
 };
 
 export type CloudConfig = { url: string; anonKey: string };
@@ -75,6 +77,12 @@ export function createCloudTodoStorage(table: TodoTable, userId: string): TodoSt
       if (removed.length) await table.remove(userId, removed);
       known = new Map(todos.map((todo) => [todo.id, todo.updatedAt]));
     },
+    subscribe(onChange) {
+      if (!table.onChange) return () => {};
+      return table.onChange(userId, () => {
+        void Promise.resolve(this.load()).then(onChange);
+      });
+    },
   };
 }
 
@@ -102,5 +110,6 @@ export function withFirstSignInMigration(
       return merged;
     },
     save: (todos) => cloud.save(todos),
+    subscribe: cloud.subscribe?.bind(cloud),
   };
 }

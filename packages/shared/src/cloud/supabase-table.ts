@@ -8,6 +8,8 @@ export type TodoQueries = {
   list(userId: string): QueryResult<TodoRow[]>;
   upsert(rows: TodoRow[]): QueryResult<unknown>;
   remove(userId: string, ids: string[]): QueryResult<unknown>;
+  /** Realtime `postgres_changes` for the user's rows; returns an unsubscribe. */
+  onChange?(userId: string, callback: () => void): () => void;
 };
 
 /** Supabase `Database` generic matching supabase/migrations. */
@@ -39,5 +41,6 @@ export function supabaseTodoTable(queries: TodoQueries): TodoTable {
     list: async (userId) => (await unwrap(queries.list(userId))) ?? [],
     upsert: async (rows) => void (await unwrap(queries.upsert(rows))),
     remove: async (userId, ids) => void (await unwrap(queries.remove(userId, ids))),
+    onChange: queries.onChange?.bind(queries),
   };
 }
