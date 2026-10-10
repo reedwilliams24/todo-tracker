@@ -91,6 +91,16 @@ export function searchTodos(todos: readonly Todo[], query: string): Todo[] {
   );
 }
 
+export type TodoSort = "priority" | "manual";
+
+export const SORTS: TodoSort[] = ["priority", "manual"];
+
+/** "manual" keeps the stored list order (see reorderTodos); "priority" is the default smart sort. */
+export function sortTodos(todos: readonly Todo[], sort: TodoSort = "priority"): Todo[] {
+  if (sort === "manual") return [...todos];
+  return sortByPriority(todos);
+}
+
 /** Priority high→low, then due date (undated last), then creation; completed sink. */
 export function sortByPriority(todos: readonly Todo[]): Todo[] {
   return [...todos].sort((a, b) => {
@@ -104,10 +114,6 @@ export function sortByPriority(todos: readonly Todo[]): Todo[] {
     }
     return a.createdAt < b.createdAt ? -1 : 1;
   });
-}
-
-export function sortTodos(todos: readonly Todo[]): Todo[] {
-  return sortByPriority(todos);
 }
 
 export function countRemaining(todos: readonly Todo[]): number {

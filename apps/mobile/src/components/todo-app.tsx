@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
+import { countRemaining, filterTodos, sortTodos, SORTS, type TodoFilter } from "@todo/shared";
+import { useSort } from "@todo/shared/react";
+import { asyncSortStorage } from "../lib/storage";
 import { useTodos } from "../hooks/use-todos";
 import { colors, fontSize, radius, spacing } from "../theme";
 import { TodoForm } from "./todo-form";
@@ -9,11 +11,35 @@ import { TodoItem } from "./todo-item";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted, undoable, undo } =
-    useTodos();
+  const {
+    todos,
+    hydrated,
+    addTodo,
+    toggle,
+    rename,
+    remove,
+    clearCompleted,
+    undoable,
+    undo,
+    reorder,
+  } = useTodos();
+  const [sort, setSort] = useSort(asyncSortStorage);
   const [filter, setFilter] = useState<TodoFilter>("all");
+  const [liftedId, setLiftedId] = useState<string | null>(null);
 
-  const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
+  const visible = useMemo(() => sortTodos(filterTodos(todos, filter), sort), [todos, filter, sort]);
+
+  function dropOn(targetId: string) {
+    if (liftedId && liftedId !== targetId) {
+      reorder(
+        visible.map((todo) => todo.id),
+        liftedId,
+        targetId,
+      );
+      setSort("manual");
+    }
+    setLiftedId(null);
+  }
   const remaining = countRemaining(todos);
   const hasCompleted = todos.length > remaining;
 
@@ -40,12 +66,41 @@ export function TodoApp() {
             );
           })}
         </View>
-        {hasCompleted && (
-          <Pressable accessibilityRole="button" onPress={clearCompleted}>
-            <Text style={styles.clear}>Clear completed</Text>
-          </Pressable>
-        )}
+        <View style={styles.toolbarRight}>
+          <View style={styles.filters} accessibilityRole="radiogroup" accessibilityLabel="Sort todos">
+            {SORTS.map((option) => {
+              const selected = sort === option;
+              return (
+                <Pressable
+                  key={option}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  onPress={() => setSort(option)}
+                  style={[styles.filter, selected && styles.filterSelected]}
+                >
+                  <Text style={[styles.filterText, selected && styles.filterTextSelected]}>
+                    {option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {hasCompleted && (
+            <Pressable accessibilityRole="button" onPress={clearCompleted}>
+              <Text style={styles.clear}>Clear completed</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
+
+      {liftedId && (
+        <View style={styles.hint}>
+          <Text style={styles.hintText}>Tap a todo to move the lifted one there.</Text>
+          <Pressable accessibilityRole="button" onPress={() => setLiftedId(null)}>
+            <Text style={styles.clear}>Cancel</Text>
+          </Pressable>
+        </View>
+      )}
 
       {!hydrated ? (
         <Text style={styles.empty}>Loading…</Text>
@@ -60,7 +115,18 @@ export function TodoApp() {
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
           renderItem={({ item }) => (
-            <TodoItem todo={item} onToggle={toggle} onRename={rename} onRemove={remove} />
+            <TodoItem
+              todo={item}
+              onToggle={toggle}
+              onRename={rename}
+              onRemove={remove}
+              move={{
+                lifted: liftedId === item.id,
+                dropTarget: liftedId !== null && liftedId !== item.id,
+                onLift: setLiftedId,
+                onDrop: dropOn,
+              }}
+            />
           )}
         />
       )}
@@ -84,7 +150,10 @@ export function TodoApp() {
 const styles = StyleSheet.create({
   container: { flex: 1, gap: spacing[4] },
   toolbar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing[3] },
+  toolbarRight: { flexDirection: "row", alignItems: "center", gap: spacing[3] },
   filters: { flexDirection: "row", gap: spacing[1] },
+  hint: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing[3] },
+  hintText: { fontSize: fontSize.xs, color: colors.muted },
   filter: { borderRadius: radius.full, paddingHorizontal: spacing[3], paddingVertical: spacing[1] },
   filterSelected: { backgroundColor: colors.foreground },
   filterText: { fontSize: fontSize.sm, textTransform: "capitalize", color: colors.foreground, opacity: 0.7 },
