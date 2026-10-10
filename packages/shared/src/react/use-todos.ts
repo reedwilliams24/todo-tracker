@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "../list";
+import {
+  addTodos,
+  bulkToggle,
+  clearCompletedInList,
+  removeFromList,
+  renameInList,
+  toggleInList,
+} from "../list";
 import type { TodoStorage } from "../storage";
 import type { Todo, TodoDraft } from "../types";
 import { createUndoEntry, describeUndo, isUndoExpired, UNDO_TIMEOUT_MS, type UndoEntry } from "../undo";
@@ -74,6 +81,10 @@ export function useTodos(storage: TodoStorage) {
     [],
   );
 
+  const toggleMany = useCallback((ids: string[]) => {
+    setTodos((current) => bulkToggle(current, ids));
+  }, []);
+
   const rename = useCallback((id: string, title: string) => {
     setTodos((current) => renameInList(current, id, title));
   }, []);
@@ -110,5 +121,6 @@ export function useTodos(storage: TodoStorage) {
     clearCompleted,
     undoable,
     undo,
+    toggleMany,
   };
 }

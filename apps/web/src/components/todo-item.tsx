@@ -14,9 +14,11 @@ type TodoItemProps = {
   onToggle: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onRemove: (id: string) => void;
+  /** When provided the row is in multi-select mode: the checkbox selects instead of completing. */
+  selection?: { selected: boolean; onSelect: (id: string) => void };
 };
 
-export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onRename, onRemove, selection }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
   const cancelled = useRef(false);
@@ -41,6 +43,35 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
       setDraftTitle(todo.title);
     }
     setEditing(false);
+  }
+
+  if (selection) {
+    return (
+      <li
+        data-selected={selection.selected}
+        className={`flex items-center gap-3 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
+          selection.selected ? "border-foreground/60" : "border-black/10 dark:border-white/15"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={selection.selected}
+          onChange={() => selection.onSelect(todo.id)}
+          aria-label={`Select "${todo.title}"`}
+          className="size-4 accent-current"
+        />
+        <button
+          type="button"
+          onClick={() => selection.onSelect(todo.id)}
+          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
+        >
+          {todo.title}
+        </button>
+        <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
+          {todo.priority}
+        </span>
+      </li>
+    );
   }
 
   return (
