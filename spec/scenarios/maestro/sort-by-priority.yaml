@@ -1,0 +1,41 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: sort-by-priority
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Low one"
+- tapOn:
+    id: "todo-form-priority-low"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Low one"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Medium one"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Medium one"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "High one"
+- tapOn:
+    id: "todo-form-priority-high"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-High one"
+- assertVisible:
+    id: "todo-item-High one"
+- assertVisible:
+    id: "todo-item-Medium one"
+- assertVisible:
+    id: "todo-item-Low one"

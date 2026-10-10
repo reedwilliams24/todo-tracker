@@ -10,6 +10,10 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "spec:record": "pnpm --filter @todo/spec record",
+    "spec:generate": "pnpm --filter @todo/spec generate",
+    "spec:check": "pnpm --filter @todo/spec record --check && pnpm --filter @todo/spec generate --check",
+    "spec:parity": "pnpm --filter @todo/spec parity"
   }
 }

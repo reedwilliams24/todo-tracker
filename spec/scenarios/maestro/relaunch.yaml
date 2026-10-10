@@ -1,0 +1,35 @@
+# Restart the app keeping storage, to prove persistence.
+appId: ${APP_ID}
+---
+- stopApp
+- launchApp:
+    clearState: false
+- runFlow:
+    when:
+      true: ${EXPO_URL}
+    commands:
+      - openLink: ${EXPO_URL}
+      - extendedWaitUntil:
+          visible: "Continue|Todo Tracker"
+          timeout: 60000
+      - runFlow:
+          when:
+            visible: "Continue"
+          commands:
+            - tapOn: "Continue"
+      - runFlow:
+          when:
+            visible: "Go home"
+          commands:
+            - tapOn: "Close"
+- extendedWaitUntil:
+    visible:
+      id: "todo-form-title"
+    timeout: 60000
+# Expo dev builds show LogBox warnings as a toast that can cover the undo toast.
+- runFlow:
+    when:
+      visible: ".*has been deprecated.*"
+    commands:
+      - tapOn: ".*has been deprecated.*"
+      - tapOn: "Dismiss"

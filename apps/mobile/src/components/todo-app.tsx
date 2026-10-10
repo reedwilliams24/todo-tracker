@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { countRemaining, filterTodos, sortTodos, type TodoFilter } from "@todo/shared";
+import { countRemaining, filterTodos, sortTodos, TEST_IDS, type TodoFilter } from "@todo/shared";
 import { useTodos } from "../hooks/use-todos";
 import { colors, fontSize, radius, spacing } from "../theme";
 import { TodoForm } from "./todo-form";
@@ -31,6 +31,7 @@ export function TodoApp() {
                 accessibilityRole="tab"
                 accessibilityState={{ selected }}
                 onPress={() => setFilter(option)}
+                testID={TEST_IDS.filter(option)}
                 style={[styles.filter, selected && styles.filterSelected]}
               >
                 <Text style={[styles.filterText, selected && styles.filterTextSelected]}>
@@ -41,7 +42,7 @@ export function TodoApp() {
           })}
         </View>
         {hasCompleted && (
-          <Pressable accessibilityRole="button" onPress={clearCompleted}>
+          <Pressable accessibilityRole="button" onPress={clearCompleted} testID={TEST_IDS.clearCompleted}>
             <Text style={styles.clear}>Clear completed</Text>
           </Pressable>
         )}
@@ -50,12 +51,13 @@ export function TodoApp() {
       {!hydrated ? (
         <Text style={styles.empty}>Loading…</Text>
       ) : visible.length === 0 ? (
-        <Text style={styles.empty}>
+        <Text style={styles.empty} testID={TEST_IDS.empty}>
           {todos.length === 0 ? "No todos yet. Add your first one above." : `No ${filter} todos.`}
         </Text>
       ) : (
         <FlatList
           data={visible}
+          testID={TEST_IDS.list}
           keyExtractor={(todo) => todo.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
@@ -65,14 +67,14 @@ export function TodoApp() {
         />
       )}
 
-      <Text style={styles.remaining}>
+      <Text style={styles.remaining} testID={TEST_IDS.remaining}>
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </Text>
 
       {undoable && (
-        <View style={styles.toast} accessibilityLiveRegion="polite" accessibilityRole="alert">
-          <Text style={styles.toastText}>{undoable.label}</Text>
-          <Pressable accessibilityRole="button" onPress={undo} hitSlop={8}>
+        <View style={styles.toast} accessibilityLiveRegion="polite" accessibilityRole="alert" testID={TEST_IDS.undoToast}>
+          <Text style={styles.toastText} testID={TEST_IDS.undoLabel}>{undoable.label}</Text>
+          <Pressable accessibilityRole="button" onPress={undo} hitSlop={8} testID={TEST_IDS.undoAction}>
             <Text style={styles.toastAction}>Undo</Text>
           </Pressable>
         </View>

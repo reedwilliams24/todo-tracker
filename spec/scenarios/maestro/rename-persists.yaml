@@ -1,0 +1,25 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: rename-persists
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- tapOn:
+    id: "todo-title-Buy milk"
+- eraseText: 200
+- inputText: "Buy oat milk"
+- pressKey: Enter
+- assertVisible:
+    id: "todo-item-Buy oat milk"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "todo-item-Buy oat milk"

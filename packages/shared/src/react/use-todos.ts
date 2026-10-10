@@ -1,47 +1,33 @@
-import { useCallback, useEffect, useState } from "react";
-import { addTodos, clearCompletedInList, removeFromList, renameInList, toggleInList } from "../list";
+import { useCallback, useEffect, useReducer, useState } from "react";
+import { addTodos } from "../list";
 import type { TodoStorage } from "../storage";
-import type { Todo, TodoDraft } from "../types";
-import { createUndoEntry, describeUndo, isUndoExpired, UNDO_TIMEOUT_MS, type UndoEntry } from "../undo";
+import { INITIAL_TODO_STATE, reduceTodos, type TodoAction, type TodoState } from "../store";
+import type { TodoDraft } from "../types";
+import { UNDO_TIMEOUT_MS } from "../undo";
+
+function reducer(state: TodoState, action: TodoAction): TodoState {
+  return reduceTodos(state, action);
+}
 
 /**
  * Todo list state backed by a platform storage. Loads once on mount and
  * persists every change after hydration. `storage` should be a stable reference.
  */
 export function useTodos(storage: TodoStorage) {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const [{ todos, undoable }, dispatch] = useReducer(reducer, INITIAL_TODO_STATE);
   const [hydrated, setHydrated] = useState(false);
-  const [undoable, setUndoable] = useState<UndoEntry | null>(null);
 
   useEffect(() => {
     if (!undoable) return;
-    const timer = setTimeout(() => {
-      setUndoable((current) => (current && isUndoExpired(current) ? null : current));
-    }, UNDO_TIMEOUT_MS);
+    const timer = setTimeout(() => dispatch({ type: "expireUndo" }), UNDO_TIMEOUT_MS);
     return () => clearTimeout(timer);
   }, [undoable]);
-
-  /** Applies `fn` and remembers the previous list so it can be undone for a few seconds. */
-  const applyUndoable = useCallback((label: string, fn: (current: Todo[]) => Todo[]) => {
-    setTodos((current) => {
-      const next = fn(current);
-      if (next !== current) setUndoable(createUndoEntry(label, current));
-      return next;
-    });
-  }, []);
-
-  const undo = useCallback(() => {
-    setUndoable((entry) => {
-      if (entry) setTodos([...entry.before]);
-      return null;
-    });
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
     Promise.resolve(storage.load()).then((loaded) => {
       if (cancelled) return;
-      setTodos(loaded);
+      dispatch({ type: "load", todos: loaded });
       setHydrated(true);
     });
     return () => {
@@ -53,50 +39,19 @@ export function useTodos(storage: TodoStorage) {
     if (hydrated) void storage.save(todos);
   }, [storage, hydrated, todos]);
 
-  const addTodo = useCallback((draft: TodoDraft) => {
-    setTodos((current) => addTodos(current, [draft]).todos);
-  }, []);
-
   const addMany = useCallback((drafts: TodoDraft[]) => {
     const { created } = addTodos([], drafts);
-    setTodos((current) => [...created, ...current]);
+    dispatch({ type: "prepend", todos: created });
     return created;
   }, []);
 
-  const toggle = useCallback(
-    (id: string) => {
-      setTodos((current) => {
-        const target = current.find((todo) => todo.id === id);
-        if (target && !target.completed) setUndoable(createUndoEntry(describeUndo("complete", 1), current));
-        return toggleInList(current, id);
-      });
-    },
-    [],
-  );
-
-  const rename = useCallback((id: string, title: string) => {
-    setTodos((current) => renameInList(current, id, title));
-  }, []);
-
-  const remove = useCallback(
-    (id: string) => applyUndoable(describeUndo("delete", 1), (current) => removeFromList(current, [id])),
-    [applyUndoable],
-  );
-
-  const removeMany = useCallback(
-    (ids: string[]) =>
-      applyUndoable(describeUndo("delete", ids.length), (current) => removeFromList(current, ids)),
-    [applyUndoable],
-  );
-
-  const clearCompleted = useCallback(() => {
-    setTodos((current) => {
-      const next = clearCompletedInList(current);
-      const removed = current.length - next.length;
-      if (removed > 0) setUndoable(createUndoEntry(describeUndo("delete", removed), current));
-      return next;
-    });
-  }, []);
+  const addTodo = useCallback((draft: TodoDraft) => void addMany([draft]), [addMany]);
+  const toggle = useCallback((id: string) => dispatch({ type: "toggle", id }), []);
+  const rename = useCallback((id: string, title: string) => dispatch({ type: "rename", id, title }), []);
+  const remove = useCallback((id: string) => dispatch({ type: "remove", ids: [id] }), []);
+  const removeMany = useCallback((ids: string[]) => dispatch({ type: "remove", ids }), []);
+  const clearCompleted = useCallback(() => dispatch({ type: "clearCompleted" }), []);
+  const undo = useCallback(() => dispatch({ type: "undo" }), []);
 
   return {
     todos,

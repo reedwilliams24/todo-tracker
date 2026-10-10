@@ -1,0 +1,87 @@
+{
+  "$comment": "Platform-neutral UI scenarios. Web runs them with Playwright (apps/web/e2e/scenarios.spec.ts); mobile runs the Maestro flows generated into spec/scenarios/maestro/ by `pnpm spec:generate`. Selectors come from spec/test-ids.json. Step vocabulary is documented in spec/README.md.",
+  "scenarios": [
+    {
+      "name": "add-todo",
+      "steps": [
+        { "expect": "empty" },
+        { "do": "add", "title": "Buy milk", "priority": "high" },
+        { "expect": "titles", "titles": ["Buy milk"] },
+        { "expect": "remaining", "text": "1 task remaining" }
+      ]
+    },
+    {
+      "name": "complete-and-reopen",
+      "steps": [
+        { "do": "add", "title": "Walk the dog" },
+        { "do": "toggle", "title": "Walk the dog" },
+        { "expect": "completed", "title": "Walk the dog", "value": true },
+        { "expect": "remaining", "text": "0 tasks remaining" },
+        { "expect": "undo", "label": "Completed todo" },
+        { "do": "toggle", "title": "Walk the dog" },
+        { "expect": "completed", "title": "Walk the dog", "value": false },
+        { "expect": "remaining", "text": "1 task remaining" }
+      ]
+    },
+    {
+      "name": "delete-and-undo",
+      "steps": [
+        { "do": "add", "title": "Buy milk" },
+        { "do": "add", "title": "Call mom" },
+        { "do": "delete", "title": "Buy milk" },
+        { "expect": "titles", "titles": ["Call mom"] },
+        { "expect": "undo", "label": "Deleted todo" },
+        { "do": "undo" },
+        { "expect": "titles", "titles": ["Buy milk", "Call mom"] },
+        { "expect": "undo", "label": null }
+      ]
+    },
+    {
+      "name": "rename-persists",
+      "steps": [
+        { "do": "add", "title": "Buy milk" },
+        { "do": "rename", "from": "Buy milk", "to": "Buy oat milk" },
+        { "expect": "titles", "titles": ["Buy oat milk"] },
+        { "do": "relaunch" },
+        { "expect": "titles", "titles": ["Buy oat milk"] }
+      ]
+    },
+    {
+      "name": "sort-by-priority",
+      "steps": [
+        { "do": "add", "title": "Low one", "priority": "low" },
+        { "do": "add", "title": "Medium one" },
+        { "do": "add", "title": "High one", "priority": "high" },
+        { "expect": "titles", "titles": ["High one", "Medium one", "Low one"] }
+      ]
+    },
+    {
+      "name": "filter-and-clear-completed",
+      "steps": [
+        { "do": "add", "title": "Buy milk" },
+        { "do": "add", "title": "Call mom" },
+        { "do": "toggle", "title": "Buy milk" },
+        { "do": "filter", "filter": "active" },
+        { "expect": "titles", "titles": ["Call mom"] },
+        { "do": "filter", "filter": "completed" },
+        { "expect": "titles", "titles": ["Buy milk"] },
+        { "do": "filter", "filter": "all" },
+        { "do": "clearCompleted" },
+        { "expect": "titles", "titles": ["Call mom"] },
+        { "expect": "undo", "label": "Deleted todo" },
+        { "do": "undo" },
+        { "expect": "titles", "titles": ["Call mom", "Buy milk"] }
+      ]
+    },
+    {
+      "name": "search",
+      "platforms": ["web"],
+      "steps": [
+        { "do": "add", "title": "Buy milk" },
+        { "do": "add", "title": "Call mom" },
+        { "do": "search", "query": "milk" },
+        { "expect": "titles", "titles": ["Buy milk"] }
+      ]
+    }
+  ]
+}

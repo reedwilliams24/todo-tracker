@@ -11,7 +11,7 @@ gh api -X PUT "repos/$REPO/branches/$BRANCH/protection" \
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": ["lint", "typecheck", "test", "build", "e2e"]
+    "contexts": ["lint", "typecheck", "test", "spec", "build", "e2e"]
   },
   "enforce_admins": true,
   "required_pull_request_reviews": null,

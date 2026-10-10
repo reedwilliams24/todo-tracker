@@ -1,0 +1,136 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "storage",
+  "spec": "features/storage.md",
+  "cases": [
+    {
+      "name": "parse valid list",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": "[{\"id\":\"a\",\"title\":\"Buy milk\",\"completed\":false,\"priority\":\"high\",\"createdAt\":\"2026-01-01T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\",\"notes\":\"2% organic\"},{\"id\":\"b\",\"title\":\"Walk the dog\",\"completed\":true,\"priority\":\"medium\",\"createdAt\":\"2026-01-02T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\"},{\"id\":\"c\",\"title\":\"Call mom\",\"completed\":false,\"priority\":\"low\",\"createdAt\":\"2026-01-03T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\",\"dueDate\":\"2026-01-06\"}]"
+      },
+      "then": [
+        {
+          "id": "new-1",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "new-2",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "new-3",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "parse null",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": null
+      },
+      "then": []
+    },
+    {
+      "name": "parse empty string",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": ""
+      },
+      "then": []
+    },
+    {
+      "name": "parse corrupt JSON",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": "[{oops"
+      },
+      "then": []
+    },
+    {
+      "name": "parse non-array JSON",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": "{\"id\":\"a\"}"
+      },
+      "then": []
+    },
+    {
+      "name": "serialize round-trips",
+      "op": "serializeTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    }
+  ]
+}

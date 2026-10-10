@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { isValidTitle, type Todo } from "@todo/shared";
+import { isValidTitle, TEST_IDS, type Todo } from "@todo/shared";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
   high: "bg-red-500/15 text-red-600 dark:text-red-400",
@@ -44,11 +44,12 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/60 px-3 py-2 dark:border-white/15 dark:bg-white/5">
+    <li data-testid={TEST_IDS.item(todo.title)} className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/60 px-3 py-2 dark:border-white/15 dark:bg-white/5">
       <input
         type="checkbox"
         checked={todo.completed}
         onChange={() => onToggle(todo.id)}
+        data-testid={TEST_IDS.itemToggle(todo.title)}
         aria-label={`Mark "${todo.title}" as ${todo.completed ? "active" : "complete"}`}
         className="size-4 accent-current"
       />
@@ -64,12 +65,14 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
             if (event.key === "Escape") cancel();
           }}
           aria-label="Edit title"
+          data-testid={TEST_IDS.itemEditInput}
           className="flex-1 rounded-lg bg-transparent px-1 py-1 outline-none"
         />
       ) : (
         <button
           type="button"
           onDoubleClick={startEditing}
+          data-testid={TEST_IDS.itemTitle(todo.title)}
           aria-label={`Edit "${todo.title}"`}
           title="Double-click to edit"
           className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
@@ -78,15 +81,22 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         </button>
       )}
 
-      {todo.dueDate && <span className="text-xs opacity-60">{todo.dueDate}</span>}
+      {todo.dueDate && (
+        <span data-testid={TEST_IDS.itemDueDate(todo.title)} className="text-xs opacity-60">
+          {todo.dueDate}
+        </span>
+      )}
 
-      <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
+      <span
+        data-testid={TEST_IDS.itemPriority(todo.title)}
+        className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
         {todo.priority}
       </span>
 
       <button
         type="button"
         onClick={() => onRemove(todo.id)}
+        data-testid={TEST_IDS.itemDelete(todo.title)}
         aria-label={`Delete "${todo.title}"`}
         className="rounded-lg px-2 py-1 text-sm opacity-50 transition hover:opacity-100"
       >

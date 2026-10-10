@@ -1,0 +1,38 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: delete-and-undo
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Call mom"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Call mom"
+- tapOn:
+    id: "todo-delete-Buy milk"
+- assertVisible:
+    id: "todo-item-Call mom"
+- assertVisible:
+    id: "undo-toast-label"
+    text: "Deleted todo"
+- tapOn:
+    id: "undo-toast-action"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- assertVisible:
+    id: "todo-item-Call mom"
+- assertNotVisible:
+    id: "undo-toast"

@@ -1,0 +1,25 @@
+{
+  "name": "@todo/spec",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Conformance tooling for spec/: TypeScript fixture runner, code generation and the CI parity matrix.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "record": "tsx src/record.ts",
+    "generate": "tsx src/generate.ts",
+    "parity": "tsx src/parity.ts"
+  },
+  "dependencies": {
+    "@todo/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
