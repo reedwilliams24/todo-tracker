@@ -16,8 +16,19 @@ import { VoiceCapture } from "@/components/voice-capture";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, addMany, toggle, rename, remove, removeMany, clearCompleted } =
-    useTodos();
+  const {
+    todos,
+    hydrated,
+    addTodo,
+    addMany,
+    toggle,
+    rename,
+    remove,
+    removeMany,
+    clearCompleted,
+    undoable,
+    undo,
+  } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
 
@@ -115,6 +126,19 @@ export function TodoApp() {
       <p className="text-xs opacity-60">
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </p>
+
+      {undoable && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-foreground px-4 py-2 text-sm text-background shadow-lg"
+        >
+          <span>{undoable.label}</span>
+          <button type="button" onClick={undo} className="font-medium underline underline-offset-4">
+            Undo
+          </button>
+        </div>
+      )}
     </section>
   );
 }

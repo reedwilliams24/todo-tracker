@@ -164,3 +164,30 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: 'Mark "Persist me" as active' })).toBeChecked();
   await expect(page.getByText("0 tasks remaining")).toBeVisible();
 });
+
+test("undo restores deleted and completed todos in their original position", async ({ page }) => {
+  await addTodo(page, "First");
+  await addTodo(page, "Second");
+  await addTodo(page, "Third");
+  await page.getByRole("button", { name: 'Delete "Second"' }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(2);
+  const toast = page.getByRole("status");
+  await expect(toast).toContainText("Deleted todo");
+  await toast.getByRole("button", { name: "Undo" }).click();
+  await expect(toast).toBeHidden();
+  await expect(page.getByRole("listitem")).toHaveCount(3);
+  await expect(page.getByRole("listitem").nth(1)).toContainText("Second");
+
+  await page.getByRole("checkbox", { name: 'Mark "First" as complete' }).check();
+  await expect(toast).toContainText("Completed todo");
+  await toast.getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByRole("checkbox", { name: 'Mark "First" as complete' })).not.toBeChecked();
+
+  await page.getByRole("checkbox", { name: 'Mark "First" as complete' }).check();
+  await page.getByRole("checkbox", { name: 'Mark "Third" as complete' }).check();
+  await page.getByRole("button", { name: "Clear completed" }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(1);
+  await expect(toast).toContainText("Deleted 2 todos");
+  await toast.getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(3);
+});

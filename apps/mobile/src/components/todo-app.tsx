@@ -9,7 +9,8 @@ import { TodoItem } from "./todo-item";
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
 export function TodoApp() {
-  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted } = useTodos();
+  const { todos, hydrated, addTodo, toggle, rename, remove, clearCompleted, undoable, undo } =
+    useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
 
   const visible = useMemo(() => sortTodos(filterTodos(todos, filter)), [todos, filter]);
@@ -67,6 +68,15 @@ export function TodoApp() {
       <Text style={styles.remaining}>
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </Text>
+
+      {undoable && (
+        <View style={styles.toast} accessibilityLiveRegion="polite" accessibilityRole="alert">
+          <Text style={styles.toastText}>{undoable.label}</Text>
+          <Pressable accessibilityRole="button" onPress={undo} hitSlop={8}>
+            <Text style={styles.toastAction}>Undo</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
@@ -83,4 +93,18 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 40, textAlign: "center", fontSize: 14, color: colors.muted },
   list: { gap: 8 },
   remaining: { fontSize: 12, color: colors.muted },
+  toast: {
+    position: "absolute",
+    bottom: 24,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    borderRadius: 12,
+    backgroundColor: colors.foreground,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  toastText: { fontSize: 14, color: colors.card },
+  toastAction: { fontSize: 14, fontWeight: "600", color: colors.card, textDecorationLine: "underline" },
 });
