@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import type { Todo, TodoDraft } from "@todo/shared";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { useT } from "@/hooks/use-t";
 import { parseTodosFromTranscript, type ParseResult } from "@/lib/parse-todos";
 
 const SOURCE_LABEL: Record<ParseResult["source"], string> = {
@@ -20,6 +21,7 @@ type Props = {
 type LastAdd = { ids: string[]; titles: string[]; source: ParseResult["source"] };
 
 export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
+  const t = useT();
   const [manualTranscript, setManualTranscript] = useState("");
   const [parsing, setParsing] = useState(false);
   const [lastAdd, setLastAdd] = useState<LastAdd | null>(null);
@@ -74,15 +76,11 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
     setLastAdd(null);
   }
 
-  const status = speech.listening
-    ? "Listening… I'll add your todos once you stop talking."
-    : parsing
-      ? "Adding…"
-      : null;
+  const status = speech.listening ? t("voice.listening") : parsing ? t("voice.adding") : null;
 
   return (
     <section
-      aria-label="Voice capture"
+      aria-label={t("voice.label")}
       className="flex flex-col gap-3 rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/15 dark:bg-white/5"
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -97,7 +95,7 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
               : "bg-foreground text-background disabled:opacity-40"
           }`}
         >
-          {speech.listening ? "Stop and add" : "Speak your todos"}
+          {speech.listening ? t("voice.stop") : t("voice.speak")}
         </button>
 
         {speech.listening && <span className="size-2 animate-pulse rounded-full bg-red-500" />}
@@ -109,14 +107,14 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
             onClick={() => void capture(speech.transcript || manualTranscript)}
             className="rounded-lg border border-black/15 px-3 py-2 text-sm dark:border-white/20"
           >
-            Add these
+            {t("voice.addThese")}
           </button>
         )}
       </div>
 
       {!speech.supported && (
         <p className="text-xs opacity-70">
-          This browser has no speech recognition, so type what you would say instead.
+          {t("voice.unsupported")}
         </p>
       )}
 
@@ -128,19 +126,19 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
         }}
         readOnly={speech.listening}
         rows={2}
-        placeholder="e.g. remind me to buy milk and then call the dentist tomorrow, also file taxes asap"
-        aria-label="Transcript"
+        placeholder={t("voice.transcript.placeholder")}
+        aria-label={t("voice.transcript")}
         className="w-full resize-y rounded-lg bg-transparent px-2 py-2 text-sm outline-none placeholder:opacity-50"
       />
 
       {speech.error && <p className="text-xs text-red-500">{speech.error}</p>}
 
-      {empty && <p className="text-sm opacity-70">No tasks found in that transcript.</p>}
+      {empty && <p className="text-sm opacity-70">{t("voice.empty")}</p>}
 
       {lastAdd && (
         <div className="flex flex-wrap items-center gap-2 border-t border-black/10 pt-3 text-sm dark:border-white/15">
           <span>
-            Added {lastAdd.titles.length === 1 ? lastAdd.titles[0] : `${lastAdd.titles.length} todos`}{" "}
+            {t("voice.added", { count: lastAdd.titles.length, first: lastAdd.titles[0] ?? "" })}{" "}
             <span className="opacity-60">({SOURCE_LABEL[lastAdd.source]})</span>
           </span>
           <button
@@ -148,7 +146,7 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
             onClick={undo}
             className="rounded-lg px-2 py-1 underline underline-offset-4 opacity-70 hover:opacity-100"
           >
-            Undo
+            {t("voice.undo")}
           </button>
         </div>
       )}

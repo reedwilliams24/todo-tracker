@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { isValidTitle, type Todo } from "@todo/shared";
+import { useT } from "../hooks/use-t";
 import { borderWidth, colors, fontSize, lineHeight, priorityColors, radius, spacing } from "../theme";
 
 type TodoItemProps = {
@@ -11,6 +12,7 @@ type TodoItemProps = {
 };
 
 export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) {
+  const t = useT();
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
 
@@ -30,7 +32,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: todo.completed }}
-        accessibilityLabel={`Mark "${todo.title}" as ${todo.completed ? "active" : "complete"}`}
+        accessibilityLabel={t(todo.completed ? "item.markActive" : "item.markComplete", { title: todo.title })}
         onPress={() => onToggle(todo.id)}
         style={[styles.checkbox, todo.completed && styles.checkboxChecked]}
       >
@@ -44,7 +46,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           onChangeText={setDraftTitle}
           onBlur={commit}
           onSubmitEditing={commit}
-          accessibilityLabel="Edit title"
+          accessibilityLabel={t("item.editTitle")}
           style={styles.editInput}
         />
       ) : (
@@ -58,12 +60,12 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
       {todo.dueDate && <Text style={styles.dueDate}>{todo.dueDate}</Text>}
 
       <View style={[styles.badge, { backgroundColor: priority.bg }]}>
-        <Text style={[styles.badgeText, { color: priority.text }]}>{todo.priority}</Text>
+        <Text style={[styles.badgeText, { color: priority.text }]}>{t(`priority.${todo.priority}`)}</Text>
       </View>
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Delete "${todo.title}"`}
+        accessibilityLabel={t("item.delete", { title: todo.title })}
         onPress={() => onRemove(todo.id)}
         hitSlop={8}
         style={styles.delete}
@@ -103,7 +105,7 @@ const styles = StyleSheet.create({
   editInput: { flex: 1, fontSize: fontSize.base, paddingVertical: spacing[1], color: colors.foreground },
   dueDate: { fontSize: fontSize.xs, color: colors.muted },
   badge: { borderRadius: radius.full, paddingHorizontal: spacing[2], paddingVertical: spacing[0.5] },
-  badgeText: { fontSize: fontSize.xs, textTransform: "capitalize" },
+  badgeText: { fontSize: fontSize.xs },
   delete: { paddingHorizontal: spacing[1.5], paddingVertical: spacing[0.5] },
   deleteText: { fontSize: fontSize.lg, color: colors.muted },
 });
