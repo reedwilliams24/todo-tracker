@@ -6,3 +6,4 @@ export * from "./voice";
 export * from "./undo";
 export * from "./cloud";
 export * from "./cloud/supabase-table";
+export * from "./cloud/offline";
