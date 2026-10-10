@@ -30,6 +30,11 @@ struct ContentView: View {
         }
         .scrollDismissesKeyboard(.immediately)
         .background(Theme.background)
+        .contentShape(Rectangle())
+        // Like RN's keyboardShouldPersistTaps="handled": tapping empty space blurs the focused field (committing a rename).
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
         .overlay(alignment: .bottom) { toast }
         .animation(.easeOut(duration: 0.15), value: model.undoLabel)
     }
