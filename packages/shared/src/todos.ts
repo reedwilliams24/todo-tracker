@@ -91,7 +91,8 @@ export function searchTodos(todos: readonly Todo[], query: string): Todo[] {
   );
 }
 
-export function sortTodos(todos: readonly Todo[]): Todo[] {
+/** Priority high→low, then due date (undated last), then creation; completed sink. */
+export function sortByPriority(todos: readonly Todo[]): Todo[] {
   return [...todos].sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
     const byPriority = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
@@ -103,6 +104,10 @@ export function sortTodos(todos: readonly Todo[]): Todo[] {
     }
     return a.createdAt < b.createdAt ? -1 : 1;
   });
+}
+
+export function sortTodos(todos: readonly Todo[]): Todo[] {
+  return sortByPriority(todos);
 }
 
 export function countRemaining(todos: readonly Todo[]): number {
