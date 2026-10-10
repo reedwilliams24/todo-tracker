@@ -69,6 +69,8 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
       </View>
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel="Add todo"
+        accessibilityState={{ disabled: !canAdd }}
         disabled={!canAdd}
         onPress={submit}
         style={[styles.addButton, !canAdd && styles.disabled]}
