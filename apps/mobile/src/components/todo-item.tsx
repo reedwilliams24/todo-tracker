@@ -55,6 +55,11 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         </Pressable>
       )}
 
+      {todo.tags?.map((tag) => (
+        <Text key={tag} style={styles.tag}>
+          #{tag}
+        </Text>
+      ))}
       {todo.dueDate && <Text style={styles.dueDate}>{todo.dueDate}</Text>}
 
       <View style={[styles.badge, { backgroundColor: priority.bg }]}>
@@ -101,6 +106,14 @@ const styles = StyleSheet.create({
   title: { fontSize: fontSize.base, color: colors.foreground },
   titleDone: { textDecorationLine: "line-through", opacity: 0.5 },
   editInput: { flex: 1, fontSize: fontSize.base, paddingVertical: spacing[1], color: colors.foreground },
+  tag: {
+    fontSize: fontSize.xs,
+    color: colors.muted,
+    backgroundColor: colors.border,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing[1.5],
+    paddingVertical: 1,
+  },
   dueDate: { fontSize: fontSize.xs, color: colors.muted },
   badge: { borderRadius: radius.full, paddingHorizontal: spacing[2], paddingVertical: spacing[0.5] },
   badgeText: { fontSize: fontSize.xs, textTransform: "capitalize" },

@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import {
+  allTags,
   countRemaining,
+  filterByTag,
   filterTodos,
   searchTodos,
   sortTodos,
@@ -31,10 +33,13 @@ export function TodoApp() {
   } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
+  const [tag, setTag] = useState<string | null>(null);
 
+  const tags = useMemo(() => allTags(todos), [todos]);
+  const activeTag = tag && tags.includes(tag) ? tag : null;
   const visible = useMemo(
-    () => sortTodos(searchTodos(filterTodos(todos, filter), query)),
-    [todos, filter, query],
+    () => sortTodos(searchTodos(filterByTag(filterTodos(todos, filter), activeTag), query)),
+    [todos, filter, activeTag, query],
   );
   const searching = query.trim().length > 0;
   const remaining = countRemaining(todos);
@@ -42,7 +47,7 @@ export function TodoApp() {
 
   return (
     <section className="flex flex-col gap-4">
-      <TodoForm onAdd={addTodo} />
+      <TodoForm onAdd={addTodo} existingTags={tags} />
       <VoiceCapture todos={todos} onAddMany={addMany} onUndo={removeMany} />
 
       <div className="relative">
@@ -99,6 +104,29 @@ export function TodoApp() {
         )}
       </div>
 
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 text-xs" role="group" aria-label="Filter by tag">
+          {tags.map((option) => {
+            const selected = activeTag === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => setTag(selected ? null : option)}
+                className={`rounded-full border px-2 py-0.5 transition ${
+                  selected
+                    ? "border-transparent bg-foreground text-background"
+                    : "border-black/10 opacity-70 hover:opacity-100 dark:border-white/15"
+                }`}
+              >
+                #{option}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {!hydrated ? (
         <p className="py-10 text-center text-sm opacity-60">Loading…</p>
       ) : visible.length === 0 ? (
@@ -107,7 +135,9 @@ export function TodoApp() {
             ? "No todos yet. Add your first one above."
             : searching
               ? `No ${filter === "all" ? "" : `${filter} `}todos match “${query.trim()}”.`
-              : `No ${filter} todos.`}
+              : activeTag
+                ? `No ${filter === "all" ? "" : `${filter} `}todos tagged #${activeTag}.`
+                : `No ${filter} todos.`}
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
