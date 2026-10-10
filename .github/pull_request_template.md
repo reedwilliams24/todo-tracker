@@ -1,3 +1,8 @@
+<!-- Linear ticket as a link with its name, e.g. [REED-28: Cross-platform conformance spec](https://linear.app/reed-williams/issue/REED-28/...). Add "Fixes REED-n" below it so Linear closes the ticket on merge. -->
+**Linear:** [REED-n: Ticket title](https://linear.app/reed-williams/issue/REED-n)
+
+Fixes REED-n
+
 ## Summary
 
 <!-- What changed and why. -->
