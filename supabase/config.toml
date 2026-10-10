@@ -1,0 +1,11 @@
+# Minimal Supabase CLI config; `supabase link --project-ref <ref>` before `pnpm db:migrate`.
+project_id = "todo-tracker"
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000", "todotracker://auth"]
+
+# Mobile signs in with the 6-digit OTP, web with the link; one template serves both.
+[auth.email.template.magic_link]
+subject = "Your Todo Tracker sign-in code"
+content_path = "./supabase/templates/magic_link.html"
