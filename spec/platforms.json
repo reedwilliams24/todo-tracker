@@ -2,19 +2,19 @@
   "$comment": "Which implementation passes which part of the spec. CI's parity job prints this matrix and fails if a feature listed here has no fixture file, or a fixture file has no row. Values: pass | missing | n/a.",
   "platforms": ["web", "ios", "android"],
   "fixtures": {
-    "todo": { "web": "pass", "ios": "missing", "android": "missing" },
-    "list": { "web": "pass", "ios": "missing", "android": "missing" },
-    "undo": { "web": "pass", "ios": "missing", "android": "missing" },
-    "storage": { "web": "pass", "ios": "missing", "android": "missing" },
-    "voice": { "web": "pass", "ios": "missing", "android": "missing" }
+    "todo": { "web": "pass", "ios": "pass", "android": "missing" },
+    "list": { "web": "pass", "ios": "pass", "android": "missing" },
+    "undo": { "web": "pass", "ios": "pass", "android": "missing" },
+    "storage": { "web": "pass", "ios": "pass", "android": "missing" },
+    "voice": { "web": "pass", "ios": "pass", "android": "missing" }
   },
   "scenarios": {
-    "add-todo": { "web": "pass", "ios": "missing", "android": "missing" },
-    "complete-and-reopen": { "web": "pass", "ios": "missing", "android": "missing" },
-    "delete-and-undo": { "web": "pass", "ios": "missing", "android": "missing" },
-    "rename-persists": { "web": "pass", "ios": "missing", "android": "missing" },
-    "sort-by-priority": { "web": "pass", "ios": "missing", "android": "missing" },
-    "filter-and-clear-completed": { "web": "pass", "ios": "missing", "android": "missing" },
+    "add-todo": { "web": "pass", "ios": "pass", "android": "missing" },
+    "complete-and-reopen": { "web": "pass", "ios": "pass", "android": "missing" },
+    "delete-and-undo": { "web": "pass", "ios": "pass", "android": "missing" },
+    "rename-persists": { "web": "pass", "ios": "pass", "android": "missing" },
+    "sort-by-priority": { "web": "pass", "ios": "pass", "android": "missing" },
+    "filter-and-clear-completed": { "web": "pass", "ios": "pass", "android": "missing" },
     "search": { "web": "pass", "ios": "n/a", "android": "n/a" }
   }
 }

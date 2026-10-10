@@ -53,7 +53,7 @@ Runners must apply the same normalization before comparing:
 
 Swift and Kotlin load the same files; nothing is copied or regenerated per platform.
 
-- **iOS (XCTest)**: add `../../spec/fixtures` to the test target as a folder reference. A `FixtureTests` case decodes each file, switches on `op`, calls the Swift implementation, encodes the result with `JSONEncoder` (`.sortedKeys`), applies normalization, and compares with `then` decoded as `JSONValue`. One `XCTContext.runActivity` per case gives per-case reporting.
+- **iOS (XCTest)**: `apps/ios/TodoCore` is a Swift package whose `FixtureTests` resolve `spec/fixtures` from `#filePath`. Each test decodes each file, switches on `op`, calls the Swift implementation, encodes the result with `JSONEncoder` (`.sortedKeys`), applies normalization, and compares with `then` decoded as `JSONValue`. One `XCTContext.runActivity` per case gives per-case reporting.
 - **Android (JUnit 5)**: point `sourceSets.test.resources.srcDir("../../spec/fixtures")` at the folder. A `@TestFactory` returns one `DynamicTest` per case, dispatches on `op` to the Kotlin implementation, serializes with kotlinx.serialization (`explicitNulls = false`), normalizes, and asserts JSON equality.
 - An unknown `op` must **fail**, not skip, so a new fixture can't silently pass on a platform that doesn't implement it. Update `platforms.json` when a platform starts passing a feature.
 

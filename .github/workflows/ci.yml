@@ -55,3 +55,19 @@ jobs:
           name: playwright-report
           path: apps/web/playwright-report/
           retention-days: 14
+
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - name: TodoCore fixtures
+        working-directory: apps/ios/TodoCore
+        run: swift test
+      - name: Build and UI test on the Simulator
+        working-directory: apps/ios
+        run: |
+          xcodegen generate
+          udid=$(xcrun simctl list devices available -j | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
+          xcodebuild build test -project TodoTracker.xcodeproj -scheme TodoTracker \
+            -destination "platform=iOS Simulator,id=$udid" CODE_SIGNING_ALLOWED=NO
