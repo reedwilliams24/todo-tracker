@@ -28,6 +28,9 @@ export function TodoApp() {
     clearCompleted,
     undoable,
     undo,
+    addSubtask,
+    toggleSubtask,
+    removeSubtask,
   } = useTodos();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
@@ -118,6 +121,9 @@ export function TodoApp() {
               onToggle={toggle}
               onRename={rename}
               onRemove={remove}
+              onAddSubtask={addSubtask}
+              onToggleSubtask={toggleSubtask}
+              onRemoveSubtask={removeSubtask}
             />
           ))}
         </ul>
