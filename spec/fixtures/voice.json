@@ -1,0 +1,349 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "voice",
+  "spec": "features/voice.md",
+  "cases": [
+    {
+      "name": "extractPriority: high priority call the bank",
+      "op": "extractPriority",
+      "given": {
+        "text": "high priority call the bank"
+      },
+      "then": {
+        "priority": "high",
+        "rest": "  call the bank"
+      }
+    },
+    {
+      "name": "extractPriority: pay rent urgent",
+      "op": "extractPriority",
+      "given": {
+        "text": "pay rent urgent"
+      },
+      "then": {
+        "priority": "high",
+        "rest": "pay rent  "
+      }
+    },
+    {
+      "name": "extractPriority: water plants low priority",
+      "op": "extractPriority",
+      "given": {
+        "text": "water plants low priority"
+      },
+      "then": {
+        "priority": "low",
+        "rest": "water plants  "
+      }
+    },
+    {
+      "name": "extractPriority: this is important email the landlord",
+      "op": "extractPriority",
+      "given": {
+        "text": "this is important email the landlord"
+      },
+      "then": {
+        "priority": "high",
+        "rest": "this is   email the landlord"
+      }
+    },
+    {
+      "name": "extractPriority: buy milk",
+      "op": "extractPriority",
+      "given": {
+        "text": "buy milk"
+      },
+      "then": {
+        "rest": "buy milk"
+      }
+    },
+    {
+      "name": "extractPriority: low key email bob",
+      "op": "extractPriority",
+      "given": {
+        "text": "low key email bob"
+      },
+      "then": {
+        "rest": "low key email bob"
+      }
+    },
+    {
+      "name": "extractDueDate: call mom today",
+      "op": "extractDueDate",
+      "given": {
+        "text": "call mom today",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "dueDate": "2026-01-05",
+        "rest": "call mom  "
+      }
+    },
+    {
+      "name": "extractDueDate: finish report tonight",
+      "op": "extractDueDate",
+      "given": {
+        "text": "finish report tonight",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "dueDate": "2026-01-05",
+        "rest": "finish report  "
+      }
+    },
+    {
+      "name": "extractDueDate: dentist tomorrow",
+      "op": "extractDueDate",
+      "given": {
+        "text": "dentist tomorrow",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "dueDate": "2026-01-06",
+        "rest": "dentist  "
+      }
+    },
+    {
+      "name": "extractDueDate: plan trip next week",
+      "op": "extractDueDate",
+      "given": {
+        "text": "plan trip next week",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "dueDate": "2026-01-12",
+        "rest": "plan trip  "
+      }
+    },
+    {
+      "name": "extractDueDate: gym on friday",
+      "op": "extractDueDate",
+      "given": {
+        "text": "gym on friday",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "dueDate": "2026-01-09",
+        "rest": "gym  "
+      }
+    },
+    {
+      "name": "extractDueDate: standup monday",
+      "op": "extractDueDate",
+      "given": {
+        "text": "standup monday",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "dueDate": "2026-01-12",
+        "rest": "standup "
+      }
+    },
+    {
+      "name": "extractDueDate: meet sam next monday",
+      "op": "extractDueDate",
+      "given": {
+        "text": "meet sam next monday",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "dueDate": "2026-01-12",
+        "rest": "meet sam  "
+      }
+    },
+    {
+      "name": "extractDueDate: renew passport",
+      "op": "extractDueDate",
+      "given": {
+        "text": "renew passport",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "rest": "renew passport"
+      }
+    },
+    {
+      "name": "cleanTitle: um I need to buy milk.",
+      "op": "cleanTitle",
+      "given": {
+        "text": "um I need to buy milk."
+      },
+      "then": "buy milk"
+    },
+    {
+      "name": "cleanTitle: remind me to call the bank",
+      "op": "cleanTitle",
+      "given": {
+        "text": "  remind me to call the bank  "
+      },
+      "then": "call the bank"
+    },
+    {
+      "name": "cleanTitle: Please, uh, water the plants!",
+      "op": "cleanTitle",
+      "given": {
+        "text": "Please, uh, water the plants!"
+      },
+      "then": "water the plants"
+    },
+    {
+      "name": "cleanTitle: add a todo to pay rent",
+      "op": "cleanTitle",
+      "given": {
+        "text": "add a todo to pay rent"
+      },
+      "then": "pay rent"
+    },
+    {
+      "name": "parseTranscript: buy milk and call mom tomorrow, then high priority pay rent",
+      "op": "parseTranscript",
+      "given": {
+        "transcript": "buy milk and call mom tomorrow, then high priority pay rent",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": [
+        {
+          "title": "buy milk and call mom , then pay rent",
+          "priority": "high",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "parseTranscript: I need to email Bob. Also water plants on friday",
+      "op": "parseTranscript",
+      "given": {
+        "transcript": "I need to email Bob. Also water plants on friday",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": [
+        {
+          "title": "email Bob"
+        },
+        {
+          "title": "water plants",
+          "dueDate": "2026-01-09"
+        }
+      ]
+    },
+    {
+      "name": "parseTranscript: um",
+      "op": "parseTranscript",
+      "given": {
+        "transcript": "um",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": []
+    },
+    {
+      "name": "parseTranscript: (empty)",
+      "op": "parseTranscript",
+      "given": {
+        "transcript": "",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": []
+    },
+    {
+      "name": "coerceDrafts accepts model output and drops junk",
+      "op": "coerceDrafts",
+      "given": {
+        "value": {
+          "todos": [
+            {
+              "title": " Buy milk ",
+              "priority": "HIGH",
+              "dueDate": "2026-01-06"
+            },
+            {
+              "title": "",
+              "priority": "low"
+            },
+            {
+              "title": "Call mom",
+              "priority": "urgent",
+              "dueDate": "next week"
+            },
+            "nope"
+          ]
+        }
+      },
+      "then": [
+        {
+          "title": "Buy milk",
+          "dueDate": "2026-01-06"
+        },
+        {
+          "title": "Call mom"
+        },
+        {
+          "title": "nope"
+        }
+      ]
+    },
+    {
+      "name": "coerceDrafts accepts a bare array",
+      "op": "coerceDrafts",
+      "given": {
+        "value": [
+          {
+            "title": "Read"
+          }
+        ]
+      },
+      "then": [
+        {
+          "title": "Read"
+        }
+      ]
+    },
+    {
+      "name": "coerceDrafts rejects non-objects",
+      "op": "coerceDrafts",
+      "given": {
+        "value": "buy milk"
+      },
+      "then": []
+    },
+    {
+      "name": "reconcileDrafts replaces a heuristic draft with the matching llm draft",
+      "op": "reconcileDrafts",
+      "given": {
+        "heuristic": [
+          {
+            "title": "buy milk",
+            "priority": "high",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "llm": [
+          {
+            "title": "Buy milk"
+          }
+        ]
+      },
+      "then": [
+        {
+          "title": "Buy milk"
+        }
+      ]
+    },
+    {
+      "name": "reconcileDrafts falls back to heuristic",
+      "op": "reconcileDrafts",
+      "given": {
+        "heuristic": [
+          {
+            "title": "buy milk"
+          }
+        ],
+        "llm": []
+      },
+      "then": [
+        {
+          "title": "buy milk"
+        }
+      ]
+    }
+  ]
+}

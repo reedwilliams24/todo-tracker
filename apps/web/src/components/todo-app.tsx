@@ -6,6 +6,7 @@ import {
   filterTodos,
   searchTodos,
   sortTodos,
+  TEST_IDS,
   type TodoFilter,
 } from "@todo/shared";
 import { useTodos } from "@/hooks/use-todos";
@@ -55,6 +56,7 @@ export function TodoApp() {
           }}
           placeholder="Search todos…"
           aria-label="Search todos"
+          data-testid={TEST_IDS.search}
           className="w-full rounded-xl border [&::-webkit-search-cancel-button]:appearance-none border-black/10 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-white/5 dark:focus:border-white/40"
         />
         {searching && (
@@ -62,6 +64,7 @@ export function TodoApp() {
             type="button"
             onClick={() => setQuery("")}
             aria-label="Clear search"
+            data-testid={TEST_IDS.searchClear}
             className="absolute inset-y-0 right-2 px-2 text-sm opacity-50 transition hover:opacity-100"
           >
             ×
@@ -78,6 +81,7 @@ export function TodoApp() {
               role="tab"
               aria-selected={filter === option}
               onClick={() => setFilter(option)}
+              data-testid={TEST_IDS.filter(option)}
               className={`rounded-full px-3 py-1 capitalize transition ${
                 filter === option
                   ? "bg-foreground text-background"
@@ -92,6 +96,7 @@ export function TodoApp() {
           <button
             type="button"
             onClick={clearCompleted}
+            data-testid={TEST_IDS.clearCompleted}
             className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
           >
             Clear completed
@@ -102,7 +107,7 @@ export function TodoApp() {
       {!hydrated ? (
         <p className="py-10 text-center text-sm opacity-60">Loading…</p>
       ) : visible.length === 0 ? (
-        <p className="py-10 text-center text-sm opacity-60">
+        <p data-testid={TEST_IDS.empty} className="py-10 text-center text-sm opacity-60">
           {todos.length === 0
             ? "No todos yet. Add your first one above."
             : searching
@@ -110,7 +115,7 @@ export function TodoApp() {
               : `No ${filter} todos.`}
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul data-testid={TEST_IDS.list} className="flex flex-col gap-2">
           {visible.map((todo) => (
             <TodoItem
               key={todo.id}
@@ -123,18 +128,24 @@ export function TodoApp() {
         </ul>
       )}
 
-      <p className="text-xs opacity-60">
+      <p data-testid={TEST_IDS.remaining} className="text-xs opacity-60">
         {remaining} {remaining === 1 ? "task" : "tasks"} remaining
       </p>
 
       {undoable && (
         <div
           role="status"
+          data-testid={TEST_IDS.undoToast}
           aria-live="polite"
           className="fixed bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-foreground px-4 py-2 text-sm text-background shadow-lg"
         >
-          <span>{undoable.label}</span>
-          <button type="button" onClick={undo} className="font-medium underline underline-offset-4">
+          <span data-testid={TEST_IDS.undoLabel}>{undoable.label}</span>
+          <button
+            type="button"
+            onClick={undo}
+            data-testid={TEST_IDS.undoAction}
+            className="font-medium underline underline-offset-4"
+          >
             Undo
           </button>
         </div>

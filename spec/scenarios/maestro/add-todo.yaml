@@ -1,0 +1,24 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: add-todo
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- assertVisible:
+    id: "todo-empty"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- tapOn:
+    id: "todo-form-priority-high"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- assertVisible:
+    id: "todo-remaining"
+    text: "1 task remaining"

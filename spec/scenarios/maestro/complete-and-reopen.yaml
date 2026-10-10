@@ -1,0 +1,34 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: complete-and-reopen
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Walk the dog"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Walk the dog"
+- tapOn:
+    id: "todo-toggle-Walk the dog"
+- assertVisible:
+    id: "todo-toggle-Walk the dog"
+    checked: true
+- assertVisible:
+    id: "todo-remaining"
+    text: "0 tasks remaining"
+- assertVisible:
+    id: "undo-toast-label"
+    text: "Completed todo"
+- tapOn:
+    id: "todo-toggle-Walk the dog"
+- assertVisible:
+    id: "todo-toggle-Walk the dog"
+    checked: false
+- assertVisible:
+    id: "todo-remaining"
+    text: "1 task remaining"

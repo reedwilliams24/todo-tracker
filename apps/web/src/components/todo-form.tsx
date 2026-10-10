@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   EMPTY_TODO_FORM,
   isValidTitle,
+  TEST_IDS,
   toTodoDraft,
   type TodoDraft,
   type TodoPriority,
@@ -32,6 +33,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         onChange={(event) => setForm((f) => ({ ...f, title: event.target.value }))}
         placeholder="What needs doing?"
         aria-label="Todo title"
+        data-testid={TEST_IDS.formTitle}
         className="flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50"
       />
       <select
@@ -40,10 +42,16 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))
         }
         aria-label="Priority"
+        data-testid={TEST_IDS.formPriority}
         className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm capitalize dark:border-white/15"
       >
         {PRIORITIES.map((option) => (
-          <option key={option} value={option} className="text-foreground">
+          <option
+            key={option}
+            value={option}
+            data-testid={TEST_IDS.formPriorityOption(option)}
+            className="text-foreground"
+          >
             {option}
           </option>
         ))}
@@ -53,10 +61,12 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         value={dueDate}
         onChange={(event) => setForm((f) => ({ ...f, dueDate: event.target.value }))}
         aria-label="Due date"
+        data-testid={TEST_IDS.formDueDate}
         className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
       />
       <button
         type="submit"
+        data-testid={TEST_IDS.formSubmit}
         disabled={!isValidTitle(title)}
         className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
       >

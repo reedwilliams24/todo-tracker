@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://todo-tracker/spec/schema/fixture.schema.json",
+  "title": "Conformance fixture file",
+  "description": "One feature's golden cases. Each platform runner calls `op` with `given` and must produce exactly `then` after normalization (see spec/README.md).",
+  "type": "object",
+  "required": ["feature", "spec", "cases"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "feature": { "type": "string", "pattern": "^[a-z][a-z-]*$" },
+    "spec": { "type": "string", "description": "Path of the feature spec, relative to spec/." },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "op", "given", "then"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "op": { "type": "string", "minLength": 1 },
+          "given": { "type": "object" },
+          "then": {}
+        }
+      }
+    }
+  }
+}

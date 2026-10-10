@@ -1,0 +1,26 @@
+// Generated from spec/test-ids.json by `pnpm spec:generate`. Do not edit.
+
+export const TEST_IDS = {
+  formTitle: "todo-form-title",
+  formPriority: "todo-form-priority",
+  formPriorityOption: (priority: string) => `todo-form-priority-${priority}`,
+  formDueDate: "todo-form-due-date",
+  formSubmit: "todo-form-submit",
+  search: "todo-search",
+  searchClear: "todo-search-clear",
+  filter: (filter: string) => `todo-filter-${filter}`,
+  clearCompleted: "todo-clear-completed",
+  list: "todo-list",
+  empty: "todo-empty",
+  remaining: "todo-remaining",
+  item: (title: string) => `todo-item-${title}`,
+  itemToggle: (title: string) => `todo-toggle-${title}`,
+  itemTitle: (title: string) => `todo-title-${title}`,
+  itemEditInput: "todo-edit-input",
+  itemDueDate: (title: string) => `todo-due-${title}`,
+  itemPriority: (title: string) => `todo-priority-${title}`,
+  itemDelete: (title: string) => `todo-delete-${title}`,
+  undoToast: "undo-toast",
+  undoLabel: "undo-toast-label",
+  undoAction: "undo-toast-action",
+} as const;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { isValidTitle, type Todo } from "@todo/shared";
+import { isValidTitle, TEST_IDS, type Todo } from "@todo/shared";
 import { borderWidth, colors, fontSize, lineHeight, priorityColors, radius, spacing } from "../theme";
 
 type TodoItemProps = {
@@ -26,12 +26,13 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
   const priority = priorityColors[todo.priority];
 
   return (
-    <View style={styles.row}>
+    <View style={styles.row} testID={TEST_IDS.item(todo.title)}>
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: todo.completed }}
         accessibilityLabel={`Mark "${todo.title}" as ${todo.completed ? "active" : "complete"}`}
         onPress={() => onToggle(todo.id)}
+        testID={TEST_IDS.itemToggle(todo.title)}
         style={[styles.checkbox, todo.completed && styles.checkboxChecked]}
       >
         {todo.completed && <Text style={styles.checkmark}>✓</Text>}
@@ -45,19 +46,25 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           onBlur={commit}
           onSubmitEditing={commit}
           accessibilityLabel="Edit title"
+          testID={TEST_IDS.itemEditInput}
           style={styles.editInput}
         />
       ) : (
-        <Pressable onPress={() => setEditing(true)} style={styles.titleButton}>
+        <Pressable
+          onPress={() => setEditing(true)}
+          accessibilityLabel={`Edit "${todo.title}"`}
+          testID={TEST_IDS.itemTitle(todo.title)}
+          style={styles.titleButton}
+        >
           <Text numberOfLines={1} style={[styles.title, todo.completed && styles.titleDone]}>
             {todo.title}
           </Text>
         </Pressable>
       )}
 
-      {todo.dueDate && <Text style={styles.dueDate}>{todo.dueDate}</Text>}
+      {todo.dueDate && <Text style={styles.dueDate} testID={TEST_IDS.itemDueDate(todo.title)}>{todo.dueDate}</Text>}
 
-      <View style={[styles.badge, { backgroundColor: priority.bg }]}>
+      <View style={[styles.badge, { backgroundColor: priority.bg }]} testID={TEST_IDS.itemPriority(todo.title)}>
         <Text style={[styles.badgeText, { color: priority.text }]}>{todo.priority}</Text>
       </View>
 
@@ -65,6 +72,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         accessibilityRole="button"
         accessibilityLabel={`Delete "${todo.title}"`}
         onPress={() => onRemove(todo.id)}
+        testID={TEST_IDS.itemDelete(todo.title)}
         hitSlop={8}
         style={styles.delete}
       >

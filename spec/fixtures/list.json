@@ -1,0 +1,913 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "list",
+  "spec": "features/list.md",
+  "cases": [
+    {
+      "name": "filterTodos: all",
+      "op": "filterTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "filter": "all"
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "filterTodos: active",
+      "op": "filterTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "filter": "active"
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "filterTodos: completed",
+      "op": "filterTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "filter": "completed"
+      },
+      "then": [
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "searchTodos: empty query returns everything",
+      "op": "searchTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "query": ""
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "searchTodos: blank query returns everything",
+      "op": "searchTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "query": "   "
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "searchTodos: matches title case-insensitively",
+      "op": "searchTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "query": "MILK"
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        }
+      ]
+    },
+    {
+      "name": "searchTodos: matches notes",
+      "op": "searchTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "query": "organic"
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        }
+      ]
+    },
+    {
+      "name": "searchTodos: trims query",
+      "op": "searchTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "query": "  dog "
+      },
+      "then": [
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "searchTodos: no match",
+      "op": "searchTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "query": "zebra"
+      },
+      "then": []
+    },
+    {
+      "name": "countRemaining",
+      "op": "countRemaining",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": 2
+    },
+    {
+      "name": "countRemaining empty",
+      "op": "countRemaining",
+      "given": {
+        "todos": []
+      },
+      "then": 0
+    },
+    {
+      "name": "sortByPriority: completed last, then priority, due date, creation",
+      "op": "sortByPriority",
+      "given": {
+        "todos": [
+          {
+            "id": "done-high",
+            "title": "Todo done-high",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "low",
+            "title": "Todo low",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "med-undated",
+            "title": "Todo med-undated",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "med-later",
+            "title": "Todo med-later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-01"
+          },
+          {
+            "id": "med-sooner",
+            "title": "Todo med-sooner",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-02-01"
+          },
+          {
+            "id": "med-undated-newer",
+            "title": "Todo med-undated-newer",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-02T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "high",
+            "title": "Todo high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "high",
+          "title": "Todo high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "med-sooner",
+          "title": "Todo med-sooner",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-02-01"
+        },
+        {
+          "id": "med-later",
+          "title": "Todo med-later",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-03-01"
+        },
+        {
+          "id": "med-undated",
+          "title": "Todo med-undated",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "med-undated-newer",
+          "title": "Todo med-undated-newer",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-02T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "low",
+          "title": "Todo low",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "done-high",
+          "title": "Todo done-high",
+          "completed": true,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "addTodos prepends in draft order",
+      "op": "addTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "drafts": [
+          {
+            "title": "First"
+          },
+          {
+            "title": "Second",
+            "priority": "high"
+          }
+        ],
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "new-1",
+            "title": "First",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T10:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "new-2",
+            "title": "Second",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T10:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "created": [
+          {
+            "id": "new-1",
+            "title": "First",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T10:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "new-2",
+            "title": "Second",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T10:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "name": "removeFromList removes several",
+      "op": "removeFromList",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "ids": [
+          "a",
+          "c"
+        ]
+      },
+      "then": [
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "removeFromList ignores unknown ids",
+      "op": "removeFromList",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "ids": [
+          "zzz"
+        ]
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "clearCompletedInList",
+      "op": "clearCompletedInList",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    }
+  ]
+}

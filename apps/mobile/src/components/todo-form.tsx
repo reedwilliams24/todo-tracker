@@ -7,6 +7,7 @@ import {
   toTodoDraft,
   type TodoDraft,
   type TodoPriority,
+  TEST_IDS,
 } from "@todo/shared";
 import { borderWidth, colors, fontSize, fontWeight, radius, spacing } from "../theme";
 
@@ -33,12 +34,13 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         placeholder="What needs doing?"
         placeholderTextColor={colors.muted}
         accessibilityLabel="Todo title"
+        testID={TEST_IDS.formTitle}
         onSubmitEditing={submit}
         returnKeyType="done"
         style={styles.input}
       />
       <View style={styles.row}>
-        <View style={styles.segments} accessibilityLabel="Priority" accessibilityRole="radiogroup">
+        <View style={styles.segments} accessibilityLabel="Priority" accessibilityRole="radiogroup" testID={TEST_IDS.formPriority}>
           {PRIORITIES.map((option) => {
             const selected = option === priority;
             return (
@@ -47,6 +49,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 onPress={() => setForm((f) => ({ ...f, priority: option }))}
+                testID={TEST_IDS.formPriorityOption(option)}
                 style={[styles.segment, selected && styles.segmentSelected]}
               >
                 <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
@@ -62,6 +65,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           placeholder="YYYY-MM-DD"
           placeholderTextColor={colors.muted}
           accessibilityLabel="Due date"
+          testID={TEST_IDS.formDueDate}
           autoCapitalize="none"
           keyboardType="numbers-and-punctuation"
           style={[styles.dateInput, !dateOk && styles.dateInvalid]}
@@ -71,6 +75,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         accessibilityRole="button"
         disabled={!canAdd}
         onPress={submit}
+        testID={TEST_IDS.formSubmit}
         style={[styles.addButton, !canAdd && styles.disabled]}
       >
         <Text style={styles.addText}>Add</Text>

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://todo-tracker/spec/schema/storage.schema.json",
+  "title": "Stored todo list",
+  "description": "Value persisted under the key `todo-tracker:todos:v1` (localStorage on web, AsyncStorage on mobile): a JSON array of todos, newest first. Native apps migrating from AsyncStorage read this exact format.",
+  "type": "array",
+  "items": { "$ref": "todo.schema.json" }
+}
