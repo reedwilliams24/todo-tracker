@@ -340,6 +340,8 @@ private fun TodoItem(
     onRemove: (String) -> Unit,
 ) {
     var editing by remember { mutableStateOf(false) }
+    // onFocusChanged reports "unfocused" when the editor first attaches; only a real blur commits.
+    var editorFocused by remember { mutableStateOf(false) }
     var draftTitle by remember(todo.title) { mutableStateOf(todo.title) }
     val focus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -348,6 +350,7 @@ private fun TodoItem(
         if (!editing) return
         if (isValidTitle(draftTitle) && draftTitle.trim() != todo.title) onRename(todo.id, draftTitle) else draftTitle = todo.title
         editing = false
+        editorFocused = false
     }
 
     Row(
@@ -388,7 +391,9 @@ private fun TodoItem(
                 modifier = Modifier
                     .weight(1f)
                     .focusRequester(focus)
-                    .onFocusChanged { if (!it.isFocused) commit() }
+                    .onFocusChanged {
+                        if (it.isFocused) editorFocused = true else if (editorFocused) commit()
+                    }
                     .onPreviewKeyEvent { event ->
                         if (event.key == Key.Enter) {
                             focusManager.clearFocus()
