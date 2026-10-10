@@ -55,3 +55,41 @@ jobs:
           name: playwright-report
           path: apps/web/playwright-report/
           retention-days: 14
+
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :core:test :app:assembleDebug :app:lintDebug --console=plain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android
+          path: |
+            apps/android/app/build/outputs/apk/debug/app-debug.apk
+            apps/android/core/build/reports/tests/
+          retention-days: 14
+
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - name: TodoCore fixtures
+        working-directory: apps/ios/TodoCore
+        run: swift test
+      - name: Build and UI test on the Simulator
+        working-directory: apps/ios
+        run: |
+          xcodegen generate
+          udid=$(xcrun simctl list devices available -j | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
+          xcodebuild build test -project TodoTracker.xcodeproj -scheme TodoTracker \
+            -destination "platform=iOS Simulator,id=$udid" CODE_SIGNING_ALLOWED=NO
