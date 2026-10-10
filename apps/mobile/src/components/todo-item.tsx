@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { isValidTitle, type Todo } from "@todo/shared";
-import { colors, priorityColors } from "../theme";
+import { borderWidth, colors, fontSize, lineHeight, priorityColors, radius, spacing } from "../theme";
 
 type TodoItemProps = {
   todo: Todo;
@@ -78,32 +78,32 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    borderRadius: 12,
-    borderWidth: 1,
+    gap: spacing[2.5],
+    borderRadius: radius.lg,
+    borderWidth: borderWidth.thin,
     borderColor: colors.border,
     backgroundColor: colors.card,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1.5,
+    width: spacing[5],
+    height: spacing[5],
+    borderRadius: radius.sm,
+    borderWidth: borderWidth.thick,
     borderColor: colors.foreground,
     alignItems: "center",
     justifyContent: "center",
   },
   checkboxChecked: { backgroundColor: colors.foreground },
-  checkmark: { color: colors.card, fontSize: 12, lineHeight: 14 },
+  checkmark: { color: colors.card, fontSize: fontSize.xs, lineHeight: lineHeight.xs },
   titleButton: { flex: 1 },
-  title: { fontSize: 16, color: colors.foreground },
+  title: { fontSize: fontSize.base, color: colors.foreground },
   titleDone: { textDecorationLine: "line-through", opacity: 0.5 },
-  editInput: { flex: 1, fontSize: 16, paddingVertical: 4, color: colors.foreground },
-  dueDate: { fontSize: 12, color: colors.muted },
-  badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  badgeText: { fontSize: 12, textTransform: "capitalize" },
-  delete: { paddingHorizontal: 6, paddingVertical: 2 },
-  deleteText: { fontSize: 18, color: colors.muted },
+  editInput: { flex: 1, fontSize: fontSize.base, paddingVertical: spacing[1], color: colors.foreground },
+  dueDate: { fontSize: fontSize.xs, color: colors.muted },
+  badge: { borderRadius: radius.full, paddingHorizontal: spacing[2], paddingVertical: spacing[0.5] },
+  badgeText: { fontSize: fontSize.xs, textTransform: "capitalize" },
+  delete: { paddingHorizontal: spacing[1.5], paddingVertical: spacing[0.5] },
+  deleteText: { fontSize: fontSize.lg, color: colors.muted },
 });
