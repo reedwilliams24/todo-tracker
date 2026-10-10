@@ -1,0 +1,57 @@
+name: Distribute mobile alpha
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/deploy-mobile.yml"
+
+concurrency:
+  group: deploy-mobile-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    # Inert until the Expo/Firebase secrets exist (see README "Deploying").
+    if: ${{ vars.MOBILE_ALPHA_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Build APK (EAS, alpha profile)
+        working-directory: apps/mobile
+        run: eas build --platform android --profile alpha --non-interactive --wait --json > build.json
+      - name: Download APK
+        working-directory: apps/mobile
+        run: curl -sSL "$(jq -r '.[0].artifacts.buildUrl' build.json)" -o todo-tracker-alpha.apk
+      - name: Upload to Firebase App Distribution (group "alpha")
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          groups: alpha
+          file: apps/mobile/todo-tracker-alpha.apk
+          releaseNotes: ${{ github.event.head_commit.message }}
+
+  ios:
+    runs-on: ubuntu-latest
+    if: ${{ vars.MOBILE_ALPHA_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Build ad-hoc IPA (EAS, alpha profile) - testers get the install link from EAS
+        working-directory: apps/mobile
+        run: eas build --platform ios --profile alpha --non-interactive --no-wait
