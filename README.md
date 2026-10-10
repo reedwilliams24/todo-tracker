@@ -108,7 +108,8 @@ job names in that script in sync with the workflow.
 
 Every change is expected to land on all three platforms (web, iOS, Android).
 The PR template has a Before/After table per platform; fill each one in or mark
-it "N/A — not affected" with a one-line reason.
+it "N/A — not affected" with a one-line reason. The description starts with the
+Linear ticket's name as a link, followed by `Fixes REED-n`.
 
 ## Deploying
 

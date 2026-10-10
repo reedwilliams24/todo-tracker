@@ -40,4 +40,4 @@ Mobile scenarios: `maestro test --include-tags spec -e APP_ID=… spec/scenarios
 
 - Keep domain logic pure. Pass `now` in rather than reading the clock, so fixtures stay deterministic.
 - Storage key `todo-tracker:todos:v1`; its format is defined by `spec/schema/storage.schema.json`.
-- PR titles: `<type>(REED-n): …`; PR bodies include `Fixes REED-n`.
+- PR titles: `<type>(REED-n): …`. PR bodies start with the Linear ticket's name as a link, `[REED-n: Title](https://linear.app/...)`, then `Fixes REED-n`.
