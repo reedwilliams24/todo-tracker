@@ -27,6 +27,8 @@ pnpm --filter web e2e     # Playwright, incl. spec/scenarios/core.json
 (cd apps/android && ./gradlew :core:test :app:assembleDebug)  # Kotlin fixtures + APK
 ```
 
+iOS (macOS + Xcode): `swift test` in `apps/ios/TodoCore` runs the fixtures; see [`apps/ios/README.md`](apps/ios/README.md) for the app.
+
 Mobile scenarios: `maestro test --include-tags spec -e APP_ID=… spec/scenarios/maestro` (see `spec/README.md`).
 
 ## Definition of done for a behavior change
