@@ -27,6 +27,7 @@ object TestIds {
     const val bulkDeleteConfirm = "todo-bulk-delete-confirm"
     const val bulkToggle = "todo-bulk-toggle"
     const val clearCompleted = "todo-clear-completed"
+    const val connectionBanner = "connection-banner"
     const val empty = "todo-empty"
 
     fun filter(filter: String) = "todo-filter-$filter"

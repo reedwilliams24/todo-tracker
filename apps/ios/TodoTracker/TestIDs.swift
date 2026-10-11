@@ -27,6 +27,7 @@ enum TestID {
     static let bulkDeleteConfirm = "todo-bulk-delete-confirm"
     static let bulkToggle = "todo-bulk-toggle"
     static let clearCompleted = "todo-clear-completed"
+    static let connectionBanner = "connection-banner"
     static let empty = "todo-empty"
     static func filter(_ filter: TodoFilter) -> String { "todo-filter-\(filter.rawValue)" }
     static let formDueDate = "todo-form-due-date"

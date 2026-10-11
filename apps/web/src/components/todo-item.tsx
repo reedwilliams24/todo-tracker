@@ -27,6 +27,10 @@ type TodoItemProps = {
   onAddSubtask: (id: string, title: string) => void;
   onToggleSubtask: (id: string, subtaskId: string) => void;
   onRemoveSubtask: (id: string, subtaskId: string) => void;
+  /** Read-only list (spec/features/realtime.md#connection-status): edits are disabled, expanding still works. */
+  readOnly?: boolean;
+  /** Why it's read-only, for `aria-describedby` on the disabled controls. */
+  describedBy?: string;
 };
 
 export function TodoItem({
@@ -39,6 +43,8 @@ export function TodoItem({
   onRemoveSubtask,
   selection,
   drag,
+  readOnly = false,
+  describedBy,
 }: TodoItemProps) {
   const t = useT();
   const [editing, setEditing] = useState(false);
@@ -49,7 +55,10 @@ export function TodoItem({
   const [draftTitle, setDraftTitle] = useState(todo.title);
   const cancelled = useRef(false);
 
+  const locked = readOnly ? { disabled: true, "aria-describedby": describedBy } : {};
+
   function startEditing() {
+    if (readOnly) return;
     cancelled.current = false;
     setDraftTitle(todo.title);
     setEditing(true);
@@ -139,6 +148,7 @@ export function TodoItem({
           type="checkbox"
           checked={todo.completed}
           onChange={() => onToggle(todo.id)}
+          {...locked}
           data-testid={TEST_IDS.itemToggle(todo.title)}
           aria-label={t(todo.completed ? "item.markActive" : "item.markComplete", { title: todo.title })}
           className="size-4 accent-current"
@@ -162,6 +172,8 @@ export function TodoItem({
           <button
             type="button"
             onDoubleClick={startEditing}
+            aria-disabled={readOnly || undefined}
+            aria-describedby={readOnly ? describedBy : undefined}
             data-testid={TEST_IDS.itemTitle(todo.title)}
             aria-label={t("item.edit", { title: todo.title })}
             title={t("item.editHint")}
@@ -230,9 +242,10 @@ export function TodoItem({
         <button
           type="button"
           onClick={() => onRemove(todo.id)}
+          {...locked}
           data-testid={TEST_IDS.itemDelete(todo.title)}
           aria-label={t("item.delete", { title: todo.title })}
-          className="rounded-lg px-2 py-1 text-sm opacity-70 transition hover:opacity-100"
+          className="rounded-lg px-2 py-1 text-sm opacity-70 transition hover:opacity-100 disabled:opacity-30"
         >
           ×
         </button>
@@ -246,6 +259,7 @@ export function TodoItem({
                 type="checkbox"
                 checked={subtask.completed}
                 onChange={() => onToggleSubtask(todo.id, subtask.id)}
+                {...locked}
                 data-testid={TEST_IDS.subtaskToggle(subtask.title)}
                 aria-label={t(subtask.completed ? "subtask.markActive" : "subtask.markComplete", {
                   title: subtask.title,
@@ -258,6 +272,7 @@ export function TodoItem({
               <button
                 type="button"
                 onClick={() => onRemoveSubtask(todo.id, subtask.id)}
+                {...locked}
                 data-testid={TEST_IDS.subtaskDelete(subtask.title)}
                 aria-label={t("subtask.delete", { title: subtask.title })}
                 className="px-1 text-xs opacity-50 hover:opacity-100"
@@ -276,6 +291,7 @@ export function TodoItem({
               }
             }}
             placeholder={t("subtasks.add.placeholder")}
+            {...locked}
             aria-label={t("subtasks.add.label", { title: todo.title })}
             data-testid={TEST_IDS.subtaskInput(todo.title)}
             className="rounded-lg bg-transparent px-1 py-1 outline-none placeholder:opacity-50"
