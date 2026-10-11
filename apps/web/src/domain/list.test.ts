@@ -4,12 +4,14 @@ import {
   bulkToggle,
   clearCompletedInList,
   countCompleted,
+  moveVisibleTodo,
   removeFromList,
   renameInList,
+  reorderTodos,
   toggleInList,
 } from "./list";
-import { parseStoredTodos, serializeTodos } from "./storage";
-import { createTodo, isValidDueDate } from "./todos";
+import { parseStoredSort, parseStoredTodos, serializeTodos } from "./storage";
+import { createTodo, isValidDueDate, sortTodos } from "./todos";
 
 describe("list operations", () => {
   it("prepends new todos and returns the created ones", () => {
@@ -51,6 +53,29 @@ describe("list operations", () => {
     const b = createTodo({ title: "b" });
     const c = createTodo({ title: "c" });
     expect(removeFromList([a, b, c], [a.id, c.id])).toEqual([b]);
+  });
+
+  it("reorderTodos moves an item and ignores out-of-range indexes", () => {
+    const [a, b, c] = ["a", "b", "c"].map((title) => createTodo({ title }));
+    expect(reorderTodos([a!, b!, c!], 0, 2)).toEqual([b, c, a]);
+    expect(reorderTodos([a!, b!, c!], 2, 0)).toEqual([c, a, b]);
+    expect(reorderTodos([a!, b!, c!], 1, 1)).toEqual([a, b, c]);
+    expect(reorderTodos([a!, b!, c!], 5, 0)).toEqual([a, b, c]);
+  });
+
+  it("moveVisibleTodo applies the displayed order to the stored list, leaving hidden rows in place", () => {
+    const [a, b, c, d] = ["a", "b", "c", "d"].map((title) => createTodo({ title }));
+    // stored: a b c d; displayed (say, sorted): d c a with b hidden; drag a above d
+    const result = moveVisibleTodo([a!, b!, c!, d!], [d!.id, c!.id, a!.id], a!.id, d!.id);
+    expect(result).toEqual([a, b, d, c]);
+    expect(sortTodos(result, "manual")).toEqual([a, b, d, c]);
+    expect(moveVisibleTodo([a!, b!], [a!.id, b!.id], "nope", a!.id)).toEqual([a, b]);
+  });
+
+  it("parseStoredSort falls back to priority", () => {
+    expect(parseStoredSort("manual")).toBe("manual");
+    expect(parseStoredSort("bogus")).toBe("priority");
+    expect(parseStoredSort(null)).toBe("priority");
   });
 });
 

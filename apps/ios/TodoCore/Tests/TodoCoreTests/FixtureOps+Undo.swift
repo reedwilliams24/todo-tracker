@@ -43,6 +43,8 @@ extension FixtureOps {
         let id: String?
         let title: String?
         let ids: [String]?
+        let visibleIds: [String]?
+        let targetId: String?
 
         func apply(to state: TodoState) throws -> TodoState {
             guard let date = Timestamp.parse(now) else { throw BadGiven(description: "bad step now \(now)") }
@@ -55,6 +57,9 @@ extension FixtureOps {
             case "toggleMany": action = .toggleMany(ids: try require(ids))
             case "rename": action = .rename(id: try require(id), title: try require(title))
             case "remove": action = .remove(ids: try require(ids))
+            case "reorder":
+                action = .reorder(
+                    visibleIds: try require(visibleIds), id: try require(id), targetId: try require(targetId))
             case "clearCompleted": action = .clearCompleted
             case "undo": action = .undo
             case "expireUndo": action = .expireUndo

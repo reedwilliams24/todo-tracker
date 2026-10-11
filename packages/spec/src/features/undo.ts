@@ -193,6 +193,29 @@ export const feature: Feature = {
         ],
       },
     },
+    {
+      name: "reordering keeps the previous undo",
+      op: "applyActions",
+      given: {
+        todos: sample,
+        steps: [
+          { action: "toggle", id: "a", now: T1 },
+          { action: "reorder", visibleIds: ["a", "b", "c"], id: "c", targetId: "a", now: T1 },
+        ],
+      },
+    },
+    {
+      name: "undo after reordering restores the order before the undoable action",
+      op: "applyActions",
+      given: {
+        todos: sample,
+        steps: [
+          { action: "remove", ids: ["b"], now: T1 },
+          { action: "reorder", visibleIds: ["a", "c"], id: "c", targetId: "a", now: T1 },
+          { action: "undo", now: T2 },
+        ],
+      },
+    },
   ],
 };
 

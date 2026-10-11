@@ -1,6 +1,12 @@
 import Foundation
 
 public let storageKey = "todo-tracker:todos:v1"
+public let sortStorageKey = "todo-tracker:sort:v1"
+
+/// Missing or unknown values load as `.priority`.
+public func parseStoredSort(_ raw: String?) -> TodoSort {
+    raw.flatMap(TodoSort.init(rawValue:)) ?? .priority
+}
 
 /// JSON array of todos in storage order (newest first); see spec/schema/storage.schema.json.
 public func serializeTodos(_ todos: [Todo]) -> String {

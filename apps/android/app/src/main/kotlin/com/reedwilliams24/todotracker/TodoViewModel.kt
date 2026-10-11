@@ -4,13 +4,16 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.reedwilliams24.todotracker.core.SORT_STORAGE_KEY
 import com.reedwilliams24.todotracker.core.THEME_STORAGE_KEY
 import com.reedwilliams24.todotracker.core.ThemePreference
 import com.reedwilliams24.todotracker.core.TodoAction
 import com.reedwilliams24.todotracker.core.TodoDraft
+import com.reedwilliams24.todotracker.core.TodoSort
 import com.reedwilliams24.todotracker.core.TodoState
 import com.reedwilliams24.todotracker.core.UNDO_TIMEOUT_MS
 import com.reedwilliams24.todotracker.core.addTodos
+import com.reedwilliams24.todotracker.core.parseStoredSort
 import com.reedwilliams24.todotracker.core.parseThemePreference
 import com.reedwilliams24.todotracker.core.reduceTodos
 import com.reedwilliams24.todotracker.data.TodoDatabase
@@ -25,19 +28,23 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-data class TodoUiState(val state: TodoState = TodoState(), val hydrated: Boolean = false)
+data class TodoUiState(
+    val state: TodoState = TodoState(),
+    val hydrated: Boolean = false,
+    val sort: TodoSort = TodoSort.PRIORITY,
+)
 
 /** Android counterpart of `useTodos`: drives the shared reducer and persists after hydration. */
 class TodoViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = TodoRepository(TodoDatabase.get(application).todos())
+    private val prefs = application.getSharedPreferences("todo-tracker", Context.MODE_PRIVATE)
     private val saveLock = Mutex()
     private var undoTimer: Job? = null
 
-    private val _ui = MutableStateFlow(TodoUiState())
+    private val _ui = MutableStateFlow(TodoUiState(sort = parseStoredSort(prefs.getString(SORT_STORAGE_KEY, null))))
     val ui: StateFlow<TodoUiState> = _ui.asStateFlow()
 
     // Read synchronously so the first frame already uses the stored theme.
-    private val prefs = application.getSharedPreferences("todo-tracker", Context.MODE_PRIVATE)
     private val _theme = MutableStateFlow(parseThemePreference(prefs.getString(THEME_STORAGE_KEY, null)))
     val theme: StateFlow<ThemePreference> = _theme.asStateFlow()
 
@@ -49,7 +56,7 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     init {
         viewModelScope.launch {
             val stored = repository.load()
-            _ui.update { TodoUiState(reduceTodos(it.state, TodoAction.Load(stored)), hydrated = true) }
+            _ui.update { it.copy(state = reduceTodos(it.state, TodoAction.Load(stored)), hydrated = true) }
         }
     }
 
@@ -68,6 +75,17 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     fun clearCompleted() = dispatch(TodoAction.ClearCompleted)
 
     fun undo() = dispatch(TodoAction.Undo)
+
+    /** Drops `id` onto `targetId` within the shown rows and switches to manual sort so the new order shows. */
+    fun reorder(visibleIds: List<String>, id: String, targetId: String) {
+        dispatch(TodoAction.Reorder(visibleIds, id, targetId))
+        setSort(TodoSort.MANUAL)
+    }
+
+    fun setSort(sort: TodoSort) {
+        _ui.update { it.copy(sort = sort) }
+        prefs.edit().putString(SORT_STORAGE_KEY, sort.key).apply()
+    }
 
     private fun dispatch(action: TodoAction) {
         val before = _ui.value

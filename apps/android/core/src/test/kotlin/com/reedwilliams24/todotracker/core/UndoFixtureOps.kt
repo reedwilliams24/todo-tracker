@@ -50,6 +50,7 @@ private fun applyStep(state: TodoState, step: JsonObject): TodoState {
             "toggleMany" -> TodoAction.ToggleMany(step.getValue("ids").jsonArray.map { it.jsonPrimitive.content })
             "rename" -> TodoAction.Rename(step.str("id"), step.str("title"))
             "remove" -> TodoAction.Remove(step.getValue("ids").jsonArray.map { it.jsonPrimitive.content })
+            "reorder" -> TodoAction.Reorder(step.strings("visibleIds"), step.str("id"), step.str("targetId"))
             "clearCompleted" -> TodoAction.ClearCompleted
             "undo" -> TodoAction.Undo
             "expireUndo" -> TodoAction.ExpireUndo

@@ -6,6 +6,9 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 
 const val STORAGE_KEY = "todo-tracker:todos:v1"
+const val SORT_STORAGE_KEY = "todo-tracker:sort:v1"
+
+fun parseStoredSort(raw: String?): TodoSort = TodoSort.fromKey(raw)
 
 val TodoJson = Json {
     explicitNulls = false

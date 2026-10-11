@@ -38,6 +38,16 @@ extension FixtureOps {
             "clearCompletedInList": { g in
                 return clearCompletedInList(try g.decode("todos"))
             },
+            "moveVisibleTodo": { g in
+                return moveVisibleTodo(
+                    try g.decode("todos"), visibleIds: try g.decode("visibleIds"),
+                    id: try g.decode("id"), targetId: try g.decode("targetId")
+                )
+            },
+            "reorderTodos": { g in
+                return reorderTodos(
+                    try g.decode("todos"), fromIndex: try g.decode("fromIndex"), toIndex: try g.decode("toIndex"))
+            },
             "bulkToggle": { g in
                 return bulkToggle(try g.decode("todos"), ids: try g.decode("ids"), now: try g.date("now"))
             },

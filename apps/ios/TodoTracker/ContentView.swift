@@ -157,7 +157,7 @@ struct ContentView: View {
                 Button {
                     model.sort = option
                 } label: {
-                    Text(option == .due ? "Due date" : "Priority")
+                    Text(option == .due ? "Due date" : option.rawValue.capitalized)
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
                         .padding(.horizontal, 12)
@@ -287,6 +287,13 @@ struct ContentView: View {
                                 onSelect: { model.toggleSelected(todo.id) })
                             : nil
                     )
+                    // Long-press a row and drop it on another to move it there.
+                    .draggable(todo.id)
+                    .dropDestination(for: String.self) { ids, _ in
+                        guard let id = ids.first, id != todo.id else { return false }
+                        model.reorder(id, onto: todo.id)
+                        return true
+                    }
                 }
             }
             .accessibilityElement(children: .contain)

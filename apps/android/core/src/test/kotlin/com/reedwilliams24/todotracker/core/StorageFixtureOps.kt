@@ -11,5 +11,10 @@ internal val storageOps: Map<String, Op> =
             { g: JsonObject ->
                 encode(parseStoredTodos((g["raw"] as? JsonPrimitive)?.takeIf { it.isString }?.content))
             },
+        "parseStoredSort" to
+            { g: JsonObject ->
+                JsonPrimitive(parseStoredSort((g["raw"] as? JsonPrimitive)?.takeIf { it.isString }?.content).key)
+            },
+        "sortStorageKey" to { _: JsonObject -> JsonPrimitive(SORT_STORAGE_KEY) },
         "serializeTodos" to { g: JsonObject -> Json.parseToJsonElement(serializeTodos(g.todos())) },
     )

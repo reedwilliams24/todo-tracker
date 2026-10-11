@@ -20,7 +20,7 @@ type_name:
     warning: 2
     error: 2
 cyclomatic_complexity:
-  warning: 15
+  ignores_case_statements: true # Store's reducer is one big switch over actions.
 type_body_length:
   warning: 350
 nesting:

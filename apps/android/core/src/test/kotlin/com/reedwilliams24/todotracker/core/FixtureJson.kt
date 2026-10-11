@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 
 /** JSON helpers shared by the <Feature>FixtureOps.kt files. */
@@ -12,6 +13,8 @@ internal val todoList = ListSerializer(Todo.serializer())
 internal val draftList = ListSerializer(TodoDraft.serializer())
 
 internal fun JsonObject.str(key: String): String = getValue(key).jsonPrimitive.content
+
+internal fun JsonObject.strings(key: String): List<String> = getValue(key).jsonArray.map { it.jsonPrimitive.content }
 
 internal fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 

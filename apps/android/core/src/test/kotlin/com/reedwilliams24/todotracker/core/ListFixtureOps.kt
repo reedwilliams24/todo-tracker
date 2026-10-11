@@ -3,6 +3,7 @@ package com.reedwilliams24.todotracker.core
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
@@ -37,6 +38,20 @@ internal val listOps: Map<String, Op> =
                 encode(removeFromList(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content }))
             },
         "clearCompletedInList" to { g: JsonObject -> encode(clearCompletedInList(g.todos())) },
+        "moveVisibleTodo" to
+            { g: JsonObject ->
+                encode(moveVisibleTodo(g.todos(), g.strings("visibleIds"), g.str("id"), g.str("targetId")))
+            },
+        "reorderTodos" to
+            { g: JsonObject ->
+                encode(
+                    reorderTodos(
+                        g.todos(),
+                        g.getValue("fromIndex").jsonPrimitive.int,
+                        g.getValue("toIndex").jsonPrimitive.int,
+                    )
+                )
+            },
         "bulkToggle" to
             { g: JsonObject ->
                 encode(

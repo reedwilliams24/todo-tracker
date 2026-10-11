@@ -137,6 +137,7 @@ fun sortByDue(todos: List<Todo>): List<Todo> = todos.sortedWith(::compareByDue)
 fun sortTodos(todos: List<Todo>, sort: TodoSort = TodoSort.PRIORITY): List<Todo> =
     when (sort) {
         TodoSort.DUE -> sortByDue(todos)
+        TodoSort.MANUAL -> todos.toList()
         TodoSort.PRIORITY -> sortByPriority(todos)
     }
 

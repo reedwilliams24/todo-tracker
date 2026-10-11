@@ -70,6 +70,7 @@ Actions (`do`):
 - `clearCompleted`
 - `delete {title}`
 - `filter {filter}`
+- `move {title, onto}` (drag a row onto another; web only, since Maestro can't long-press-drag)
 - `openStats`
 - `relaunch`
 - `rename {from, to}`

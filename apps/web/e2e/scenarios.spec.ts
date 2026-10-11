@@ -56,6 +56,8 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("itemDelete", s.title!)).click();
     case "filter":
       return page.getByTestId(id("filter", s.filter)).click();
+    case "move":
+      return page.getByTestId(id("item", s.title!)).dragTo(page.getByTestId(id("item", s.onto!)));
     case "openStats":
       return page.getByTestId(id("statsToggle")).click();
     case "relaunch":
