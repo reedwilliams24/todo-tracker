@@ -69,7 +69,7 @@ async function run(page: Page, step: Step) {
     case "selectMode":
       return page.getByTestId(id("selectMode")).click();
     case "select":
-      return page.getByTestId(id("itemSelect", s.title)).click();
+      return page.getByTestId(id("itemSelect", s.title!)).click();
     case "selectAll":
       return page.getByTestId(id("selectAll")).click();
     case "bulkToggle":

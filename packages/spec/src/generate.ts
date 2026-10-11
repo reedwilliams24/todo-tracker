@@ -82,7 +82,7 @@ function maestroStep(step: Step): string[] {
     case "selectMode":
       return tap(id("selectMode"));
     case "select":
-      return tap(id("itemSelect", s.title));
+      return tap(id("itemSelect", s.title!));
     case "selectAll":
       return tap(id("selectAll"));
     case "bulkToggle":
