@@ -53,7 +53,11 @@ struct TodoTrackerApp: App {
                 }
                 .onChange(of: auth?.session?.userId) { updateSync() }
                 .onChange(of: scenePhase) { _, phase in
-                    if phase == .active { model.pull() }
+                    switch phase {
+                    case .active: model.resume()
+                    case .background: model.suspend()
+                    default: break
+                    }
                 }
                 .task { updateSync() }
         }
@@ -62,6 +66,6 @@ struct TodoTrackerApp: App {
     /// The account list syncs while signed in; the guest list never does.
     private func updateSync() {
         let server = auth?.scope == .account ? auth?.syncServer : nil
-        model.useSync(server, userId: auth?.session?.userId)
+        model.useSync(server, userId: auth?.session?.userId, realtime: auth?.realtime)
     }
 }

@@ -3,8 +3,10 @@ package com.reedwilliams24.todotracker.auth
 import android.content.Context
 import com.reedwilliams24.todotracker.BuildConfig
 import com.reedwilliams24.todotracker.core.AuthError
+import com.reedwilliams24.todotracker.core.RealtimeTransport
 import com.reedwilliams24.todotracker.core.SyncServer
 import com.reedwilliams24.todotracker.core.authErrorKind
+import com.reedwilliams24.todotracker.data.SupabaseRealtimeTransport
 import com.reedwilliams24.todotracker.data.SupabaseSyncServer
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
@@ -18,6 +20,8 @@ import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.realtime.realtime
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -40,6 +44,9 @@ interface AuthClient {
     /** The todos backend, as the signed-in user. */
     val sync: SyncServer
 
+    /** The Realtime socket live updates arrive on. */
+    val realtime: RealtimeTransport
+
     suspend fun sendCode(email: String)
 
     suspend fun verifyCode(email: String, code: String): AuthSession
@@ -61,6 +68,7 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
         createSupabaseClient(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY) {
             install(Auth) { sessionManager = EncryptedSessionManager(context) }
             install(Postgrest)
+            install(Realtime)
         }
     private var signingOut = false
 
@@ -76,6 +84,8 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
 
     override val sync: SyncServer = SupabaseSyncServer(client.postgrest)
 
+    override val realtime: RealtimeTransport = SupabaseRealtimeTransport(client)
+
     override suspend fun sendCode(email: String) = mapErrors {
         client.auth.signInWith(OTP) {
             this.email = email
@@ -90,7 +100,9 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
 
     override suspend fun signOut() {
         signingOut = true
-        // REED-68's Realtime socket closes here too; the local session is cleared even if the server call fails.
+        // The Realtime socket closes too; the local session is cleared even if the server call fails.
+        runCatching { client.realtime.removeAllChannels() }
+        client.realtime.disconnect()
         runCatching { client.auth.signOut() }.onFailure { client.auth.clearSession() }
     }
 

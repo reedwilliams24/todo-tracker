@@ -55,6 +55,7 @@ final class AuthViewModel {
 
     /// The todos backend the signed-in account list syncs with.
     var syncServer: any SyncServer { client.sync }
+    var realtime: any RealtimeTransport { client.realtime }
 
     var isSheetPresented: Bool { state.step != nil }
     var movePromptText: String? { state.movePrompt.map { t("auth.move.prompt", ["count": $0]) } }

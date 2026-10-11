@@ -13,5 +13,6 @@ export * from "./quick-add";
 export * from "./stats";
 export * from "./theme";
 export * from "./subtasks";
+export * from "./realtime";
 export * from "./sync";
 export * from "./auth";
