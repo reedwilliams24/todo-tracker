@@ -1,0 +1,16 @@
+{
+  "name": "manual-sort-persists",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "do": "add", "title": "High one", "priority": "high" },
+    { "do": "add", "title": "Low one", "priority": "low" },
+    { "do": "add", "title": "Medium one" },
+    { "expect": "titles", "titles": ["High one", "Medium one", "Low one"] },
+    { "do": "sort", "sort": "manual" },
+    { "expect": "titles", "titles": ["Medium one", "Low one", "High one"] },
+    { "do": "relaunch" },
+    { "expect": "titles", "titles": ["Medium one", "Low one", "High one"] },
+    { "do": "sort", "sort": "priority" },
+    { "expect": "titles", "titles": ["High one", "Medium one", "Low one"] }
+  ]
+}

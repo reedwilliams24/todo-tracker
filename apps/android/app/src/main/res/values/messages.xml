@@ -22,7 +22,9 @@
     <string name="sort_ariaLabel">Sort todos</string>
     <string name="sort_priority">Priority</string>
     <string name="sort_due">Due date</string>
+    <string name="sort_manual">Manual</string>
     <string name="search_placeholder">Search todos…</string>
+    <string name="search_placeholder_web">"Search todos…  ( / )"</string>
     <string name="search_label">Search todos</string>
     <string name="search_clear">Clear search</string>
     <string name="list_label">Todos</string>
@@ -54,6 +56,7 @@
     <string name="item_markActive">Mark \"%1$s\" as active</string>
     <string name="item_edit">Edit \"%1$s\"</string>
     <string name="item_editTitle">Edit title</string>
+    <string name="item_dragHint">Long-press and drag to reorder</string>
     <string name="item_editHint">Double-click to edit</string>
     <string name="item_editA11yHint">Opens the title for editing</string>
     <string name="item_editClickLabel">open the title for editing</string>

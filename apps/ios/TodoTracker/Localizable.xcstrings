@@ -254,6 +254,17 @@
         }
       }
     },
+    "item.dragHint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-press and drag to reorder"
+          }
+        }
+      }
+    },
     "item.due" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -661,6 +672,17 @@
         }
       }
     },
+    "search.placeholder.web" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search todos…  ( / )"
+          }
+        }
+      }
+    },
     "select.all" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -756,6 +778,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sort"
+          }
+        }
+      }
+    },
+    "sort.manual" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual"
           }
         }
       }

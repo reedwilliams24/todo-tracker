@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   countCompleted,
   countRemaining,
@@ -14,6 +14,8 @@ import {
 } from "@/domain";
 import { useT } from "@/hooks/use-t";
 import { useTodos } from "@/hooks/use-todos";
+import { useSort } from "@/domain/react";
+import { localSortStorage } from "@/lib/storage";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
@@ -35,19 +37,53 @@ export function TodoApp() {
     clearCompleted,
     undoable,
     undo,
+    reorder,
   } = useTodos();
   const t = useT();
+  const [sort, setSort] = useSort(localSortStorage);
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<TodoSort>("priority");
   const [selecting, setSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const typing =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement;
+      if (event.key === "/" && !typing) {
+        event.preventDefault();
+        searchRef.current?.focus();
+      } else if (event.key === "Escape" && (!typing || target === searchRef.current)) {
+        setQuery("");
+        searchRef.current?.blur();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const visible = useMemo(
     () => sortTodos(searchTodos(filterTodos(todos, filter), query), sort),
     [todos, filter, query, sort],
   );
+
+  function dropOn(targetId: string) {
+    if (draggingId && draggingId !== targetId) {
+      reorder(
+        visible.map((todo) => todo.id),
+        draggingId,
+        targetId,
+      );
+      setSort("manual");
+    }
+    setDraggingId(null);
+  }
   const searching = query.trim().length > 0;
   const remaining = countRemaining(todos);
   const completedCount = countCompleted(todos);
@@ -83,14 +119,12 @@ export function TodoApp() {
 
       <div className="relative">
         <input
+          ref={searchRef}
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") setQuery("");
-          }}
           data-testid={TEST_IDS.search}
-          placeholder={t("search.placeholder")}
+          placeholder={t("search.placeholder.web")}
           aria-label={t("search.label")}
           className="w-full rounded-xl border [&::-webkit-search-cancel-button]:appearance-none border-black/10 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-white/5 dark:focus:border-white/40"
         />
@@ -139,7 +173,7 @@ export function TodoApp() {
             >
               {SORTS.map((option) => (
                 <option key={option} value={option} data-testid={TEST_IDS.sortOption(option)} className="text-foreground">
-                  {t(option === "due" ? "sort.due" : "sort.priority")}
+                  {t(`sort.${option}`)}
                 </option>
               ))}
             </select>
@@ -258,6 +292,16 @@ export function TodoApp() {
               onRemove={remove}
               selection={
                 selecting ? { selected: selected.includes(todo.id), onSelect: toggleSelected } : undefined
+              }
+              drag={
+                !searching && !selecting
+                  ? {
+                      dragging: draggingId === todo.id,
+                      onDragStart: setDraggingId,
+                      onDrop: dropOn,
+                      onDragEnd: () => setDraggingId(null),
+                    }
+                  : undefined
               }
             />
           ))}

@@ -161,6 +161,7 @@ public func sortTodos(_ todos: [Todo], _ sort: TodoSort = .priority) -> [Todo] {
     switch sort {
     case .priority: sortByPriority(todos)
     case .due: sortByDue(todos)
+    case .manual: todos
     }
 }
 

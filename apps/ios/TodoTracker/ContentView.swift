@@ -151,7 +151,7 @@ struct ContentView: View {
             ForEach(TodoSort.allCases, id: \.self) { option in
                 let selected = model.sort == option
                 Button { model.sort = option } label: {
-                    Text(t(option == .due ? "sort.due" : "sort.priority"))
+                    Text(t("sort.\(option.rawValue)"))
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
                         .padding(.horizontal, 12)
@@ -275,6 +275,13 @@ struct ContentView: View {
                             ? TodoRowView.Selection(selected: model.selectedIds.contains(todo.id), onSelect: { model.toggleSelected(todo.id) })
                             : nil
                     )
+                    // Long-press a row and drop it on another to move it there.
+                    .draggable(todo.id)
+                    .dropDestination(for: String.self) { ids, _ in
+                        guard let id = ids.first, id != todo.id else { return false }
+                        model.reorder(id, onto: todo.id)
+                        return true
+                    }
                 }
             }
             .accessibilityElement(children: .contain)

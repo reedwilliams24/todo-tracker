@@ -1,0 +1,14 @@
+{
+  "name": "drag-to-reorder",
+  "status": { "web": "pass", "ios": "n/a", "android": "n/a" },
+  "steps": [
+    { "do": "add", "title": "First" },
+    { "do": "add", "title": "Second" },
+    { "do": "add", "title": "Third" },
+    { "expect": "titles", "titles": ["First", "Second", "Third"] },
+    { "do": "move", "title": "Third", "onto": "First" },
+    { "expect": "titles", "titles": ["Third", "First", "Second"] },
+    { "do": "relaunch" },
+    { "expect": "titles", "titles": ["Third", "First", "Second"] }
+  ]
+}

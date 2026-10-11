@@ -29,6 +29,7 @@ internal val todoList = ListSerializer(Todo.serializer())
 internal val draftList = ListSerializer(TodoDraft.serializer())
 
 internal fun JsonObject.str(key: String): String = getValue(key).jsonPrimitive.content
+internal fun JsonObject.strings(key: String): List<String> = getValue(key).jsonArray.map { it.jsonPrimitive.content }
 internal fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 internal fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
 internal fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
