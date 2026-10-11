@@ -135,6 +135,10 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "cleanTitle" -> JsonPrimitive(cleanTitle(g.str("text")))
     "coerceDrafts" -> encodeDrafts(coerceDrafts(g["value"]))
     "reconcileDrafts" -> encodeDrafts(reconcileDrafts(g.drafts("heuristic"), g.drafts("llm")))
+    "draftsFromSharedText" -> encodeDrafts(
+        draftsFromSharedText(g.getValue("texts").jsonArray.map { it.jsonPrimitive.content }, g.todos("existing")),
+    )
+    "sharedTextFromQuery" -> JsonArray(sharedTextFromQuery(g.str("search")).map(::JsonPrimitive))
     else -> error("Unknown op \"$op\"")
 }
 

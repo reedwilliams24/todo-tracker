@@ -7,6 +7,7 @@ import {
   createTodo,
   DEFAULT_PRIORITY,
   describeUndo,
+  draftsFromSharedText,
   EMPTY_TODO_FORM,
   extractDueDate,
   extractPriority,
@@ -23,6 +24,7 @@ import {
   removeFromList,
   searchTodos,
   serializeTodos,
+  sharedTextFromQuery,
   sortByPriority,
   STORAGE_KEY,
   toggleTodo,
@@ -97,6 +99,8 @@ export const OPS: Record<string, (given: Given) => unknown> = {
   cleanTitle: (g) => cleanTitle(g.text),
   coerceDrafts: (g) => coerceDrafts(g.value),
   reconcileDrafts: (g) => reconcileDrafts(g.heuristic, g.llm),
+  draftsFromSharedText: (g) => draftsFromSharedText(g.texts, g.existing),
+  sharedTextFromQuery: (g) => sharedTextFromQuery(g.search),
 };
 
 const NEW_ID = /^new-\d+$/;

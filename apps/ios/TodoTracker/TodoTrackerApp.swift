@@ -16,6 +16,7 @@ struct TodoTrackerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(model: model)
+                .onOpenURL { model.open($0) }
         }
     }
 }

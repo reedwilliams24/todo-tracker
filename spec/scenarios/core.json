@@ -74,6 +74,17 @@
       ]
     },
     {
+      "name": "quick-add-from-share",
+      "steps": [
+        { "do": "add", "title": "Call mom" },
+        { "do": "quickAdd", "texts": ["Buy milk", "buy MILK\nCall mom", "  Walk   the dog "] },
+        { "expect": "titles", "titles": ["Call mom", "Buy milk", "Walk the dog"] },
+        { "expect": "remaining", "text": "3 tasks remaining" },
+        { "do": "relaunch" },
+        { "expect": "titles", "titles": ["Call mom", "Buy milk", "Walk the dog"] }
+      ]
+    },
+    {
       "name": "search",
       "platforms": ["web"],
       "steps": [

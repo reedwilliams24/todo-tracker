@@ -1,0 +1,32 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: quick-add-from-share
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Call mom"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Call mom"
+- openLink: "todotracker://add?add=Buy%20milk&add=buy%20MILK%0ACall%20mom&add=%20%20Walk%20%20%20the%20dog%20"
+- assertVisible:
+    id: "todo-item-Call mom"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- assertVisible:
+    id: "todo-item-Walk the dog"
+- assertVisible:
+    id: "todo-remaining"
+    text: "3 tasks remaining"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "todo-item-Call mom"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- assertVisible:
+    id: "todo-item-Walk the dog"

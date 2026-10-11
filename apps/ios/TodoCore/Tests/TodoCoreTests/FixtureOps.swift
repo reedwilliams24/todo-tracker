@@ -77,6 +77,10 @@ enum FixtureOps {
             return coerceDrafts(g.raw["value"] ?? .null)
         case "reconcileDrafts":
             return reconcileDrafts(heuristic: try g.decode("heuristic"), llm: try g.decode("llm"))
+        case "draftsFromSharedText":
+            return draftsFromSharedText(try g.decode("texts"), existing: try g.decode("existing"))
+        case "sharedTextFromQuery":
+            return sharedTextFromQuery(try g.decode("search"))
         default:
             throw UnknownOp(op: op)
         }

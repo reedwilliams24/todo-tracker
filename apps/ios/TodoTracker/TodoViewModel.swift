@@ -32,6 +32,20 @@ final class TodoViewModel {
         dispatch(.prepend(addTodos([], drafts: [draft], now: now()).created))
     }
 
+    /// Adds text shared from another app as todos (spec/features/share.md).
+    func addShared(_ texts: [String]) {
+        let drafts = draftsFromSharedText(texts, existing: state.todos)
+        guard !drafts.isEmpty else { return }
+        dispatch(.prepend(addTodos([], drafts: drafts, now: now()).created))
+    }
+
+    /// Handles `todotracker://add?add=…` quick-add links.
+    func open(_ url: URL) {
+        guard url.scheme == "todotracker", url.host() == "add" else { return }
+        let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedQuery ?? ""
+        addShared(sharedTextFromQuery(query))
+    }
+
     func toggle(_ id: String) { dispatch(.toggle(id: id)) }
     func rename(_ id: String, title: String) { dispatch(.rename(id: id, title: title)) }
     func remove(_ id: String) { dispatch(.remove(ids: [id])) }

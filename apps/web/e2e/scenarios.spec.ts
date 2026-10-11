@@ -28,7 +28,12 @@ async function visibleTitles(page: Page): Promise<string[]> {
 }
 
 async function run(page: Page, step: Step) {
-  const s = step as Record<string, string> & { value?: boolean; titles?: string[]; label?: string | null };
+  const s = step as Record<string, string> & {
+    value?: boolean;
+    titles?: string[];
+    texts?: string[];
+    label?: string | null;
+  };
   switch (step.do) {
     case "add":
       await page.getByTestId(id("formTitle")).fill(s.title!);
@@ -49,6 +54,8 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("filter", s.filter)).click();
     case "search":
       return page.getByTestId(id("search")).fill(s.query!);
+    case "quickAdd":
+      return void (await page.goto(`/?${s.texts!.map((text) => `add=${encodeURIComponent(text)}`).join("&")}`));
     case "clearCompleted":
       return page.getByTestId(id("clearCompleted")).click();
     case "undo":

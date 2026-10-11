@@ -8,6 +8,7 @@ import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoState
 import com.reedwilliams24.todotracker.core.UNDO_TIMEOUT_MS
 import com.reedwilliams24.todotracker.core.addTodos
+import com.reedwilliams24.todotracker.core.draftsFromSharedText
 import com.reedwilliams24.todotracker.core.reduceTodos
 import com.reedwilliams24.todotracker.data.TodoDatabase
 import com.reedwilliams24.todotracker.data.TodoRepository
@@ -28,6 +29,7 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = TodoRepository(TodoDatabase.get(application).todos())
     private val saveLock = Mutex()
     private var undoTimer: Job? = null
+    private val pendingShares = mutableListOf<String>()
 
     private val _ui = MutableStateFlow(TodoUiState())
     val ui: StateFlow<TodoUiState> = _ui.asStateFlow()
@@ -36,10 +38,22 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val stored = repository.load()
             _ui.update { TodoUiState(reduceTodos(it.state, TodoAction.Load(stored)), hydrated = true) }
+            if (pendingShares.isNotEmpty()) addShared(pendingShares.toList().also { pendingShares.clear() })
         }
     }
 
     fun add(draft: TodoDraft) = dispatch(TodoAction.Prepend(addTodos(emptyList(), listOf(draft)).created))
+
+    /** Adds shared text as todos (spec/features/share.md), waiting for hydration so duplicates are skipped. */
+    fun addShared(texts: List<String>) {
+        if (!_ui.value.hydrated) {
+            pendingShares += texts
+            return
+        }
+        val drafts = draftsFromSharedText(texts, _ui.value.state.todos)
+        if (drafts.isNotEmpty()) dispatch(TodoAction.Prepend(addTodos(emptyList(), drafts).created))
+    }
+
     fun toggle(id: String) = dispatch(TodoAction.Toggle(id))
     fun rename(id: String, title: String) = dispatch(TodoAction.Rename(id, title))
     fun remove(id: String) = dispatch(TodoAction.Remove(listOf(id)))

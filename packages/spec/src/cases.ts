@@ -282,6 +282,43 @@ export const FEATURES: Feature[] = [
     ],
   },
   {
+    feature: "share",
+    spec: "features/share.md",
+    cases: [
+      ...[
+        ["splits lines, collapses whitespace, trims and de-duplicates", ["  Buy milk \n\nbuy MILK\ncall   mom  "]],
+        ["splits CRLF lines", ["One\r\nTwo"]],
+        ["de-duplicates across texts (title then text)", ["Buy milk", "Buy milk\nCall mom"]],
+        ["skips blank input", ["", "   \n\t "]],
+        ["skips titles over 200 characters", ["x".repeat(201), "y".repeat(200)]],
+        ["no texts", []],
+        ["caps a share at 50 todos", [Array.from({ length: 60 }, (_, i) => `Item ${i + 1}`).join("\n")]],
+      ].map(([label, texts]) => ({
+        name: `draftsFromSharedText: ${label}`,
+        op: "draftsFromSharedText",
+        given: { texts, existing: [] },
+      })),
+      {
+        name: "draftsFromSharedText: skips titles already in the list, case-insensitively",
+        op: "draftsFromSharedText",
+        given: { texts: ["buy MILK", "Walk dog", " call mom "], existing: sample },
+      },
+      ...[
+        ["reads add, then text, then title", "?title=T&add=one&text=three&add=two&filter=all"],
+        ["works without the leading ?", "add=one"],
+        ["empty query", ""],
+        ["no share params", "?filter=all"],
+        ["decodes + and percent escapes", "?add=Buy+oat%20milk&add=Caf%C3%A9%0Aline%202"],
+        ["keeps malformed escapes", "?add=100%25&add=50%zz"],
+        ["keeps empty values and keys without =", "?add=&add&add=x"],
+      ].map(([label, search]) => ({
+        name: `sharedTextFromQuery: ${label}`,
+        op: "sharedTextFromQuery",
+        given: { search },
+      })),
+    ],
+  },
+  {
     feature: "voice",
     spec: "features/voice.md",
     cases: [

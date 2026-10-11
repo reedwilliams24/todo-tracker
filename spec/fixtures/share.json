@@ -1,0 +1,378 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "share",
+  "spec": "features/share.md",
+  "cases": [
+    {
+      "name": "draftsFromSharedText: splits lines, collapses whitespace, trims and de-duplicates",
+      "op": "draftsFromSharedText",
+      "given": {
+        "texts": [
+          "  Buy milk \n\nbuy MILK\ncall   mom  "
+        ],
+        "existing": []
+      },
+      "then": [
+        {
+          "title": "Buy milk"
+        },
+        {
+          "title": "call mom"
+        }
+      ]
+    },
+    {
+      "name": "draftsFromSharedText: splits CRLF lines",
+      "op": "draftsFromSharedText",
+      "given": {
+        "texts": [
+          "One\r\nTwo"
+        ],
+        "existing": []
+      },
+      "then": [
+        {
+          "title": "One"
+        },
+        {
+          "title": "Two"
+        }
+      ]
+    },
+    {
+      "name": "draftsFromSharedText: de-duplicates across texts (title then text)",
+      "op": "draftsFromSharedText",
+      "given": {
+        "texts": [
+          "Buy milk",
+          "Buy milk\nCall mom"
+        ],
+        "existing": []
+      },
+      "then": [
+        {
+          "title": "Buy milk"
+        },
+        {
+          "title": "Call mom"
+        }
+      ]
+    },
+    {
+      "name": "draftsFromSharedText: skips blank input",
+      "op": "draftsFromSharedText",
+      "given": {
+        "texts": [
+          "",
+          "   \n\t "
+        ],
+        "existing": []
+      },
+      "then": []
+    },
+    {
+      "name": "draftsFromSharedText: skips titles over 200 characters",
+      "op": "draftsFromSharedText",
+      "given": {
+        "texts": [
+          "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+        ],
+        "existing": []
+      },
+      "then": [
+        {
+          "title": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+        }
+      ]
+    },
+    {
+      "name": "draftsFromSharedText: no texts",
+      "op": "draftsFromSharedText",
+      "given": {
+        "texts": [],
+        "existing": []
+      },
+      "then": []
+    },
+    {
+      "name": "draftsFromSharedText: caps a share at 50 todos",
+      "op": "draftsFromSharedText",
+      "given": {
+        "texts": [
+          "Item 1\nItem 2\nItem 3\nItem 4\nItem 5\nItem 6\nItem 7\nItem 8\nItem 9\nItem 10\nItem 11\nItem 12\nItem 13\nItem 14\nItem 15\nItem 16\nItem 17\nItem 18\nItem 19\nItem 20\nItem 21\nItem 22\nItem 23\nItem 24\nItem 25\nItem 26\nItem 27\nItem 28\nItem 29\nItem 30\nItem 31\nItem 32\nItem 33\nItem 34\nItem 35\nItem 36\nItem 37\nItem 38\nItem 39\nItem 40\nItem 41\nItem 42\nItem 43\nItem 44\nItem 45\nItem 46\nItem 47\nItem 48\nItem 49\nItem 50\nItem 51\nItem 52\nItem 53\nItem 54\nItem 55\nItem 56\nItem 57\nItem 58\nItem 59\nItem 60"
+        ],
+        "existing": []
+      },
+      "then": [
+        {
+          "title": "Item 1"
+        },
+        {
+          "title": "Item 2"
+        },
+        {
+          "title": "Item 3"
+        },
+        {
+          "title": "Item 4"
+        },
+        {
+          "title": "Item 5"
+        },
+        {
+          "title": "Item 6"
+        },
+        {
+          "title": "Item 7"
+        },
+        {
+          "title": "Item 8"
+        },
+        {
+          "title": "Item 9"
+        },
+        {
+          "title": "Item 10"
+        },
+        {
+          "title": "Item 11"
+        },
+        {
+          "title": "Item 12"
+        },
+        {
+          "title": "Item 13"
+        },
+        {
+          "title": "Item 14"
+        },
+        {
+          "title": "Item 15"
+        },
+        {
+          "title": "Item 16"
+        },
+        {
+          "title": "Item 17"
+        },
+        {
+          "title": "Item 18"
+        },
+        {
+          "title": "Item 19"
+        },
+        {
+          "title": "Item 20"
+        },
+        {
+          "title": "Item 21"
+        },
+        {
+          "title": "Item 22"
+        },
+        {
+          "title": "Item 23"
+        },
+        {
+          "title": "Item 24"
+        },
+        {
+          "title": "Item 25"
+        },
+        {
+          "title": "Item 26"
+        },
+        {
+          "title": "Item 27"
+        },
+        {
+          "title": "Item 28"
+        },
+        {
+          "title": "Item 29"
+        },
+        {
+          "title": "Item 30"
+        },
+        {
+          "title": "Item 31"
+        },
+        {
+          "title": "Item 32"
+        },
+        {
+          "title": "Item 33"
+        },
+        {
+          "title": "Item 34"
+        },
+        {
+          "title": "Item 35"
+        },
+        {
+          "title": "Item 36"
+        },
+        {
+          "title": "Item 37"
+        },
+        {
+          "title": "Item 38"
+        },
+        {
+          "title": "Item 39"
+        },
+        {
+          "title": "Item 40"
+        },
+        {
+          "title": "Item 41"
+        },
+        {
+          "title": "Item 42"
+        },
+        {
+          "title": "Item 43"
+        },
+        {
+          "title": "Item 44"
+        },
+        {
+          "title": "Item 45"
+        },
+        {
+          "title": "Item 46"
+        },
+        {
+          "title": "Item 47"
+        },
+        {
+          "title": "Item 48"
+        },
+        {
+          "title": "Item 49"
+        },
+        {
+          "title": "Item 50"
+        }
+      ]
+    },
+    {
+      "name": "draftsFromSharedText: skips titles already in the list, case-insensitively",
+      "op": "draftsFromSharedText",
+      "given": {
+        "texts": [
+          "buy MILK",
+          "Walk dog",
+          " call mom "
+        ],
+        "existing": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": [
+        {
+          "title": "Walk dog"
+        }
+      ]
+    },
+    {
+      "name": "sharedTextFromQuery: reads add, then text, then title",
+      "op": "sharedTextFromQuery",
+      "given": {
+        "search": "?title=T&add=one&text=three&add=two&filter=all"
+      },
+      "then": [
+        "one",
+        "two",
+        "three",
+        "T"
+      ]
+    },
+    {
+      "name": "sharedTextFromQuery: works without the leading ?",
+      "op": "sharedTextFromQuery",
+      "given": {
+        "search": "add=one"
+      },
+      "then": [
+        "one"
+      ]
+    },
+    {
+      "name": "sharedTextFromQuery: empty query",
+      "op": "sharedTextFromQuery",
+      "given": {
+        "search": ""
+      },
+      "then": []
+    },
+    {
+      "name": "sharedTextFromQuery: no share params",
+      "op": "sharedTextFromQuery",
+      "given": {
+        "search": "?filter=all"
+      },
+      "then": []
+    },
+    {
+      "name": "sharedTextFromQuery: decodes + and percent escapes",
+      "op": "sharedTextFromQuery",
+      "given": {
+        "search": "?add=Buy+oat%20milk&add=Caf%C3%A9%0Aline%202"
+      },
+      "then": [
+        "Buy oat milk",
+        "Café\nline 2"
+      ]
+    },
+    {
+      "name": "sharedTextFromQuery: keeps malformed escapes",
+      "op": "sharedTextFromQuery",
+      "given": {
+        "search": "?add=100%25&add=50%zz"
+      },
+      "then": [
+        "100%",
+        "50%zz"
+      ]
+    },
+    {
+      "name": "sharedTextFromQuery: keeps empty values and keys without =",
+      "op": "sharedTextFromQuery",
+      "given": {
+        "search": "?add=&add&add=x"
+      },
+      "then": [
+        "",
+        "",
+        "x"
+      ]
+    }
+  ]
+}

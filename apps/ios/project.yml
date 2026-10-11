@@ -23,6 +23,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.reedwilliams24.todotracker
         GENERATE_INFOPLIST_FILE: YES
+        # Only the keys INFOPLIST_KEY_* can't express (the todotracker:// URL scheme); Xcode merges the rest in.
+        INFOPLIST_FILE: TodoTracker/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: Todo Tracker
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIUserInterfaceStyle: Light

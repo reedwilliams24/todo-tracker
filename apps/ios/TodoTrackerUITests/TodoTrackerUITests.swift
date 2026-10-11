@@ -29,4 +29,17 @@ final class TodoTrackerUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 3))
         XCTAssertTrue(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 5))
     }
+
+    @MainActor
+    func testQuickAddFromURL() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["todo-empty"].waitForExistence(timeout: 10))
+
+        app.open(URL(string: "todotracker://add?add=Buy%20milk&add=buy%20MILK%0ACall%20mom")!)
+        XCTAssertTrue(app.descendants(matching: .any)["todo-item-Buy milk"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["todo-item-Call mom"].exists)
+        XCTAssertEqual(app.staticTexts["todo-remaining"].label, "2 tasks remaining")
+    }
 }

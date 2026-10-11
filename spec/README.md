@@ -61,7 +61,7 @@ Swift and Kotlin load the same files; nothing is copied or regenerated per platf
 
 `scenarios/core.json` lists user flows as steps. Every platform drives its UI through the IDs in `test-ids.json` (`data-testid` on web, `accessibilityIdentifier` in SwiftUI, `Modifier.testTag` with `testTagsAsResourceId` in Compose). `{title}` placeholders take the todo's title.
 
-Actions (`do`): `add {title, priority?, dueDate?}`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `search {query}`, `clearCompleted`, `undo`, `relaunch`.
+Actions (`do`): `add {title, priority?, dueDate?}`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `search {query}`, `quickAdd {texts}` (text shared from another app: web opens `/?add=…`, mobile opens the `todotracker://add?add=…` deep link; see `features/share.md`), `clearCompleted`, `undo`, `relaunch`.
 
 Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maestro checks each is visible), `remaining {text}`, `completed {title, value}`, `undo {label | null}`.
 

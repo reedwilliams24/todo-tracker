@@ -29,12 +29,19 @@ function id(key: string, value = ""): string {
 }
 
 const q = (value: unknown) => JSON.stringify(value);
+/** Query string for a quickAdd step; web runs the same encoding in apps/web/e2e/scenarios.spec.ts. */
+const quickAddQuery = (texts: string[]) => texts.map((text) => `add=${encodeURIComponent(text)}`).join("&");
 const tap = (testId: string) => [`- tapOn:`, `    id: ${q(testId)}`];
 const visible = (testId: string, extra: string[] = []) => [`- assertVisible:`, `    id: ${q(testId)}`, ...extra];
 
 /** Maestro commands for one scenario step; mirrors apps/web/e2e/scenarios.spec.ts. */
 function maestroStep(step: Step): string[] {
-  const s = step as Record<string, string> & { value?: boolean; titles?: string[]; label?: string | null };
+  const s = step as Record<string, string> & {
+    value?: boolean;
+    titles?: string[];
+    texts?: string[];
+    label?: string | null;
+  };
   switch (step.do) {
     case "add":
       return [
@@ -61,6 +68,8 @@ function maestroStep(step: Step): string[] {
       return tap(id("filter", s.filter));
     case "search":
       return [...tap(id("search")), `- inputText: ${q(s.query)}`, "- hideKeyboard"];
+    case "quickAdd":
+      return [`- openLink: ${q(`todotracker://add?${quickAddQuery(s.texts!)}`)}`];
     case "clearCompleted":
       return tap(id("clearCompleted"));
     case "undo":
