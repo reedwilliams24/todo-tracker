@@ -45,6 +45,8 @@ export const TEST_IDS = {
   statsLongest: "stat-longest",
   statsToggle: "stats-toggle",
   statsTotal: "stat-total",
+  themeOption: (theme: string) => `theme-option-${theme}`,
+  themeToggle: "theme-toggle",
   undoAction: "undo-toast-action",
   undoLabel: "undo-toast-label",
   undoToast: "undo-toast",

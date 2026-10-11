@@ -77,6 +77,8 @@ async function run(page: Page, step: Step) {
       return void (await page.getByTestId(id("sort")).selectOption(s.sort!));
     case "submit":
       return page.getByTestId(id("formSubmit")).click();
+    case "theme":
+      return page.getByTestId(id("themeOption", s.theme)).click();
     case "toggle":
       return page.getByTestId(id("itemToggle", s.title!)).click();
     case "type":
@@ -113,6 +115,11 @@ async function run(page: Page, step: Step) {
       await expect(page.getByTestId(id("statsTotal"))).toHaveText(s.total!);
       await expect(page.getByTestId(id("statsCurrent"))).toHaveText(s.current!);
       return expect(page.getByTestId(id("statsLongest"))).toHaveText(s.longest!);
+    case "theme":
+      await expect(page.getByTestId(id("themeOption", s.theme))).toHaveAttribute("aria-checked", "true");
+      if (s.theme === "dark") await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+      if (s.theme === "light") await expect(page.locator("html")).not.toHaveClass(/\bdark\b/);
+      return;
     case "titles":
       if (s.titles!.length === 0) return expect(page.getByTestId(id("empty"))).toBeVisible();
       return expect.poll(() => visibleTitles(page)).toEqual(s.titles);

@@ -44,6 +44,8 @@ enum TestID {
     static let statsLongest = "stat-longest"
     static let statsToggle = "stats-toggle"
     static let statsTotal = "stat-total"
+    static func themeOption(_ theme: ThemePreference) -> String { "theme-option-\(theme.rawValue)" }
+    static let themeToggle = "theme-toggle"
     static let undoAction = "undo-toast-action"
     static let undoLabel = "undo-toast-label"
     static let undoToast = "undo-toast"

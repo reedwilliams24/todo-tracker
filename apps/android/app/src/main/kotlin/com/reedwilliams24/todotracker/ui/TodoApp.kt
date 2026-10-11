@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -79,7 +80,9 @@ import com.reedwilliams24.todotracker.core.REMINDER_OFFSETS
 import com.reedwilliams24.todotracker.core.ReminderOffset
 import com.reedwilliams24.todotracker.core.RECURRENCES
 import com.reedwilliams24.todotracker.core.Recurrence
+import com.reedwilliams24.todotracker.core.THEME_PREFERENCES
 import com.reedwilliams24.todotracker.core.TestIds
+import com.reedwilliams24.todotracker.core.ThemePreference
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoFilter
@@ -101,6 +104,7 @@ import com.reedwilliams24.todotracker.core.sortTodos
 @Composable
 fun TodoApp(viewModel: TodoViewModel) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
+    val theme by viewModel.theme.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(TodoFilter.ALL) }
     var sort by rememberSaveable { mutableStateOf(TodoSort.PRIORITY) }
     val todos = ui.state.todos
@@ -134,15 +138,22 @@ fun TodoApp(viewModel: TodoViewModel) {
                 .padding(Spacing.s4),
             verticalArrangement = Arrangement.spacedBy(Spacing.s4),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-                Text(
-                    "Todo Tracker",
-                    fontSize = FontSize.xl2,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Palette.foreground,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                    Text(
+                        "Todo Tracker",
+                        fontSize = FontSize.xl2,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Palette.foreground,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                    Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
+                }
+                ThemeToggle(theme, onSelect = viewModel::setTheme)
             }
 
             val context = LocalContext.current
@@ -520,6 +531,32 @@ private fun StatValue(label: String, value: String, testId: String, modifier: Mo
 }
 
 @Composable
+private fun ThemeToggle(preference: ThemePreference, onSelect: (ThemePreference) -> Unit) {
+    Row(
+        Modifier
+            .clip(RoundedCornerShape(Radius.md))
+            .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
+            .selectableGroup()
+            .semantics { contentDescription = "Theme" }
+            .testTag(TestIds.themeToggle),
+    ) {
+        THEME_PREFERENCES.forEach { option ->
+            val selected = option == preference
+            Text(
+                option.label,
+                fontSize = FontSize.xs,
+                color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
+                modifier = Modifier
+                    .background(if (selected) Palette.foreground else Color.Transparent)
+                    .selectable(selected = selected, role = Role.Tab) { onSelect(option) }
+                    .testTag(TestIds.themeOption(option.key))
+                    .padding(horizontal = Spacing.s2_5, vertical = Spacing.s1),
+            )
+        }
+    }
+}
+
+@Composable
 private fun EmptyText(text: String, modifier: Modifier) {
     Text(
         text,
@@ -530,7 +567,8 @@ private fun EmptyText(text: String, modifier: Modifier) {
     )
 }
 
-private val inputStyle = TextStyle(fontSize = FontSize.base, color = Palette.foreground)
+@Composable
+private fun inputStyle() = TextStyle(fontSize = FontSize.base, color = Palette.foreground)
 
 @Composable
 private fun Field(
@@ -538,7 +576,7 @@ private fun Field(
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = inputStyle,
+    style: TextStyle = inputStyle(),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
@@ -630,7 +668,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                 value = dueDate,
                 onValueChange = { dueDate = it },
                 placeholder = "YYYY-MM-DD",
-                style = inputStyle.copy(fontSize = FontSize.sm),
+                style = inputStyle().copy(fontSize = FontSize.sm),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 modifier = Modifier
                     .weight(1f)

@@ -48,4 +48,28 @@ final class TodoTrackerUITests: XCTestCase {
         XCTAssertEqual(app.staticTexts["todo-due-Call mom"].label, "2030-01-15")
         XCTAssertFalse(app.staticTexts["todo-quick-add-preview-title"].exists)
     }
+
+    @MainActor
+    func testThemePersists() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting"]
+        app.launch()
+
+        let light = app.buttons["theme-option-light"]
+        let dark = app.buttons["theme-option-dark"]
+        XCTAssertTrue(light.waitForExistence(timeout: 10))
+        light.tap()
+        XCTAssertTrue(light.isSelected)
+        dark.tap()
+        XCTAssertTrue(dark.isSelected)
+        XCTAssertFalse(light.isSelected)
+
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(dark.waitForExistence(timeout: 10))
+        XCTAssertTrue(dark.isSelected)
+
+        app.buttons["theme-option-system"].tap()
+        XCTAssertTrue(app.buttons["theme-option-system"].isSelected)
+    }
 }

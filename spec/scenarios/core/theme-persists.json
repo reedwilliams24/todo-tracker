@@ -1,0 +1,13 @@
+{
+  "name": "theme-persists",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "expect": "theme", "theme": "system" },
+    { "do": "theme", "theme": "dark" },
+    { "expect": "theme", "theme": "dark" },
+    { "do": "relaunch" },
+    { "expect": "theme", "theme": "dark" },
+    { "do": "theme", "theme": "light" },
+    { "expect": "theme", "theme": "light" }
+  ]
+}

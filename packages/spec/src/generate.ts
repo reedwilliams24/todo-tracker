@@ -90,6 +90,8 @@ function maestroStep(step: Step): string[] {
       return tap(id("sortOption", s.sort));
     case "submit":
       return ["- hideKeyboard", ...tap(id("formSubmit"))];
+    case "theme":
+      return tap(id("themeOption", s.theme));
     case "toggle":
       return tap(id("itemToggle", s.title!));
     case "type":
@@ -130,6 +132,8 @@ function maestroStep(step: Step): string[] {
         ...visible(id("statsCurrent"), [`    text: ${q(s.current)}`]),
         ...visible(id("statsLongest"), [`    text: ${q(s.longest)}`]),
       ];
+    case "theme":
+      return visible(id("themeOption", s.theme), ["    selected: true"]);
     case "titles":
       return s.titles!.length === 0 ? visible(id("empty")) : s.titles!.flatMap((title) => visible(id("item", title)));
     case "undo":

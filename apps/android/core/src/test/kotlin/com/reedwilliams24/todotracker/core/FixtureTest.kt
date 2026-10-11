@@ -62,6 +62,7 @@ private val OPS: Map<String, Op> = buildMap {
         remindersOps,
         statsOps,
         storageOps,
+        themeOps,
         todoOps,
         undoOps,
         voiceOps,
