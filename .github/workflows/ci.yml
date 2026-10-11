@@ -166,6 +166,7 @@ jobs:
   # The only check the main ruleset requires. Passes when every PR job above passed or was
   # skipped by the path filter, so jobs can be added/renamed here without touching the ruleset.
   ci:
+    name: Required CI Checks
     needs: [lint, typecheck, spec, unit-tests-web, unit-tests-android, unit-tests-ios, build-web, build-android, build-ios]
     if: always()
     runs-on: ubuntu-latest

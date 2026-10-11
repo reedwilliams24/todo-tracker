@@ -101,7 +101,7 @@ pnpm build
 Platform detection: files under `apps/<platform>` count for that platform only; everything
 else (`spec/`, `packages/`, root config, workflows) counts for all three.
 
-The `main` ruleset requires exactly one check, `ci`: a gate job that passes when every PR
+The `main` ruleset requires exactly one check, `Required CI Checks` (job `ci`): a gate job that passes when every PR
 job passed or was skipped by the path filter. Jobs can be added, split or renamed in
 `ci.yml` without editing the ruleset (which the Devin app can't do; see
 `scripts/protect-main.sh` for the one-time UI steps). E2E jobs are not required: they run
