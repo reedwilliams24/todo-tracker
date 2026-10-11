@@ -7,8 +7,8 @@ enum TodoScope {
     case guest, account
 }
 
-/// REED-68 replaces the default with `guestToRows` + push.
-typealias GuestTodoMover = @MainActor (_ guest: [Todo], _ session: AuthSession) async -> Void
+/// Move on the first-sign-in prompt. Throws if the todos couldn't be moved.
+typealias GuestTodoMover = @MainActor (_ guest: [Todo], _ session: AuthSession) async throws -> Void
 
 /// Drives the TodoCore auth reducer; owns the guest/account lists' lifecycle (move, discard, wipe on sign out).
 @MainActor
@@ -23,6 +23,8 @@ final class AuthViewModel {
     private(set) var scope: TodoScope
     private(set) var resendSeconds = 0
     var mover: GuestTodoMover
+    /// The last Move failed; the prompt stays up with an error.
+    private(set) var moveFailed = false
 
     private let client: AuthClient
     private let guest: TodoStore
@@ -39,11 +41,10 @@ final class AuthViewModel {
         self.defaults = defaults
         // Read synchronously so a restored account opens straight on its cached list.
         scope = defaults.string(forKey: Self.ownerKey) == nil ? .guest : .account
-        // Keeps the guest todos on this device as the signed-in local list.
-        mover = { todos, _ in
-            let existing = account.load()
-            let ids = Set(existing.map(\.id))
-            account.save(todos.filter { !ids.contains($0.id) } + existing)
+        // Pushes the guest todos as new account rows; the account list pulls them in.
+        mover = { todos, session in
+            let rows = guestToRows(todos, userId: session.userId, now: Date())
+            if !rows.isEmpty { _ = try await client.sync.push(rows) }
         }
         listener = Task { [weak self] in
             for await change in client.changes() {
@@ -51,6 +52,10 @@ final class AuthViewModel {
             }
         }
     }
+
+    /// The todos backend the signed-in account list syncs with.
+    var syncServer: any SyncServer { client.sync }
+    var realtime: any RealtimeTransport { client.realtime }
 
     var isSheetPresented: Bool { state.step != nil }
     var movePromptText: String? { state.movePrompt.map { t("auth.move.prompt", ["count": $0]) } }
@@ -101,7 +106,15 @@ final class AuthViewModel {
     func resolveGuestTodos(move: Bool) {
         guard let signedIn = session else { return }
         Task {
-            if move { await mover(guest.load(), signedIn) }
+            moveFailed = false
+            if move {
+                do {
+                    try await mover(guest.load(), signedIn)
+                } catch {
+                    moveFailed = true
+                    return
+                }
+            }
             guest.save([])
             dispatch(.guestResolved)
             scope = .account

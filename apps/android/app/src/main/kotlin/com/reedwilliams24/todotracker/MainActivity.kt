@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reedwilliams24.todotracker.auth.AuthViewModel
+import com.reedwilliams24.todotracker.auth.TodoScope
 import com.reedwilliams24.todotracker.core.ResolvedTheme
 import com.reedwilliams24.todotracker.core.resolveTheme
 import com.reedwilliams24.todotracker.ui.AccountMenu
@@ -48,7 +49,20 @@ class MainActivity : ComponentActivity() {
                     val scope by auth.scope.collectAsStateWithLifecycle()
                     val state by auth.state.collectAsStateWithLifecycle()
                     val resendSeconds by auth.resendSeconds.collectAsStateWithLifecycle()
-                    LaunchedEffect(scope) { viewModel.useScope(scope) }
+                    val session by auth.session.collectAsStateWithLifecycle()
+                    val moveFailed by auth.moveFailed.collectAsStateWithLifecycle()
+                    val userId = session?.userId
+                    LaunchedEffect(scope, userId) {
+                        val server = auth.syncServer
+                        viewModel.useScope(
+                            scope,
+                            if (scope == TodoScope.ACCOUNT && server != null && userId != null) {
+                                SyncSetup(server, userId, auth.realtime)
+                            } else {
+                                null
+                            },
+                        )
+                    }
                     val actions = remember {
                         AuthActions(
                             open = auth::open,
@@ -65,7 +79,7 @@ class MainActivity : ComponentActivity() {
                     TodoApp(
                         viewModel,
                         account = { AccountMenu(state, actions) },
-                        banner = { AuthBanner(state, resendSeconds, actions) },
+                        banner = { AuthBanner(state, resendSeconds, actions, moveFailed) },
                     )
                 }
             }

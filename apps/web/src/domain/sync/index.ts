@@ -97,6 +97,7 @@ export function applyRemote(
     if (current && current.updatedAt > row.updated_at) continue;
     const incoming = fromRow(row);
     if (current?.reminder && incoming.dueDate) incoming.reminder = current.reminder;
+    if (current?.subtasks) incoming.subtasks = current.subtasks;
     if (index >= 0) todos[index] = incoming;
     else todos.unshift(incoming);
   }
@@ -142,4 +143,47 @@ export function rollbackPush(local: readonly Todo[], before: readonly Todo[], fa
 export function guestToRows(guest: readonly Todo[], userId: string, now: Date): TodoRow[] {
   const stamp = now.toISOString();
   return guest.map((todo) => ({ ...toRow(todo, userId), id: generateId(), updated_at: stamp }));
+}
+
+/** A local edit ready to push: the list to show and the rows to send (spec/features/sync.md#push). */
+export type PushPlan = { todos: Todo[]; rows: TodoRow[] };
+
+function sameRow(a: TodoRow, b: TodoRow): boolean {
+  return SYNC_COLUMNS.every((column) => a[column] === b[column]);
+}
+
+/**
+ * Turns a local edit (`before` -> `after`) into rows to push. Added or changed todos become rows, removed ones
+ * tombstones. A change that doesn't move `updated_at` forward (an undo) is stamped `now` so it wins LWW, and a todo
+ * brought back after its tombstone was pushed (`tombstoned`) gets a fresh id, since tombstones always win.
+ */
+export function planPush(
+  before: readonly Todo[],
+  after: readonly Todo[],
+  tombstoned: readonly string[],
+  userId: string,
+  now: Date,
+): PushPlan {
+  const stamp = now.toISOString();
+  const prior = new Map(before.map((todo) => [todo.id, todo]));
+  const deleted = new Set(tombstoned);
+  const kept = new Set(after.map((todo) => todo.id));
+  const rows: TodoRow[] = [];
+  const todos = after.map((todo) => {
+    const prev = prior.get(todo.id);
+    let next = todo;
+    if (!prev) {
+      if (deleted.has(todo.id)) next = { ...todo, id: generateId(), updatedAt: stamp };
+    } else if (sameRow(toRow(prev, userId), toRow(todo, userId))) {
+      return todo;
+    } else if (todo.updatedAt <= prev.updatedAt) {
+      next = { ...todo, updatedAt: stamp };
+    }
+    rows.push(toRow(next, userId));
+    return next;
+  });
+  for (const prev of before) {
+    if (!kept.has(prev.id)) rows.push(toRow({ ...prev, updatedAt: stamp }, userId, now));
+  }
+  return { todos, rows };
 }

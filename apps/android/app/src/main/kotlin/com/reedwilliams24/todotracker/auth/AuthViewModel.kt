@@ -9,7 +9,10 @@ import com.reedwilliams24.todotracker.core.AuthEvent
 import com.reedwilliams24.todotracker.core.AuthState
 import com.reedwilliams24.todotracker.core.AuthStatus
 import com.reedwilliams24.todotracker.core.INITIAL_AUTH_STATE
+import com.reedwilliams24.todotracker.core.RealtimeTransport
+import com.reedwilliams24.todotracker.core.SyncServer
 import com.reedwilliams24.todotracker.core.Todo
+import com.reedwilliams24.todotracker.core.guestToRows
 import com.reedwilliams24.todotracker.core.isValidCode
 import com.reedwilliams24.todotracker.core.isValidEmail
 import com.reedwilliams24.todotracker.core.normalizeCode
@@ -17,6 +20,8 @@ import com.reedwilliams24.todotracker.core.reduceAuth
 import com.reedwilliams24.todotracker.core.resendSecondsLeft
 import com.reedwilliams24.todotracker.data.TodoDatabase
 import com.reedwilliams24.todotracker.data.TodoRepository
+import java.time.Instant
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +35,7 @@ enum class TodoScope {
     ACCOUNT,
 }
 
-/** REED-68 replaces the default with `guestToRows` + push. */
+/** Move on the first-sign-in prompt. Throws if the todos couldn't be moved. */
 fun interface GuestTodoMover {
     suspend fun move(guest: List<Todo>, session: AuthSession)
 }
@@ -40,17 +45,25 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val client = AuthClient.create(application)
     private val guest = TodoRepository(TodoDatabase.get(application, TodoDatabase.GUEST).todos())
     private val account = TodoRepository(TodoDatabase.get(application, TodoDatabase.ACCOUNT).todos())
+
+    /** The todos backend; null in a guest-only build. */
+    val syncServer: SyncServer? = client?.sync
+    val realtime: RealtimeTransport? = client?.realtime
     private val prefs = application.getSharedPreferences("todo-tracker", Context.MODE_PRIVATE)
     private var verifying = false
 
     val configured = client != null
 
-    /** Keeps the guest todos on this device as the signed-in local list. */
-    var mover = GuestTodoMover { todos, _ ->
-        val existing = account.load()
-        val ids = existing.map { it.id }.toSet()
-        account.save(todos.filter { it.id !in ids } + existing)
+    /** Pushes the guest todos as new account rows (`guestToRows` + `push_todos`); the account list pulls them in. */
+    var mover = GuestTodoMover { todos, session ->
+        val rows = guestToRows(todos, session.userId, Instant.now())
+        if (rows.isNotEmpty()) syncServer?.push(rows)
     }
+
+    private val _moveFailed = MutableStateFlow(false)
+
+    /** The last Move failed; the prompt stays up with an error. */
+    val moveFailed: StateFlow<Boolean> = _moveFailed.asStateFlow()
 
     private val _state = MutableStateFlow(INITIAL_AUTH_STATE)
     val state: StateFlow<AuthState> = _state.asStateFlow()
@@ -140,7 +153,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun resolveGuestTodos(move: Boolean) {
         viewModelScope.launch {
             val signedIn = _session.value ?: return@launch
-            if (move) mover.move(guest.load(), signedIn)
+            _moveFailed.value = false
+            if (move) {
+                try {
+                    mover.move(guest.load(), signedIn)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    _moveFailed.value = true
+                    return@launch
+                }
+            }
             guest.save(emptyList())
             dispatch(AuthEvent.GuestResolved)
             _scope.value = TodoScope.ACCOUNT

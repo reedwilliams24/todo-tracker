@@ -21,6 +21,10 @@ struct AuthFailure: Error {
 
 /// Email-code sign-in and the persisted session (supabase-swift keeps it in the Keychain).
 protocol AuthClient: Sendable {
+    /// The todos backend, as the signed-in user.
+    var sync: any SyncServer { get }
+    /// The Realtime socket live updates arrive on.
+    var realtime: any RealtimeTransport { get }
     /// Emits the restored session first, then every sign-in, sign-out and expiry.
     func changes() -> AsyncStream<AuthChange>
     func sendCode(email: String) async throws
@@ -45,9 +49,13 @@ enum SupabaseConfig {
 private final class SupabaseAuthClient: AuthClient {
     private let client: SupabaseClient
     private let signingOut = SignOutFlag()
+    let sync: any SyncServer
+    let realtime: any RealtimeTransport
 
     init(client: SupabaseClient) {
         self.client = client
+        sync = SupabaseSyncServer(client: client)
+        realtime = SupabaseRealtimeTransport(client: client)
     }
 
     func changes() -> AsyncStream<AuthChange> {
@@ -88,8 +96,9 @@ private final class SupabaseAuthClient: AuthClient {
 
     func signOut() async {
         await signingOut.set()
-        // REED-68's Realtime channel closes here too; the local session is cleared even if the server call fails.
+        // The Realtime socket closes too; the local session is cleared even if the server call fails.
         await client.removeAllChannels()
+        client.realtimeV2.disconnect()
         try? await client.auth.signOut(scope: .local)
     }
 
@@ -97,6 +106,7 @@ private final class SupabaseAuthClient: AuthClient {
         _ = try await mapErrors { try await client.rpc("delete_account").execute() }
         await signingOut.set()
         await client.removeAllChannels()
+        client.realtimeV2.disconnect()
         // The server already revoked every session along with the user.
         try? await client.auth.signOut(scope: .local)
     }
@@ -122,6 +132,103 @@ private final class SupabaseAuthClient: AuthClient {
         } catch {
             throw AuthFailure(kind: .unknown)
         }
+    }
+}
+
+/// `push_todos` + the incremental pull from spec/server.md, as the signed-in user (RLS).
+private struct SupabaseSyncServer: SyncServer {
+    let client: SupabaseClient
+
+    private struct PushParams: Encodable, Sendable {
+        let rows: [TodoRow]
+    }
+
+    func push(_ rows: [TodoRow]) async throws -> [TodoRow] {
+        let data = try await client.rpc("push_todos", params: PushParams(rows: rows)).execute().data
+        return try JSONDecoder().decode([TodoRow].self, from: data)
+    }
+
+    func pull(after cursor: Int64, limit: Int) async throws -> [TodoRow] {
+        let data = try await client.from("todos").select()
+            .gt("server_seq", value: String(cursor))
+            .order("server_seq")
+            .limit(limit)
+            .execute().data
+        return try JSONDecoder().decode([TodoRow].self, from: data)
+    }
+}
+
+/// `RealtimeTransport` on supabase-swift: one socket (`client.realtimeV2`) and one channel per open.
+private struct SupabaseRealtimeTransport: RealtimeTransport {
+    let client: SupabaseClient
+
+    func refreshAuth() async throws {
+        // `session` refreshes the access token first if it has expired or is about to.
+        let session = try await client.auth.session
+        await client.realtimeV2.setAuth(session.accessToken)
+    }
+
+    func open(
+        userId: String, onRow: @escaping @MainActor @Sendable (TodoRow) -> Void,
+        onClosed: @escaping @MainActor @Sendable () -> Void
+    ) async throws -> any RealtimeChannelHandle {
+        let channel = client.channel(realtimeTopic(userId: userId).channel)
+        let changes = channel.postgresChange(
+            AnyAction.self, schema: realtimeSchema, table: realtimeTable, filter: .eq("user_id", value: userId))
+        let statuses = channel.statusChange
+        let handle = SupabaseRealtimeChannel(client: client, channel: channel)
+        do {
+            try await channel.subscribeWithError()
+        } catch {
+            await handle.close()
+            throw error
+        }
+        let rows = Task {
+            let decoder = JSONDecoder()
+            for await change in changes {
+                let row: TodoRow? =
+                    switch change {
+                    case .insert(let action): try? action.decodeRecord(as: TodoRow.self, decoder: decoder)
+                    case .update(let action): try? action.decodeRecord(as: TodoRow.self, decoder: decoder)
+                    default: nil
+                    }
+                if let row { await onRow(row) }
+            }
+        }
+        let drops = Task {
+            // `statusChange` replays the status from before the join first, so only a later change is a drop.
+            var joined = false
+            for await status in statuses {
+                if status == .subscribed {
+                    joined = true
+                } else if joined {
+                    await onClosed()
+                    return
+                }
+            }
+        }
+        handle.tasks = [rows, drops]
+        return handle
+    }
+}
+
+private final class SupabaseRealtimeChannel: RealtimeChannelHandle, @unchecked Sendable {
+    let client: SupabaseClient
+    let channel: RealtimeChannelV2
+    /// Set once, before the handle is shared.
+    var tasks: [Task<Void, Never>] = []
+
+    init(client: SupabaseClient, channel: RealtimeChannelV2) {
+        self.client = client
+        self.channel = channel
+    }
+
+    func close() async {
+        for task in tasks { task.cancel() }
+        // Drop the socket first so removal skips the `phx_leave` round trip: a backgrounding app can be
+        // suspended mid-wait, leaving the socket open and the stale channel cached for the next open.
+        client.realtimeV2.disconnect()
+        await client.removeChannel(channel)
     }
 }
 

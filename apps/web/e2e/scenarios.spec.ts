@@ -123,6 +123,15 @@ async function run(page: Page, step: Step, ctx: Ctx) {
       return page.getByTestId(id("itemSubtasksToggle", s.title!)).click();
     case "filter":
       return page.getByTestId(id("filter", s.filter)).click();
+    case "forgetLocalTodos":
+      // Drop this device's account cache and cursor (not the session), so the list has to come from the server.
+      return page.evaluate(() => {
+        for (const key of Object.keys(localStorage)) {
+          if (key.startsWith("todo-tracker:account:") || key.startsWith("todo-tracker:sync-cursor:")) {
+            if (!key.endsWith(":owner")) localStorage.removeItem(key);
+          }
+        }
+      });
     case "move":
       return page.getByTestId(id("item", s.title!)).dragTo(page.getByTestId(id("item", s.onto!)));
     case "openDeleteAccount":
@@ -245,4 +254,35 @@ test.describe("spec scenarios", () => {
       }
     });
   }
+});
+
+test.describe("realtime", () => {
+  test.skip(!AUTH, "needs the local Supabase stack (pnpm e2e:auth)");
+
+  test("an add on one device appears on another without a reload", async ({ browser }) => {
+    const a = await browser.newContext();
+    const pageA = await a.newPage();
+    await pageA.goto("/");
+    const ctx: Ctx = { emails: new Map() };
+    await run(pageA, { do: "signIn", email: "realtime@example.com" }, ctx);
+    await expect(pageA.getByTestId(id("authAccount"))).toBeVisible();
+
+    // The second device is the same account in a separate browser context (its own tab, socket and cache).
+    const b = await browser.newContext({ storageState: await a.storageState() });
+    const pageB = await b.newPage();
+    await pageB.goto("/");
+    await expect(pageB.getByTestId(id("authAccount"))).toBeVisible();
+    await expect(pageB.getByTestId(id("empty"))).toBeVisible();
+    let reloads = 0;
+    pageB.on("load", () => reloads++);
+
+    await run(pageA, { do: "type", text: "Buy milk" }, ctx);
+    await run(pageA, { do: "submit" }, ctx);
+    await expect.poll(() => visibleTitles(pageA)).toEqual(["Buy milk"]);
+
+    await expect.poll(() => visibleTitles(pageB), { timeout: 10_000 }).toEqual(["Buy milk"]);
+    expect(reloads).toBe(0);
+    await a.close();
+    await b.close();
+  });
 });

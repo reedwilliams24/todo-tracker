@@ -137,6 +137,7 @@ export const en = {
   "auth.move.prompt": "{count, plural, one {Move your # guest todo to your account?} other {Move your # guest todos to your account?}}",
   "auth.move.move": "Move",
   "auth.move.discard": "Discard",
+  "auth.move.failed": "Couldn't move your todos. Check your connection and try again.",
   "auth.account.label": "Account",
   "auth.account.signedInAs": "Signed in as {email}",
   "auth.signOut": "Sign out",
@@ -147,6 +148,7 @@ export const en = {
   "auth.delete.deleting": "Deleting…",
   "auth.expired.banner": "Your session expired. Sign in again to keep syncing.",
   "auth.expired.signIn": "Sign in again",
+  "sync.pushFailed": "Couldn't save your change. Check your connection and try again.",
 } as const;
 
 export type MessageKey = keyof typeof en;

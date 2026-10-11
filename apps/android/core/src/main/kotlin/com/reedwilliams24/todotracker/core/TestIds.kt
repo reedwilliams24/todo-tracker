@@ -18,6 +18,7 @@ object TestIds {
     const val authGuestBanner = "auth-guest-banner"
     const val authMoveConfirm = "auth-move-confirm"
     const val authMoveDiscard = "auth-move-discard"
+    const val authMoveError = "auth-move-error"
     const val authMovePrompt = "auth-move-prompt"
     const val authResend = "auth-resend"
     const val authSendCode = "auth-send-code"
@@ -101,6 +102,8 @@ object TestIds {
     fun subtaskInput(title: String) = "todo-subtask-input-$title"
 
     fun subtaskToggle(title: String) = "todo-subtask-toggle-$title"
+
+    const val syncError = "sync-error-toast"
 
     fun themeOption(theme: String) = "theme-option-$theme"
 

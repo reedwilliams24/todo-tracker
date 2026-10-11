@@ -1,0 +1,38 @@
+{
+  "name": "sign-in-syncs-todos-from-server",
+  "requires": "supabase",
+  "status": {
+    "web": "pass",
+    "ios": "missing",
+    "android": "missing"
+  },
+  "note": "Needs a configured build + local `supabase start`; native follow-up: REED-80",
+  "steps": [
+    {
+      "do": "signIn",
+      "email": "sync@example.com"
+    },
+    {
+      "expect": "account",
+      "email": "sync@example.com"
+    },
+    {
+      "do": "add",
+      "title": "Pay rent"
+    },
+    {
+      "expect": "titles",
+      "titles": ["Pay rent"]
+    },
+    {
+      "do": "forgetLocalTodos"
+    },
+    {
+      "do": "relaunch"
+    },
+    {
+      "expect": "titles",
+      "titles": ["Pay rent"]
+    }
+  ]
+}

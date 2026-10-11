@@ -20,6 +20,14 @@ final class TodoViewModel {
     private let defaults: UserDefaults
     private let now: () -> Date
     private var expiry: Task<Void, Never>?
+    /// The last signed-in edit couldn't be pushed and was rolled back.
+    private(set) var pushFailed = false
+    private var sync: SyncEngine?
+    private var syncUserId: String?
+    private var realtime: RealtimeConnection?
+    /// The live connection while the account list syncs over Realtime; nil for the guest list.
+    private(set) var connection: ConnectionState?
+    private var pushFailedTimer: Task<Void, Never>?
 
     init(
         store: TodoStore, reminders: ReminderScheduling? = nil, defaults: UserDefaults = .standard,
@@ -40,6 +48,75 @@ final class TodoViewModel {
         exitSelectMode()
         state = reduceTodos(TodoState.initial, .load(store.load()), now: now())
         reminders?.sync(state.todos)
+    }
+
+    /// Signed in: syncs the shown (account) list with `server` as `userId`, live over `realtime`; nil stops syncing
+    /// (spec/features/sync.md, spec/features/realtime.md).
+    func useSync(_ server: (any SyncServer)?, userId: String?, realtime transport: (any RealtimeTransport)? = nil) {
+        let key = server == nil ? nil : userId
+        guard key != syncUserId else { return }
+        realtime?.disconnect()
+        sync?.close()
+        syncUserId = key
+        guard let server, let userId = key else {
+            sync = nil
+            realtime = nil
+            connection = nil
+            return
+        }
+        if let transport {
+            let live = RealtimeConnection(transport: transport)
+            live.onStateChange = { [weak self] in self?.connection = $0 }
+            realtime = live
+            connection = live.state
+        } else {
+            realtime = nil
+            connection = nil
+        }
+        let defaults = defaults
+        sync = SyncEngine(
+            server: server, userId: userId,
+            loadCursor: { Int64(defaults.integer(forKey: AuthViewModel.syncCursorKey)) },
+            saveCursor: { defaults.set(Int($0), forKey: AuthViewModel.syncCursorKey) },
+            current: { [weak self] in self?.state.todos ?? [] },
+            replace: { [weak self] in self?.replaceTodos($0) },
+            onPushFailed: { [weak self] in self?.showPushFailed() }, now: now)
+        resume()
+    }
+
+    /// Foreground (`scenePhase` `.active`): reconnects, which pulls, when the list is live; else just pulls.
+    func resume() {
+        guard let realtime, let sync, let userId = syncUserId else { return pull() }
+        realtime.connect(
+            RealtimeTarget(
+                userId: userId, pull: { try await sync.pull() }, applyRemote: { sync.applyRemote($0) }))
+    }
+
+    /// Background (`scenePhase` `.background`): closes the Realtime socket.
+    func suspend() {
+        realtime?.disconnect()
+    }
+
+    /// Pulls the account list's changes since the cursor; no-op while signed out.
+    func pull() {
+        guard let sync else { return }
+        Task { try? await sync.pull() }
+    }
+
+    private func replaceTodos(_ todos: [Todo]) {
+        state = reduceTodos(state, .load(todos), now: now())
+        store.save(state.todos)
+        reminders?.sync(state.todos)
+    }
+
+    private func showPushFailed() {
+        pushFailed = true
+        pushFailedTimer?.cancel()
+        pushFailedTimer = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            self?.pushFailed = false
+        }
     }
 
     /// Asks for notification permission the first time the user picks a reminder.
@@ -115,6 +192,11 @@ final class TodoViewModel {
         if state.todos != previous.todos {
             store.save(state.todos)
             reminders?.sync(state.todos)
+            if let sync {
+                let before = previous.todos
+                let after = state.todos
+                Task { await sync.edit(before: before, after: after) }
+            }
         }
         if state.undoable != previous.undoable { scheduleExpiry() }
     }

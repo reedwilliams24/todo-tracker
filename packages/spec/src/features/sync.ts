@@ -3,6 +3,7 @@ import {
   applyRemote,
   fromRow,
   guestToRows,
+  planPush,
   rollbackPush,
   SYNC_COLUMNS,
   toRow,
@@ -53,6 +54,12 @@ const apply = (name: string, given: { local: unknown; inFlight?: unknown; rows: 
   name: `applyRemote: ${name}`,
   op: "applyRemote",
   given: { inFlight: [], cursor: CURSOR, ...given },
+});
+
+const plan = (name: string, given: { before: unknown; after: unknown; tombstoned?: string[] }) => ({
+  name: `planPush: ${name}`,
+  op: "planPush",
+  given: { tombstoned: [], userId: USER, now: NOW, ...given },
 });
 
 export const feature: Feature = {
@@ -156,6 +163,10 @@ export const feature: Feature = {
       local: [todo("a", { dueDate: "2026-02-01", reminder: "1h" })],
       rows: [row("a", { updated_at: T1 })],
     }),
+    apply("keeps the device's subtasks (they aren't synced)", {
+      local: [todo("a", { subtasks: [{ id: "s1", title: "Step", completed: false }] })],
+      rows: [row("a", { title: "Renamed", updated_at: T1 })],
+    }),
     apply("first pull from cursor 0 fills an empty list", {
       local: [],
       cursor: 0,
@@ -221,6 +232,33 @@ export const feature: Feature = {
       given: { guest: [todo("a", { title: "Buy milk" }), todo("b", { title: "Buy milk" })], userId: USER, now: NOW },
     },
     { name: "guestToRows: no guest todos", op: "guestToRows", given: { guest: [], userId: USER, now: NOW } },
+    plan("an added todo becomes a row", { before: list, after: [todo("d", { updatedAt: T2 }), ...list] }),
+    plan("an edited todo becomes a row", {
+      before: list,
+      after: [list[0], todo("b", { title: "Renamed", updatedAt: T2 }), list[2]],
+    }),
+    plan("a deleted todo becomes a tombstone stamped now", { before: list, after: [list[0], list[2]] }),
+    plan("reordering pushes nothing", { before: list, after: [list[2], list[0], list[1]] }),
+    plan("a reminder or subtask change alone pushes nothing", {
+      before: [todo("a", { dueDate: "2026-02-01" })],
+      after: [
+        todo("a", { dueDate: "2026-02-01", reminder: "1h", subtasks: [{ id: "s1", title: "Step", completed: false }] }),
+      ],
+    }),
+    plan("an undone edit is stamped now so it wins", {
+      before: [todo("a", { title: "Renamed", updatedAt: T2 })],
+      after: [todo("a", { updatedAt: T1 })],
+    }),
+    plan("a todo restored after its tombstone was pushed gets a new id", {
+      before: [list[0]],
+      after: list.slice(0, 2),
+      tombstoned: ["b"],
+    }),
+    plan("a todo that reappears without a pushed tombstone keeps its id", {
+      before: [list[0]],
+      after: list.slice(0, 2),
+    }),
+    plan("no change pushes nothing", { before: list, after: list }),
   ],
 };
 
@@ -244,4 +282,8 @@ export const ops: Ops = {
   advanceCursor: (g) => advanceCursor(g.cursor, g.rows),
   rollbackPush: (g) => rollbackPush(g.local, g.before, g.failedIds),
   guestToRows: (g) => guestToRows(g.guest, g.userId, new Date(g.now)).map(rowJson),
+  planPush: (g) => {
+    const { todos, rows } = planPush(g.before, g.after, g.tombstoned, g.userId, new Date(g.now));
+    return { todos, rows: rows.map(rowJson) };
+  },
 };

@@ -37,7 +37,10 @@ function toSession(session: Session): AuthSession {
 }
 
 /** Supabase Auth with supabase-js's default session storage (localStorage) and auto-refresh. */
-export function createSupabaseAuthClient(client: SupabaseClient): AuthClient {
+export function createSupabaseAuthClient(
+  client: SupabaseClient,
+  realtime: { disconnect(): void } | null = null,
+): AuthClient {
   let signingOut = false;
   return {
     async restore() {
@@ -56,6 +59,7 @@ export function createSupabaseAuthClient(client: SupabaseClient): AuthClient {
     async signOut() {
       signingOut = true;
       try {
+        realtime?.disconnect();
         await client.removeAllChannels();
         const { error } = await client.auth.signOut();
         // Offline or already revoked: still end the session on this device.
@@ -69,6 +73,7 @@ export function createSupabaseAuthClient(client: SupabaseClient): AuthClient {
       if (error) throw toAuthFailure(error);
       signingOut = true;
       try {
+        realtime?.disconnect();
         await client.removeAllChannels();
         // The server already revoked every session along with the user.
         await client.auth.signOut({ scope: "local" });

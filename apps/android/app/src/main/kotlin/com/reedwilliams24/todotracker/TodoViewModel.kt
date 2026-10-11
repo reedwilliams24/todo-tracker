@@ -3,13 +3,28 @@ package com.reedwilliams24.todotracker
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.viewModelScope
+import com.reedwilliams24.todotracker.auth.AuthViewModel
 import com.reedwilliams24.todotracker.auth.TodoScope
+import com.reedwilliams24.todotracker.core.ConnectionState
+import com.reedwilliams24.todotracker.core.CursorStore
+import com.reedwilliams24.todotracker.core.RealtimeConnection
+import com.reedwilliams24.todotracker.core.RealtimeTarget
+import com.reedwilliams24.todotracker.core.RealtimeTransport
 import com.reedwilliams24.todotracker.core.SORT_STORAGE_KEY
+import com.reedwilliams24.todotracker.core.SyncEngine
+import com.reedwilliams24.todotracker.core.SyncServer
 import com.reedwilliams24.todotracker.core.THEME_STORAGE_KEY
 import com.reedwilliams24.todotracker.core.ThemePreference
+import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoAction
 import com.reedwilliams24.todotracker.core.TodoDraft
+import com.reedwilliams24.todotracker.core.TodoListHost
+import com.reedwilliams24.todotracker.core.TodoRow
 import com.reedwilliams24.todotracker.core.TodoSort
 import com.reedwilliams24.todotracker.core.TodoState
 import com.reedwilliams24.todotracker.core.UNDO_TIMEOUT_MS
@@ -20,6 +35,7 @@ import com.reedwilliams24.todotracker.core.reduceTodos
 import com.reedwilliams24.todotracker.data.TodoDatabase
 import com.reedwilliams24.todotracker.data.TodoRepository
 import com.reedwilliams24.todotracker.reminders.ReminderScheduler
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +50,16 @@ data class TodoUiState(
     val state: TodoState = TodoState(),
     val hydrated: Boolean = false,
     val sort: TodoSort = TodoSort.PRIORITY,
+    /** The last signed-in edit couldn't be pushed and was rolled back. */
+    val pushFailed: Boolean = false,
+    /** The live connection while the account list syncs over [SyncSetup.realtime]; null for the guest list. */
+    val connection: ConnectionState? = null,
 )
+
+/** Signed in: the server and user the account list syncs with, and the socket live updates arrive on. */
+data class SyncSetup(val server: SyncServer, val userId: String, val realtime: RealtimeTransport? = null)
+
+private const val PUSH_FAILED_MS = 5_000L
 
 /** Android counterpart of `useTodos`: drives the shared reducer and persists after hydration. */
 class TodoViewModel(application: Application) : AndroidViewModel(application) {
@@ -58,21 +83,127 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private var loadJob: Job? = null
+    private var setup: SyncSetup? = null
+    private var sync: SyncEngine? = null
+    private var pushFailedTimer: Job? = null
+    private var connection: RealtimeConnection? = null
+    private var connectionJob: Job? = null
+
+    private val cursorStore =
+        object : CursorStore {
+            override fun load(): Long = prefs.getLong(AuthViewModel.SYNC_CURSOR_KEY, 0L)
+
+            override fun save(cursor: Long) {
+                prefs.edit().putLong(AuthViewModel.SYNC_CURSOR_KEY, cursor).apply()
+            }
+        }
+
+    private val listHost =
+        object : TodoListHost {
+            override val current: List<Todo>
+                get() = _ui.value.state.todos
+
+            override fun replace(todos: List<Todo>) {
+                val next = reduceTodos(_ui.value.state, TodoAction.Load(todos))
+                _ui.update { it.copy(state = next) }
+                persist(next)
+                syncReminders()
+            }
+        }
+
+    // Live while in the foreground, closed in the background (spec/features/realtime.md).
+    private val foreground =
+        object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) = resume()
+
+            override fun onStop(owner: LifecycleOwner) {
+                connection?.disconnect()
+            }
+        }
 
     init {
         load()
+        ProcessLifecycleOwner.get().lifecycle.addObserver(foreground)
     }
 
-    /** Switches between the guest list and the signed-in account's local cache. */
-    fun useScope(next: TodoScope) {
-        if (next == scope && loadJob != null) return
+    override fun onCleared() {
+        ProcessLifecycleOwner.get().lifecycle.removeObserver(foreground)
+        connection?.disconnect()
+        sync?.close()
+    }
+
+    /** Switches between the guest list and the signed-in account's local cache; [next] syncs with [sync]. */
+    fun useScope(next: TodoScope, sync: SyncSetup? = null) {
+        if (next == scope && loadJob != null) {
+            if (sync != setup) startSync(sync)
+            return
+        }
         scope = next
         val name = if (next == TodoScope.ACCOUNT) TodoDatabase.ACCOUNT else TodoDatabase.GUEST
         repository = TodoRepository(TodoDatabase.get(getApplication(), name).todos())
-        load()
+        startSync(null)
+        load(sync)
     }
 
-    private fun load() {
+    /** Pulls the account list's changes since the cursor; no-op while signed out. */
+    fun pull() {
+        val engine = sync ?: return
+        if (!_ui.value.hydrated) return
+        viewModelScope.launch {
+            try {
+                engine.pull()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun startSync(next: SyncSetup?) {
+        connection?.disconnect()
+        sync?.close()
+        setup = next
+        sync = next?.let { SyncEngine(it.server, it.userId, cursorStore, listHost, ::showPushFailed) }
+        watchConnection(next?.realtime)
+        resume()
+    }
+
+    /** Foreground: reconnects (which pulls) when the list is live, else just pulls. */
+    private fun resume() {
+        val live = connection
+        val engine = sync
+        if (live == null || engine == null) return pull()
+        if (!_ui.value.hydrated) return
+        if (!ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
+        live.connect(
+            object : RealtimeTarget {
+                override val userId = setup!!.userId
+
+                override suspend fun pull() = engine.pull()
+
+                override fun applyRemote(rows: List<TodoRow>) = engine.applyRemote(rows)
+            }
+        )
+    }
+
+    private fun watchConnection(transport: RealtimeTransport?) {
+        connectionJob?.cancel()
+        connection = transport?.let { RealtimeConnection(it, viewModelScope) }
+        val live = connection ?: return _ui.update { it.copy(connection = null) }
+        connectionJob =
+            viewModelScope.launch { live.state.collect { state -> _ui.update { it.copy(connection = state) } } }
+    }
+
+    private fun showPushFailed() {
+        _ui.update { it.copy(pushFailed = true) }
+        pushFailedTimer?.cancel()
+        pushFailedTimer =
+            viewModelScope.launch {
+                delay(PUSH_FAILED_MS)
+                _ui.update { it.copy(pushFailed = false) }
+            }
+    }
+
+    private fun load(sync: SyncSetup? = null) {
         loadJob?.cancel()
         _ui.update { it.copy(hydrated = false) }
         loadJob =
@@ -80,6 +211,7 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
                 val stored = saveLock.withLock { repository.load() }
                 _ui.update { it.copy(state = reduceTodos(TodoState(), TodoAction.Load(stored)), hydrated = true) }
                 syncReminders()
+                if (sync != null) startSync(sync)
             }
     }
 
@@ -129,6 +261,7 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         if (next.todos !== before.state.todos) {
             persist(next)
             syncReminders()
+            sync?.let { engine -> viewModelScope.launch { engine.edit(before.state.todos, next.todos) } }
         }
         if (next.undoable !== before.state.undoable) scheduleUndoExpiry(next)
     }

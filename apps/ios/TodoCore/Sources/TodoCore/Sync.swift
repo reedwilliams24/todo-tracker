@@ -137,6 +137,7 @@ public func applyRemote(_ local: [Todo], inFlight: [Todo], rows: [TodoRow], curs
         if let current, current.updatedAt > row.updatedAt { continue }
         var incoming = fromRow(row)
         if let reminder = current?.reminder, incoming.dueDate != nil { incoming.reminder = reminder }
+        if let subtasks = current?.subtasks { incoming.subtasks = subtasks }
         if let index { todos[index] = incoming } else { todos.insert(incoming, at: 0) }
     }
     return todos
@@ -184,4 +185,38 @@ public func guestToRows(_ guest: [Todo], userId: String, now: Date) -> [TodoRow]
         row.updatedAt = stamp
         return row
     }
+}
+
+/// A local edit ready to push: the list to show and the rows to send (spec/features/sync.md#push).
+public struct PushPlan: Equatable, Sendable {
+    public var todos: [Todo]
+    public var rows: [TodoRow]
+}
+
+/// Turns a local edit (`before` -> `after`) into rows to push. Added or changed todos become rows, removed ones
+/// tombstones. A change that doesn't move `updated_at` forward (an undo) is stamped `now` so it wins LWW, and a todo
+/// brought back after its tombstone was pushed (`tombstoned`) gets a fresh id, since tombstones always win.
+public func planPush(_ before: [Todo], after: [Todo], tombstoned: Set<String>, userId: String, now: Date) -> PushPlan {
+    let stamp = Timestamp.iso(now)
+    let prior = Dictionary(before.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    let kept = Set(after.map(\.id))
+    var rows: [TodoRow] = []
+    let todos = after.map { todo -> Todo in
+        var next = todo
+        if let prev = prior[todo.id] {
+            if toRow(prev, userId: userId) == toRow(todo, userId: userId) { return todo }
+            if todo.updatedAt <= prev.updatedAt { next.updatedAt = stamp }
+        } else if tombstoned.contains(todo.id) {
+            next.id = generateId()
+            next.updatedAt = stamp
+        }
+        rows.append(toRow(next, userId: userId))
+        return next
+    }
+    for prev in before where !kept.contains(prev.id) {
+        var gone = prev
+        gone.updatedAt = stamp
+        rows.append(toRow(gone, userId: userId, deletedAt: now))
+    }
+    return PushPlan(todos: todos, rows: rows)
 }
