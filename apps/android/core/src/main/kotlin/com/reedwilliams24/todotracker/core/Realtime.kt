@@ -33,6 +33,40 @@ fun realtimeTopic(userId: String) = RealtimeTopic(channel = "$REALTIME_TABLE:$us
 /** Delay before reconnect attempt [attempt] (0-based): doubles from the base, capped at the max. */
 fun reconnectDelayMs(attempt: Int): Long = min(RECONNECT_MAX_MS, RECONNECT_BASE_MS shl attempt.coerceIn(0, 16))
 
+/** What the signed-in list shows about its connection. [GUEST]: the local-only guest list, which never shows one. */
+enum class ConnectionStatus(val key: String) {
+    GUEST("guest"),
+    CONNECTED("connected"),
+    RECONNECTING("reconnecting"),
+    OFFLINE("offline"),
+    EXPIRED("expired"),
+}
+
+/**
+ * The connection banner's state (spec/features/realtime.md#connection-status). [account]: the shown list is an
+ * account's (signed in, or the session expired); [online]: the device has a network; [connection]: null when there is
+ * no live connection.
+ */
+fun connectionStatus(
+    account: Boolean,
+    expired: Boolean,
+    online: Boolean,
+    connection: ConnectionState?,
+): ConnectionStatus =
+    when {
+        !account -> ConnectionStatus.GUEST
+        expired -> ConnectionStatus.EXPIRED
+        !online -> ConnectionStatus.OFFLINE
+        connection == ConnectionState.CONNECTED -> ConnectionStatus.CONNECTED
+        else -> ConnectionStatus.RECONNECTING
+    }
+
+/**
+ * Add, edit, complete, delete and voice add are allowed only on the guest list or a connected, caught-up account list.
+ */
+fun canEdit(status: ConnectionStatus): Boolean =
+    status == ConnectionStatus.GUEST || status == ConnectionStatus.CONNECTED
+
 /** A joined channel; [close] leaves it and closes the socket. */
 fun interface RealtimeChannelHandle {
     suspend fun close()

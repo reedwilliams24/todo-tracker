@@ -2,6 +2,8 @@ package com.reedwilliams24.todotracker
 
 import android.app.Application
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
@@ -54,6 +56,8 @@ data class TodoUiState(
     val pushFailed: Boolean = false,
     /** The live connection while the account list syncs over [SyncSetup.realtime]; null for the guest list. */
     val connection: ConnectionState? = null,
+    /** The device has a network (ConnectivityManager's default network). */
+    val online: Boolean = true,
 )
 
 /** Signed in: the server and user the account list syncs with, and the socket live updates arrive on. */
@@ -111,6 +115,20 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
+    private val connectivity = application.getSystemService(ConnectivityManager::class.java)
+
+    // Getting the network back reconnects now instead of waiting for the backoff (spec/features/realtime.md).
+    private val network =
+        object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                viewModelScope.launch { setOnline(true) }
+            }
+
+            override fun onLost(network: Network) {
+                viewModelScope.launch { setOnline(connectivity.activeNetwork != null) }
+            }
+        }
+
     // Live while in the foreground, closed in the background (spec/features/realtime.md).
     private val foreground =
         object : DefaultLifecycleObserver {
@@ -124,10 +142,19 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     init {
         load()
         ProcessLifecycleOwner.get().lifecycle.addObserver(foreground)
+        _ui.update { it.copy(online = connectivity.activeNetwork != null) }
+        connectivity.registerDefaultNetworkCallback(network)
+    }
+
+    private fun setOnline(online: Boolean) {
+        val regained = online && !_ui.value.online
+        _ui.update { it.copy(online = online) }
+        if (regained) resume()
     }
 
     override fun onCleared() {
         ProcessLifecycleOwner.get().lifecycle.removeObserver(foreground)
+        connectivity.unregisterNetworkCallback(network)
         connection?.disconnect()
         sync?.close()
     }

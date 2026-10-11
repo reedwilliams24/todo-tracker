@@ -10,6 +10,8 @@ struct TodoRowView: View {
     let onToggleSubtask: (String) -> Void
     let onRemoveSubtask: (String) -> Void
     var selection: Selection?
+    /// False while the list is read-only (spec/features/realtime.md#connection-status); expanding still works.
+    var editable = true
 
     struct Selection {
         let selected: Bool
@@ -104,6 +106,7 @@ struct TodoRowView: View {
             )
             .toggleStyle(CheckboxToggleStyle())
             .accessibilityLabel(toggleLabel)
+            .disabled(!editable)
             .accessibilityIdentifier(TestID.itemToggle(todo.title))
 
             VStack(alignment: .leading, spacing: 2) {
@@ -138,6 +141,7 @@ struct TodoRowView: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel(t("item.edit", ["title": todo.title]))
                     .accessibilityHint(t("item.editA11yHint"))
+                    .disabled(!editable)
                     .accessibilityIdentifier(TestID.itemTitle(todo.title))
                 }
 
@@ -227,6 +231,7 @@ struct TodoRowView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(t("item.delete", ["title": todo.title]))
+            .disabled(!editable)
             .accessibilityIdentifier(TestID.itemDelete(todo.title))
         }
     }
@@ -243,6 +248,7 @@ struct TodoRowView: View {
                     )
                     .toggleStyle(CheckboxToggleStyle(size: 16))
                     .accessibilityLabel(toggleLabel)
+                    .disabled(!editable)
                     .accessibilityIdentifier(TestID.subtaskToggle(subtask.title))
 
                     Text(subtask.title)
@@ -264,6 +270,7 @@ struct TodoRowView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(t("subtask.delete", ["title": subtask.title]))
+                    .disabled(!editable)
                     .accessibilityIdentifier(TestID.subtaskDelete(subtask.title))
                 }
                 .accessibilityElement(children: .contain)
@@ -277,6 +284,7 @@ struct TodoRowView: View {
                 .submitLabel(.done)
                 .onSubmit(submitSubtask)
                 .accessibilityLabel(t("subtasks.add.label", ["title": todo.title]))
+                .disabled(!editable)
                 .accessibilityIdentifier(TestID.subtaskInput(todo.title))
         }
         .padding(.leading, 30)

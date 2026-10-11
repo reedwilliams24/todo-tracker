@@ -24,12 +24,10 @@ struct ContentView: View {
                     Spacer(minLength: 0)
                     themePicker
                 }
-                // Own row: the header has no room for an email next to the title and theme picker.
-                if let auth, auth.state.status != .signedOut {
-                    AccountMenu(auth: auth).frame(maxWidth: .infinity, alignment: .trailing)
-                }
-                if let auth { AuthBanner(auth: auth) }
+                banners
                 TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
+                    .disabled(!editable)
+                    .opacity(editable ? 1 : 0.5)
                 toolbar
                 sortControl
                 if model.selecting { bulkBar }
@@ -59,6 +57,9 @@ struct ContentView: View {
         .overlay(alignment: .bottom) { toast }
         .animation(.easeOut(duration: 0.15), value: model.undoLabel)
         .authPresentation(auth)
+        .onChange(of: editable) { _, editable in
+            if !editable { model.leaveSelectMode() }
+        }
         .preferredColorScheme(theme.colorScheme)
     }
 
@@ -139,6 +140,7 @@ struct ContentView: View {
                     .lineLimit(1)
                     .fixedSize()
                     .foregroundStyle(Theme.foreground.opacity(0.7))
+                    .disabled(!editable)
                     .accessibilityIdentifier(TestID.selectMode)
             }
             if model.completedCount > 0, !model.selecting {
@@ -148,6 +150,7 @@ struct ContentView: View {
                     .lineLimit(1)
                     .fixedSize()
                     .foregroundStyle(Theme.foreground.opacity(0.7))
+                    .disabled(!editable)
                     .accessibilityIdentifier(TestID.clearCompleted)
             }
         }
@@ -296,12 +299,13 @@ struct ContentView: View {
                             ? TodoRowView.Selection(
                                 selected: model.selectedIds.contains(todo.id),
                                 onSelect: { model.toggleSelected(todo.id) })
-                            : nil
+                            : nil,
+                        editable: editable
                     )
                     // Long-press a row and drop it on another to move it there.
                     .draggable(todo.id)
                     .dropDestination(for: String.self) { ids, _ in
-                        guard let id = ids.first, id != todo.id else { return false }
+                        guard editable, let id = ids.first, id != todo.id else { return false }
                         model.reorder(id, onto: todo.id)
                         return true
                     }
@@ -347,6 +351,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(-8)
+                .disabled(!editable)
                 .accessibilityIdentifier(TestID.undoAction)
             }
             .padding(.horizontal, 16)
@@ -357,5 +362,27 @@ struct ContentView: View {
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(TestID.undoToast)
         }
+    }
+}
+
+extension ContentView {
+    /// Read-only state of the shown list (spec/features/realtime.md#connection-status).
+    private var status: ConnectionStatus {
+        let expired = auth?.state.status == .expired
+        return connectionStatus(
+            account: model.connection != nil || expired, expired: expired, online: model.online,
+            connection: model.connection)
+    }
+
+    private var editable: Bool { canEdit(status) }
+
+    @ViewBuilder
+    private var banners: some View {
+        // Own row: the header has no room for an email next to the title and theme picker.
+        if let auth, auth.state.status != .signedOut {
+            AccountMenu(auth: auth).frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        if let auth { AuthBanner(auth: auth) }
+        ConnectionBannerView(status: status)
     }
 }

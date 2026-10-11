@@ -1,0 +1,92 @@
+{
+  "name": "connection-banner-read-only",
+  "requires": "supabase",
+  "status": {
+    "web": "pass",
+    "ios": "missing",
+    "android": "missing"
+  },
+  "note": "Needs a configured build + local `supabase start`; native follow-up: REED-80",
+  "steps": [
+    {
+      "expect": "connectionBanner",
+      "text": null
+    },
+    {
+      "expect": "editable",
+      "value": true
+    },
+    {
+      "do": "signIn",
+      "email": "banner@example.com"
+    },
+    {
+      "expect": "account",
+      "email": "banner@example.com"
+    },
+    {
+      "do": "add",
+      "title": "Pay rent"
+    },
+    {
+      "expect": "connectionBanner",
+      "text": null
+    },
+    {
+      "do": "background"
+    },
+    {
+      "expect": "connectionBanner",
+      "text": "Reconnecting…"
+    },
+    {
+      "expect": "editable",
+      "value": false,
+      "title": "Pay rent"
+    },
+    {
+      "expect": "titles",
+      "titles": ["Pay rent"]
+    },
+    {
+      "do": "foreground"
+    },
+    {
+      "expect": "connectionBanner",
+      "text": null
+    },
+    {
+      "expect": "editable",
+      "value": true,
+      "title": "Pay rent"
+    },
+    {
+      "do": "goOffline"
+    },
+    {
+      "expect": "connectionBanner",
+      "text": "You're offline. Editing is paused."
+    },
+    {
+      "expect": "editable",
+      "value": false,
+      "title": "Pay rent"
+    },
+    {
+      "expect": "titles",
+      "titles": ["Pay rent"]
+    },
+    {
+      "do": "goOnline"
+    },
+    {
+      "expect": "connectionBanner",
+      "text": null
+    },
+    {
+      "expect": "editable",
+      "value": true,
+      "title": "Pay rent"
+    }
+  ]
+}

@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reedwilliams24.todotracker.auth.AuthViewModel
 import com.reedwilliams24.todotracker.auth.TodoScope
+import com.reedwilliams24.todotracker.core.AuthStatus
 import com.reedwilliams24.todotracker.core.ResolvedTheme
 import com.reedwilliams24.todotracker.core.resolveTheme
 import com.reedwilliams24.todotracker.ui.AccountMenu
@@ -79,6 +80,7 @@ class MainActivity : ComponentActivity() {
                         viewModel,
                         account = { AccountMenu(state, actions) },
                         banner = { AuthBanner(state, resendSeconds, actions, moveFailed) },
+                        expired = state.status == AuthStatus.EXPIRED,
                     )
                 }
             }

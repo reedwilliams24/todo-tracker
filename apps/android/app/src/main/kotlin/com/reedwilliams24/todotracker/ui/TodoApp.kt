@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -83,6 +84,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reedwilliams24.todotracker.TodoViewModel
+import com.reedwilliams24.todotracker.core.ConnectionStatus
 import com.reedwilliams24.todotracker.core.EMPTY_TODO_FORM
 import com.reedwilliams24.todotracker.core.RECURRENCES
 import com.reedwilliams24.todotracker.core.REMINDER_OFFSETS
@@ -97,7 +99,9 @@ import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoFilter
 import com.reedwilliams24.todotracker.core.TodoPriority
 import com.reedwilliams24.todotracker.core.TodoSort
+import com.reedwilliams24.todotracker.core.canEdit
 import com.reedwilliams24.todotracker.core.computeStats
+import com.reedwilliams24.todotracker.core.connectionStatus
 import com.reedwilliams24.todotracker.core.countCompleted
 import com.reedwilliams24.todotracker.core.countRemaining
 import com.reedwilliams24.todotracker.core.filterTodos
@@ -113,7 +117,13 @@ import java.time.Instant
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, banner: @Composable () -> Unit = {}) {
+fun TodoApp(
+    viewModel: TodoViewModel,
+    account: @Composable () -> Unit = {},
+    banner: @Composable () -> Unit = {},
+    /** The account's session expired: the list stays visible but read-only until the user signs in again. */
+    expired: Boolean = false,
+) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val theme by viewModel.theme.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(TodoFilter.ALL) }
@@ -128,6 +138,8 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
     var confirmingDelete by remember { mutableStateOf(false) }
     val selected = visible.filter { it.id in selectedIds }.map { it.id }
     val allVisibleSelected = visible.isNotEmpty() && selected.size == visible.size
+    val status = connectionStatus(ui.connection != null || expired, expired, ui.online, ui.connection)
+    val editable = canEdit(status)
 
     fun exitSelectMode() {
         selecting = false
@@ -147,6 +159,14 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
             items.firstOrNull { center >= it.offset && center < it.offset + it.size }
                 ?: if (center < items.first().offset) items.first() else items.last()
         return target.key as String
+    }
+
+    LaunchedEffect(editable) {
+        if (!editable) {
+            exitSelectMode()
+            draggingId = null
+            dragOffset = 0f
+        }
     }
 
     fun endDrag() {
@@ -186,6 +206,7 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
             }
             account()
             banner()
+            ConnectionBanner(status, t)
 
             val context = LocalContext.current
             val notificationPermission =
@@ -194,6 +215,7 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
                 }
             TodoForm(
                 t,
+                enabled = editable,
                 onAdd = viewModel::add,
                 onPickReminder = {
                     if (
@@ -232,7 +254,11 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
                     if (todos.isNotEmpty()) {
-                        LinkText(t(if (selecting) "select.done" else "select.enter"), TestIds.selectMode) {
+                        LinkText(
+                            t(if (selecting) "select.done" else "select.enter"),
+                            TestIds.selectMode,
+                            enabled = editable,
+                        ) {
                             if (selecting) exitSelectMode() else selecting = true
                         }
                     }
@@ -240,6 +266,7 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
                         LinkText(
                             t("list.clearCompleted", "count" to completedCount),
                             TestIds.clearCompleted,
+                            enabled = editable,
                             onClick = viewModel::clearCompleted,
                         )
                     }
@@ -324,6 +351,7 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
                                     onAddSubtask = viewModel::addSubtask,
                                     onToggleSubtask = viewModel::toggleSubtask,
                                     onRemoveSubtask = viewModel::removeSubtask,
+                                    enabled = editable,
                                     selection =
                                         if (selecting) {
                                             Selection(todo.id in selectedIds) { id ->
@@ -342,7 +370,8 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
                                                 else Modifier
                                             )
                                             .semantics { contentDescription = t("item.dragHint") }
-                                            .pointerInput(todo.id) {
+                                            .pointerInput(todo.id, editable) {
+                                                if (!editable) return@pointerInput
                                                 detectDragGesturesAfterLongPress(
                                                     onDragStart = {
                                                         draggingId = todo.id
@@ -418,7 +447,8 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
                     color = Palette.card,
                     textDecoration = TextDecoration.Underline,
                     modifier =
-                        Modifier.clickable(role = Role.Button, onClick = viewModel::undo)
+                        Modifier.alpha(if (editable) 1f else 0.5f)
+                            .clickable(enabled = editable, role = Role.Button, onClick = viewModel::undo)
                             .testTag(TestIds.undoAction)
                             .padding(Spacing.s1),
                 )
@@ -429,13 +459,44 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
 
 /** UI copy for the device's preferred locales (spec/features/localization.md). */
 @Composable
-internal fun LinkText(label: String, tag: String, onClick: () -> Unit) {
+internal fun LinkText(label: String, tag: String, enabled: Boolean = true, onClick: () -> Unit) {
     Text(
         label,
         fontSize = FontSize.sm,
-        color = Palette.foreground.copy(alpha = 0.7f),
-        modifier = Modifier.clickable(role = Role.Button, onClick = onClick).testTag(tag),
+        color = Palette.foreground.copy(alpha = if (enabled) 0.7f else 0.3f),
+        modifier = Modifier.clickable(enabled = enabled, role = Role.Button, onClick = onClick).testTag(tag),
     )
+}
+
+/** Reconnecting / offline banner for the signed-in list (spec/features/realtime.md#connection-status). */
+@Composable
+private fun ConnectionBanner(status: ConnectionStatus, t: Translator) {
+    if (status != ConnectionStatus.RECONNECTING && status != ConnectionStatus.OFFLINE) return
+    Row(
+        Modifier.fillMaxWidth()
+            .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
+            .background(Palette.card, RoundedCornerShape(Radius.md))
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
+            .testTag(TestIds.connectionBanner)
+            .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (status == ConnectionStatus.RECONNECTING) {
+            CircularProgressIndicator(Modifier.size(Spacing.s4), color = Palette.muted, strokeWidth = 2.dp)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    t("connection.reconnecting"),
+                    fontSize = FontSize.sm,
+                    fontWeight = FontWeight.Medium,
+                    color = Palette.foreground,
+                )
+                Text(t("connection.readOnly"), fontSize = FontSize.xs, color = Palette.muted)
+            }
+        } else {
+            Text(t("connection.offline"), fontSize = FontSize.sm, color = Palette.foreground)
+        }
+    }
 }
 
 @Composable
@@ -699,10 +760,12 @@ internal fun Field(
     style: TextStyle = inputStyle(),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    enabled: Boolean = true,
 ) {
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
+        enabled = enabled,
         singleLine = true,
         textStyle = style,
         cursorBrush = SolidColor(Palette.foreground),
@@ -727,10 +790,12 @@ private fun Field(
     style: TextStyle = inputStyle(),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    enabled: Boolean = true,
 ) {
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
+        enabled = enabled,
         singleLine = true,
         textStyle = style,
         cursorBrush = SolidColor(Palette.foreground),
@@ -747,7 +812,7 @@ private fun Field(
 }
 
 @Composable
-private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
+private fun TodoForm(t: Translator, enabled: Boolean, onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
@@ -758,7 +823,7 @@ private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: 
     val canAdd = isValidTitle(parsed.title) && dateOk
 
     fun submit() {
-        if (!canAdd) return
+        if (!canAdd || !enabled) return
         val draft = quickAddToDraft(parsed, priority, dueDate).copy(recurrence = Recurrence.fromKey(recurrence))
         onAdd(draft.copy(reminder = if (draft.dueDate == null) null else ReminderOffset.fromKey(reminder)))
         title = EMPTY_TODO_FORM.title
@@ -773,10 +838,12 @@ private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: 
             .clip(RoundedCornerShape(Radius.lg))
             .border(1.dp, Palette.border, RoundedCornerShape(Radius.lg))
             .background(Palette.card)
+            .alpha(if (enabled) 1f else 0.5f)
             .padding(Spacing.s3),
         verticalArrangement = Arrangement.spacedBy(Spacing.s2),
     ) {
         Field(
+            enabled = enabled,
             value = title,
             onValueChange = { title = it },
             placeholder = t("form.title.placeholder"),
@@ -804,13 +871,16 @@ private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: 
                         color = if (selected) Palette.card else Palette.foreground,
                         modifier =
                             Modifier.background(if (selected) Palette.foreground else Palette.card)
-                                .selectable(selected = selected, role = Role.RadioButton) { priority = option }
+                                .selectable(selected = selected, enabled = enabled, role = Role.RadioButton) {
+                                    priority = option
+                                }
                                 .testTag(TestIds.formPriorityOption(option.key))
                                 .padding(horizontal = Spacing.s2_5, vertical = Spacing.s1_5),
                     )
                 }
             }
             Field(
+                enabled = enabled,
                 value = dueDate,
                 onValueChange = { dueDate = it },
                 placeholder = t("form.dueDate.placeholder"),
@@ -846,7 +916,11 @@ private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: 
                     modifier =
                         Modifier.weight(1f)
                             .background(if (selected) Palette.foreground else Palette.card)
-                            .selectable(selected = selected, enabled = reminderEnabled, role = Role.RadioButton) {
+                            .selectable(
+                                selected = selected,
+                                enabled = reminderEnabled && enabled,
+                                role = Role.RadioButton,
+                            ) {
                                 reminder = key
                                 if (key.isNotEmpty()) onPickReminder()
                             }
@@ -871,7 +945,9 @@ private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: 
                     color = if (selected) Palette.card else Palette.foreground,
                     modifier =
                         Modifier.background(if (selected) Palette.foreground else Palette.card)
-                            .selectable(selected = selected, role = Role.RadioButton) { recurrence = key }
+                            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton) {
+                                recurrence = key
+                            }
                             .testTag(TestIds.formRecurrenceOption(key.ifEmpty { "none" }))
                             .padding(horizontal = Spacing.s2_5, vertical = Spacing.s1_5),
                 )
@@ -907,10 +983,10 @@ private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: 
             color = Palette.card,
             modifier =
                 Modifier.align(Alignment.End)
-                    .alpha(if (canAdd) 1f else 0.4f)
+                    .alpha(if (canAdd && enabled) 1f else 0.4f)
                     .clip(RoundedCornerShape(Radius.md))
                     .background(Palette.foreground)
-                    .clickable(enabled = canAdd, role = Role.Button) { submit() }
+                    .clickable(enabled = canAdd && enabled, role = Role.Button) { submit() }
                     .semantics { contentDescription = t("form.add.label") }
                     .testTag(TestIds.formSubmit)
                     .padding(horizontal = Spacing.s4, vertical = Spacing.s2),
@@ -928,6 +1004,7 @@ private fun TodoItem(
     onAddSubtask: (String, String) -> Unit,
     onToggleSubtask: (String, String) -> Unit,
     onRemoveSubtask: (String, String) -> Unit,
+    enabled: Boolean = true,
     selection: Selection? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -976,7 +1053,8 @@ private fun TodoItem(
                     .clip(RoundedCornerShape(Radius.sm))
                     .border(1.5.dp, Palette.foreground, RoundedCornerShape(Radius.sm))
                     .background(if (todo.completed) Palette.foreground else Palette.card)
-                    .toggleable(value = todo.completed, role = Role.Checkbox) { onToggle(todo.id) }
+                    .alpha(if (enabled) 1f else 0.4f)
+                    .toggleable(value = todo.completed, enabled = enabled, role = Role.Checkbox) { onToggle(todo.id) }
                     .semantics {
                         contentDescription =
                             t(if (todo.completed) "item.markActive" else "item.markComplete", "title" to todo.title)
@@ -1022,7 +1100,9 @@ private fun TodoItem(
                     modifier =
                         Modifier.weight(1f)
                             .alpha(if (todo.completed) 0.7f else 1f)
-                            .clickable(role = Role.Button, onClickLabel = t("item.editClickLabel")) { editing = true }
+                            .clickable(enabled = enabled, role = Role.Button, onClickLabel = t("item.editClickLabel")) {
+                                editing = true
+                            }
                             .semantics { contentDescription = t("item.edit", "title" to todo.title) }
                             .testTag(TestIds.itemTitle(todo.title)),
                 )
@@ -1117,13 +1197,14 @@ private fun TodoItem(
                 fontSize = FontSize.lg,
                 color = Palette.muted,
                 modifier =
-                    Modifier.clickable(role = Role.Button) { onRemove(todo.id) }
+                    Modifier.alpha(if (enabled) 1f else 0.4f)
+                        .clickable(enabled = enabled, role = Role.Button) { onRemove(todo.id) }
                         .semantics { contentDescription = t("item.delete", "title" to todo.title) }
                         .testTag(TestIds.itemDelete(todo.title))
                         .padding(horizontal = Spacing.s1_5, vertical = Spacing.s0_5),
             )
         }
-        if (expanded) SubtaskPanel(todo, t, onAddSubtask, onToggleSubtask, onRemoveSubtask)
+        if (expanded) SubtaskPanel(todo, t, enabled, onAddSubtask, onToggleSubtask, onRemoveSubtask)
     }
 }
 
@@ -1131,6 +1212,7 @@ private fun TodoItem(
 private fun SubtaskPanel(
     todo: Todo,
     t: Translator,
+    enabled: Boolean,
     onAdd: (String, String) -> Unit,
     onToggle: (String, String) -> Unit,
     onRemove: (String, String) -> Unit,
@@ -1155,7 +1237,10 @@ private fun SubtaskPanel(
                         .clip(RoundedCornerShape(Radius.sm))
                         .border(1.5.dp, Palette.foreground, RoundedCornerShape(Radius.sm))
                         .background(if (subtask.completed) Palette.foreground else Palette.card)
-                        .toggleable(value = subtask.completed, role = Role.Checkbox) { onToggle(todo.id, subtask.id) }
+                        .alpha(if (enabled) 1f else 0.4f)
+                        .toggleable(value = subtask.completed, enabled = enabled, role = Role.Checkbox) {
+                            onToggle(todo.id, subtask.id)
+                        }
                         .semantics {
                             contentDescription =
                                 t(
@@ -1182,7 +1267,7 @@ private fun SubtaskPanel(
                     fontSize = FontSize.base,
                     color = Palette.muted,
                     modifier =
-                        Modifier.clickable(role = Role.Button) { onRemove(todo.id, subtask.id) }
+                        Modifier.clickable(enabled = enabled, role = Role.Button) { onRemove(todo.id, subtask.id) }
                             .semantics { contentDescription = t("subtask.delete", "title" to subtask.title) }
                             .testTag(TestIds.subtaskDelete(subtask.title))
                             .padding(horizontal = Spacing.s1_5),
@@ -1190,6 +1275,7 @@ private fun SubtaskPanel(
             }
         }
         Field(
+            enabled = enabled,
             value = title,
             onValueChange = { title = it },
             placeholder = t("subtasks.add.placeholder"),
