@@ -69,6 +69,8 @@ function maestroStep(step: Step): string[] {
       ];
     case "filter":
       return tap(id("filter", s.filter));
+    case "sort":
+      return tap(id("sortOption", s.sort));
     case "search":
       return [...tap(id("search")), `- inputText: ${q(s.query)}`, "- hideKeyboard"];
     case "clearCompleted":
@@ -95,6 +97,10 @@ function maestroStep(step: Step): string[] {
       return visible(id("itemPriority", s.title!), [`    text: ${q(capitalize(s.priority!))}`]);
     case "dueDate":
       return visible(id("itemDueDate", s.title!), [`    text: ${q(s.dueDate)}`]);
+    case "overdue":
+      return step.value
+        ? visible(id("itemOverdue", s.title!))
+        : [`- assertNotVisible:`, `    id: ${q(id("itemOverdue", s.title!))}`];
     case "undo":
       return s.label === null
         ? [`- assertNotVisible:`, `    id: ${q(id("undoToast"))}`]

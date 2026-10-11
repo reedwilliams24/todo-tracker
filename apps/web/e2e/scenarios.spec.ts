@@ -56,6 +56,8 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("itemEditInput")).press("Enter");
     case "filter":
       return page.getByTestId(id("filter", s.filter)).click();
+    case "sort":
+      return void (await page.getByTestId(id("sort")).selectOption(s.sort!));
     case "search":
       return page.getByTestId(id("search")).fill(s.query!);
     case "clearCompleted":
@@ -82,6 +84,9 @@ async function run(page: Page, step: Step) {
       return expect(page.getByTestId(id("itemPriority", s.title!))).toHaveText(new RegExp(`^${s.priority}$`, "i"));
     case "dueDate":
       return expect(page.getByTestId(id("itemDueDate", s.title!))).toHaveText(s.dueDate!);
+    case "overdue":
+      if (s.value) return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeVisible();
+      return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeHidden();
     case "undo":
       if (s.label === null) return expect(page.getByTestId(id("undoToast"))).toBeHidden();
       return expect(page.getByTestId(id("undoLabel"))).toHaveText(s.label!);

@@ -17,6 +17,7 @@
     "sort-by-priority": { "web": "pass", "ios": "pass", "android": "pass" },
     "filter-and-clear-completed": { "web": "pass", "ios": "pass", "android": "pass" },
     "quick-add-shorthand": { "web": "pass", "ios": "pass", "android": "pass" },
+    "sort-by-due-date-and-overdue": { "web": "pass", "ios": "pass", "android": "pass" },
     "search": { "web": "pass", "ios": "n/a", "android": "n/a" }
   }
 }

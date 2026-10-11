@@ -34,6 +34,16 @@ enum class TodoFilter {
     }
 }
 
+enum class TodoSort {
+    PRIORITY, DUE;
+
+    val key: String get() = name.lowercase()
+
+    companion object {
+        fun fromKey(key: String): TodoSort = entries.firstOrNull { it.key == key } ?: PRIORITY
+    }
+}
+
 @Serializable
 data class TodoDraft(
     val title: String,

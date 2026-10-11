@@ -13,6 +13,8 @@ export type Todo = {
 
 export type TodoFilter = "all" | "active" | "completed";
 
+export type TodoSort = "priority" | "due";
+
 export type TodoDraft = {
   title: string;
   notes?: string;
