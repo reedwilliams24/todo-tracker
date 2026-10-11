@@ -124,12 +124,23 @@ final class AuthViewModel {
     func signOut() {
         Task {
             await client.signOut()
-            wipeAccount()
-            guest.save([])
-            session = nil
-            dispatch(.signedOut(initiated: true))
-            scope = .guest
+            endSession()
         }
+    }
+
+    /// Throws an `AuthFailure` (keeping the session) when the server call fails.
+    func deleteAccount() async throws {
+        try await client.deleteAccount()
+        endSession()
+    }
+
+    /// Leaves the device as after sign out: account cache and cursor wiped, empty guest list.
+    private func endSession() {
+        wipeAccount()
+        guest.save([])
+        session = nil
+        dispatch(.signedOut(initiated: true))
+        scope = .guest
     }
 
     private func handle(_ change: AuthChange) {

@@ -113,10 +113,16 @@ async function run(page: Page, step: Step, ctx: Ctx) {
       return page.getByTestId(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel")).click();
     case "bulkToggle":
       return page.getByTestId(id("bulkToggle")).click();
+    case "cancelDeleteAccount":
+      await page.getByTestId(id("authDeleteCancel")).click();
+      return expect(page.getByTestId(id("authDeleteDialog"))).toBeHidden();
     case "chooseGuestTodos":
       return page.getByTestId(id(s.choice === "move" ? "authMoveConfirm" : "authMoveDiscard")).click();
     case "clearCompleted":
       return page.getByTestId(id("clearCompleted")).click();
+    case "confirmDeleteAccount":
+      await page.getByTestId(id("authDeleteConfirm")).click();
+      return expect(page.getByTestId(id("authAccount"))).toBeHidden();
     case "delete":
       return page.getByTestId(id("itemDelete", s.title!)).click();
     case "deleteSubtask":
@@ -144,6 +150,10 @@ async function run(page: Page, step: Step, ctx: Ctx) {
       return page.context().setOffline(false);
     case "move":
       return page.getByTestId(id("item", s.title!)).dragTo(page.getByTestId(id("item", s.onto!)));
+    case "openDeleteAccount":
+      await page.getByTestId(id("authAccount")).click();
+      await page.getByTestId(id("authDeleteAccount")).click();
+      return expect(page.getByTestId(id("authDeleteDialog"))).toBeVisible();
     case "openStats":
       return page.getByTestId(id("statsToggle")).click();
     case "relaunch":
@@ -196,6 +206,8 @@ async function run(page: Page, step: Step, ctx: Ctx) {
     case "connectionBanner":
       if (s.text === null) return expect(page.getByTestId(id("connectionBanner"))).toBeHidden();
       return expect(page.getByTestId(id("connectionBanner"))).toContainText(s.text!);
+    case "deleteDialog":
+      return expect(page.getByTestId(id("authDeleteDialog"))).toContainText(uniqueEmail(ctx, s.email!));
     case "dueDate":
       return expect(
         page.getByTestId(id("itemDueDate", s.title!)).filter({ hasText: s.dueDate! }).first(),

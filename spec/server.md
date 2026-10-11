@@ -88,3 +88,16 @@ Email code only: `signInWithOtp({ email })` sends a 6-digit code (no link) that 
 10 minutes, and a new code can be requested after 60 s. `verifyOtp({ email, token, type: "email" })`
 returns the session. The email template is `supabase/templates/otp-code.html`, used for both the
 magic-link and the confirmation email, with the subject `Your Todo Tracker code: {{ .Token }}`.
+
+## Delete account: `rpc delete_account()`
+
+Deletes the signed-in caller's todos and their `auth.users` row, which also ends all of their
+sessions. It takes no arguments and only ever acts on `auth.uid()`, so it can't touch another
+user. Security definer, because clients can't hard-delete todos or write `auth.users`.
+
+```ts
+const { error } = await supabase.rpc("delete_account");
+```
+
+Errors: `42501` when not signed in. Calling it again with the deleted user's still-valid access
+token is a no-op. Clients then end the session locally (the server session is already gone).

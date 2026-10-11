@@ -19,6 +19,8 @@ export interface AuthClient {
   verifyCode(email: string, code: string): Promise<AuthSession>;
   /** Closes Realtime and ends the session. */
   signOut(): Promise<void>;
+  /** Deletes the user's todos and auth user on the server (`delete_account`), then ends the session like `signOut`. */
+  deleteAccount(): Promise<void>;
   /** Sign-ins, token refreshes and sign-outs after `restore`. */
   onChange(listener: (change: AuthChange) => void): () => void;
 }
@@ -62,6 +64,19 @@ export function createSupabaseAuthClient(
         const { error } = await client.auth.signOut();
         // Offline or already revoked: still end the session on this device.
         if (error) await client.auth.signOut({ scope: "local" });
+      } finally {
+        signingOut = false;
+      }
+    },
+    async deleteAccount() {
+      const { error } = await client.rpc("delete_account");
+      if (error) throw toAuthFailure(error);
+      signingOut = true;
+      try {
+        realtime?.disconnect();
+        await client.removeAllChannels();
+        // The server already revoked every session along with the user.
+        await client.auth.signOut({ scope: "local" });
       } finally {
         signingOut = false;
       }

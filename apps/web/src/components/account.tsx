@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { AUTH_CODE_LENGTH, isValidCode, normalizeCode, TEST_IDS } from "@/domain";
+import { AUTH_CODE_LENGTH, isValidCode, normalizeCode, TEST_IDS, type AuthError } from "@/domain";
 import { useT } from "@/hooks/use-t";
 import type { Auth } from "@/hooks/use-auth";
+import { toAuthFailure } from "@/lib/auth-client";
 
 const BUTTON =
   "rounded-lg border border-black/10 px-3 py-1.5 text-sm font-medium disabled:opacity-50 dark:border-white/15";
@@ -181,6 +182,7 @@ export function MoveGuestTodosPrompt({ auth }: { auth: Auth }) {
 export function AccountMenu({ auth }: { auth: Auth }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const { status, email } = auth.state;
   if (status === "signedOut") return null;
   return (
@@ -216,8 +218,77 @@ export function AccountMenu({ auth }: { auth: Auth }) {
           >
             {t("auth.signOut")}
           </button>
+          <button
+            type="button"
+            role="menuitem"
+            data-testid={TEST_IDS.authDeleteAccount}
+            className={`${BUTTON} text-red-600 dark:text-red-400`}
+            onClick={() => {
+              setOpen(false);
+              setConfirmingDelete(true);
+            }}
+          >
+            {t("auth.delete.menu")}
+          </button>
         </div>
       )}
+      {confirmingDelete && <DeleteAccountDialog auth={auth} onCancel={() => setConfirmingDelete(false)} />}
+    </div>
+  );
+}
+
+function DeleteAccountDialog({ auth, onCancel }: { auth: Auth; onCancel: () => void }) {
+  const t = useT();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<AuthError | null>(null);
+  const confirm = () => {
+    setBusy(true);
+    setError(null);
+    // On success the account menu unmounts with the session.
+    auth.deleteAccount().catch((failure: unknown) => {
+      setError(toAuthFailure(failure).kind);
+      setBusy(false);
+    });
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-account-title"
+        data-testid={TEST_IDS.authDeleteDialog}
+        className="flex max-w-sm flex-col gap-3 rounded-xl border border-black/10 bg-background p-4 shadow-lg dark:border-white/15"
+      >
+        <h2 id="delete-account-title" className="font-semibold">
+          {t("auth.delete.title")}
+        </h2>
+        <p className="text-sm opacity-80">{t("auth.delete.message", { email: auth.state.email })}</p>
+        {error && (
+          <p role="alert" data-testid={TEST_IDS.authDeleteError} className="text-sm text-red-600 dark:text-red-400">
+            {t(`auth.error.${error}`)}
+          </p>
+        )}
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            data-testid={TEST_IDS.authDeleteCancel}
+            className={BUTTON}
+            disabled={busy}
+            onClick={onCancel}
+          >
+            {t("auth.cancel")}
+          </button>
+          <button
+            type="button"
+            data-testid={TEST_IDS.authDeleteConfirm}
+            className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+            disabled={busy}
+            onClick={confirm}
+          >
+            {t(busy ? "auth.delete.deleting" : "auth.delete.confirm")}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -53,6 +53,11 @@ interface AuthClient {
 
     suspend fun signOut()
 
+    /**
+     * Deletes the user's todos and auth user on the server (`delete_account`), then ends the session like [signOut].
+     */
+    suspend fun deleteAccount()
+
     companion object {
         val configured: Boolean
             get() = BuildConfig.SUPABASE_URL.isNotBlank() && BuildConfig.SUPABASE_ANON_KEY.isNotBlank()
@@ -104,6 +109,15 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
         runCatching { client.realtime.removeAllChannels() }
         client.realtime.disconnect()
         runCatching { client.auth.signOut() }.onFailure { client.auth.clearSession() }
+    }
+
+    override suspend fun deleteAccount() {
+        mapErrors { client.postgrest.rpc("delete_account") }
+        signingOut = true
+        runCatching { client.realtime.removeAllChannels() }
+        client.realtime.disconnect()
+        // The server already revoked every session along with the user.
+        client.auth.clearSession()
     }
 
     private suspend fun <T> mapErrors(block: suspend () -> T): T =
