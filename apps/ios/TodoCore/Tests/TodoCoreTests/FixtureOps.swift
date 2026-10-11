@@ -52,12 +52,16 @@ enum FixtureOps {
             return toDateKey(try g.date("now"))
         case "countRemaining":
             return countRemaining(try g.decode("todos"))
+        case "countCompleted":
+            return countCompleted(try g.decode("todos"))
         case "addTodos":
             return addTodos(try g.decode("todos"), drafts: try g.decode("drafts"), now: try g.date("now"))
         case "removeFromList":
             return removeFromList(try g.decode("todos"), ids: try g.decode("ids"))
         case "clearCompletedInList":
             return clearCompletedInList(try g.decode("todos"))
+        case "bulkToggle":
+            return bulkToggle(try g.decode("todos"), ids: try g.decode("ids"), now: try g.date("now"))
         case "describeUndo":
             return describeUndo(try g.decode("action"), count: try g.decode("count"))
         case "isUndoExpired":
@@ -148,6 +152,7 @@ enum FixtureOps {
                 let created = addTodos([], drafts: drafts ?? [], now: date).created
                 action = .prepend(created)
             case "toggle": action = .toggle(id: try require(id))
+            case "toggleMany": action = .toggleMany(ids: try require(ids))
             case "rename": action = .rename(id: try require(id), title: try require(title))
             case "remove": action = .remove(ids: try require(ids))
             case "clearCompleted": action = .clearCompleted

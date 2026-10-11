@@ -79,6 +79,16 @@ function maestroStep(step: Step): string[] {
       return tap(id("undoAction"));
     case "relaunch":
       return ["- runFlow: relaunch.yaml"];
+    case "selectMode":
+      return tap(id("selectMode"));
+    case "select":
+      return tap(id("itemSelect", s.title!));
+    case "selectAll":
+      return tap(id("selectAll"));
+    case "bulkToggle":
+      return tap(id("bulkToggle"));
+    case "bulkDelete":
+      return [...tap(id("bulkDelete")), ...tap(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel"))];
   }
   switch (step.expect) {
     case "empty":
@@ -105,6 +115,10 @@ function maestroStep(step: Step): string[] {
       return s.label === null
         ? [`- assertNotVisible:`, `    id: ${q(id("undoToast"))}`]
         : visible(id("undoLabel"), [`    text: ${q(s.label)}`]);
+    case "selected":
+      return visible(id("selectedCount"), [`    text: ${q(s.text)}`]);
+    case "clearCompleted":
+      return visible(id("clearCompleted"), [`    text: ${q(s.text)}`]);
   }
   throw new Error(`Unknown step ${JSON.stringify(step)}`);
 }

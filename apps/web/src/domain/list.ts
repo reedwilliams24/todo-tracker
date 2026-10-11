@@ -31,3 +31,19 @@ export function removeFromList(todos: readonly Todo[], ids: readonly string[]): 
 export function clearCompletedInList(todos: readonly Todo[]): Todo[] {
   return todos.filter((todo) => !todo.completed);
 }
+
+export function countCompleted(todos: readonly Todo[]): number {
+  return todos.filter((todo) => todo.completed).length;
+}
+
+/**
+ * Completes every todo in `ids`, or reopens them all when every selected todo
+ * is already complete. Unknown ids are ignored; other todos are untouched.
+ */
+export function bulkToggle(todos: readonly Todo[], ids: readonly string[], now: Date = new Date()): Todo[] {
+  const chosen = new Set(ids);
+  const selected = todos.filter((todo) => chosen.has(todo.id));
+  if (selected.length === 0) return [...todos];
+  const complete = selected.some((todo) => !todo.completed);
+  return todos.map((todo) => (chosen.has(todo.id) && todo.completed !== complete ? toggleTodo(todo, now) : todo));
+}

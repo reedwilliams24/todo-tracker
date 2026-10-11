@@ -113,6 +113,35 @@
       ]
     },
     {
+      "name": "bulk-select",
+      "steps": [
+        { "do": "add", "title": "Buy milk" },
+        { "do": "add", "title": "Call mom" },
+        { "do": "add", "title": "Walk the dog" },
+        { "do": "selectMode" },
+        { "expect": "selected", "text": "0 selected" },
+        { "do": "select", "title": "Buy milk" },
+        { "do": "select", "title": "Call mom" },
+        { "expect": "selected", "text": "2 selected" },
+        { "do": "bulkToggle" },
+        { "expect": "completed", "title": "Buy milk", "value": true },
+        { "expect": "completed", "title": "Call mom", "value": true },
+        { "expect": "completed", "title": "Walk the dog", "value": false },
+        { "expect": "undo", "label": "Completed 2 todos" },
+        { "expect": "clearCompleted", "text": "Clear completed (2)" },
+        { "do": "selectMode" },
+        { "do": "selectAll" },
+        { "expect": "selected", "text": "3 selected" },
+        { "do": "bulkDelete", "confirm": false },
+        { "expect": "selected", "text": "3 selected" },
+        { "do": "bulkDelete", "confirm": true },
+        { "expect": "empty" },
+        { "expect": "undo", "label": "Deleted 3 todos" },
+        { "do": "undo" },
+        { "expect": "titles", "titles": ["Walk the dog", "Buy milk", "Call mom"] }
+      ]
+    },
+    {
       "name": "search",
       "platforms": ["web"],
       "steps": [

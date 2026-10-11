@@ -1,8 +1,10 @@
 import {
   addTodos,
+  bulkToggle,
   cleanTitle,
   clearCompletedInList,
   coerceDrafts,
+  countCompleted,
   countRemaining,
   createTodo,
   createTranslator,
@@ -58,6 +60,7 @@ type Given = Record<string, any>;
 type Step =
   | { action: "add"; drafts: TodoDraft[]; now: string }
   | { action: "toggle"; id: string; now: string }
+  | { action: "toggleMany"; ids: string[]; now: string }
   | { action: "rename"; id: string; title: string; now: string }
   | { action: "remove"; ids: string[]; now: string }
   | { action: "clearCompleted"; now: string }
@@ -97,9 +100,11 @@ export const OPS: Record<string, (given: Given) => unknown> = {
   isOverdue: (g) => isOverdue(g.todo, new Date(g.now)),
   toDateKey: (g) => toDateKey(new Date(g.now)),
   countRemaining: (g) => countRemaining(g.todos),
+  countCompleted: (g) => countCompleted(g.todos),
   addTodos: (g) => addTodos(g.todos, g.drafts, new Date(g.now)),
   removeFromList: (g) => removeFromList(g.todos, g.ids),
   clearCompletedInList: (g) => clearCompletedInList(g.todos),
+  bulkToggle: (g) => bulkToggle(g.todos, g.ids, new Date(g.now)),
   describeUndo: (g) => describeUndo(g.action, g.count),
   isUndoExpired: (g) =>
     isUndoExpired({ label: "", before: [], at: Date.parse(g.at) }, Date.parse(g.now), g.timeoutMs),

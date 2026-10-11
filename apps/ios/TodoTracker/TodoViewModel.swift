@@ -9,6 +9,9 @@ final class TodoViewModel {
     private(set) var state = TodoState.initial
     var filter: TodoFilter = .all
     var sort: TodoSort = .priority
+    var selecting = false
+    var selectedIds: Set<String> = []
+    var confirmingDelete = false
 
     private let store: TodoStore
     private let now: () -> Date
@@ -22,7 +25,9 @@ final class TodoViewModel {
 
     var visibleTodos: [Todo] { sortTodos(filterTodos(state.todos, filter), sort) }
     var remaining: Int { countRemaining(state.todos) }
-    var hasCompleted: Bool { state.todos.count > remaining }
+    var completedCount: Int { countCompleted(state.todos) }
+    var selected: [String] { visibleTodos.map(\.id).filter(selectedIds.contains) }
+    var allVisibleSelected: Bool { !visibleTodos.isEmpty && selected.count == visibleTodos.count }
     var remainingText: String { t("list.remaining", ["count": remaining]) }
     var undoLabel: String? { state.undoable?.label }
     var emptyText: String {
@@ -37,6 +42,34 @@ final class TodoViewModel {
     func rename(_ id: String, title: String) { dispatch(.rename(id: id, title: title)) }
     func remove(_ id: String) { dispatch(.remove(ids: [id])) }
     func clearCompleted() { dispatch(.clearCompleted) }
+
+    func toggleSelectMode() {
+        if selecting { exitSelectMode() } else { selecting = true }
+    }
+
+    func toggleSelected(_ id: String) {
+        if selectedIds.contains(id) { selectedIds.remove(id) } else { selectedIds.insert(id) }
+    }
+
+    func toggleSelectAll() {
+        selectedIds = allVisibleSelected ? [] : Set(visibleTodos.map(\.id))
+    }
+
+    func toggleSelectedComplete() {
+        dispatch(.toggleMany(ids: selected))
+        exitSelectMode()
+    }
+
+    func deleteSelected() {
+        dispatch(.remove(ids: selected))
+        exitSelectMode()
+    }
+
+    private func exitSelectMode() {
+        selecting = false
+        selectedIds = []
+        confirmingDelete = false
+    }
     func undo() { dispatch(.undo) }
 
     private func dispatch(_ action: TodoAction) {

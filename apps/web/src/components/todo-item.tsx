@@ -5,9 +5,9 @@ import { useT } from "@/hooks/use-t";
 import { isOverdue, isValidTitle, TEST_IDS, type Todo } from "@/domain";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
-  high: "bg-red-500/15 text-red-600 dark:text-red-400",
-  medium: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  low: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  high: "bg-red-500/15 text-red-700 dark:text-red-400",
+  medium: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
+  low: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
 };
 
 type TodoItemProps = {
@@ -15,9 +15,11 @@ type TodoItemProps = {
   onToggle: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onRemove: (id: string) => void;
+  /** When provided the row is in multi-select mode: the checkbox selects instead of completing. */
+  selection?: { selected: boolean; onSelect: (id: string) => void };
 };
 
-export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onRename, onRemove, selection }: TodoItemProps) {
   const t = useT();
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
@@ -46,6 +48,37 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
   }
 
   const overdue = isOverdue(todo);
+
+  if (selection) {
+    return (
+      <li
+        data-testid={TEST_IDS.item(todo.title)}
+        data-selected={selection.selected}
+        className={`flex items-center gap-3 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
+          selection.selected ? "border-foreground/60" : "border-black/10 dark:border-white/15"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={selection.selected}
+          onChange={() => selection.onSelect(todo.id)}
+          data-testid={TEST_IDS.itemSelect(todo.title)}
+          aria-label={t("select.item", { title: todo.title })}
+          className="size-4 accent-current"
+        />
+        <button
+          type="button"
+          onClick={() => selection.onSelect(todo.id)}
+          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
+        >
+          {todo.title}
+        </button>
+        <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
+          {todo.priority}
+        </span>
+      </li>
+    );
+  }
 
   return (
     <li
@@ -84,7 +117,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           data-testid={TEST_IDS.itemTitle(todo.title)}
           aria-label={t("item.edit", { title: todo.title })}
           title={t("item.editHint")}
-          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
+          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-70" : ""}`}
         >
           {todo.title}
         </button>
@@ -93,7 +126,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
       {todo.dueDate && (
         <span
           data-testid={TEST_IDS.itemDueDate(todo.title)}
-          className={`text-xs ${overdue ? "font-medium text-red-600 dark:text-red-400" : "opacity-60"}`}
+          className={`text-xs ${overdue ? "font-medium text-red-700 dark:text-red-400" : "opacity-70"}`}
           aria-label={t(overdue ? "item.overdue" : "item.due", { date: todo.dueDate })}
         >
           {overdue && <span data-testid={TEST_IDS.itemOverdue(todo.title)}>{t("item.overdueBadge")}</span>}
@@ -112,7 +145,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         onClick={() => onRemove(todo.id)}
         data-testid={TEST_IDS.itemDelete(todo.title)}
         aria-label={t("item.delete", { title: todo.title })}
-        className="rounded-lg px-2 py-1 text-sm opacity-50 transition hover:opacity-100"
+        className="rounded-lg px-2 py-1 text-sm opacity-70 transition hover:opacity-100"
       >
         ×
       </button>

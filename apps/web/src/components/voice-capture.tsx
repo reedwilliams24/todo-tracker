@@ -139,7 +139,7 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
         <div className="flex flex-wrap items-center gap-2 border-t border-black/10 pt-3 text-sm dark:border-white/15">
           <span>
             {t("voice.added", { count: lastAdd.titles.length, first: lastAdd.titles[0] ?? "" })}{" "}
-            <span className="opacity-60">({SOURCE_LABEL[lastAdd.source]})</span>
+            <span className="opacity-70">({SOURCE_LABEL[lastAdd.source]})</span>
           </span>
           <button
             type="button"
