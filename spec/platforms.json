@@ -18,7 +18,7 @@
     "filter-and-clear-completed": { "web": "pass", "ios": "pass", "android": "pass" },
     "quick-add-shorthand": { "web": "pass", "ios": "pass", "android": "pass" },
     "sort-by-due-date-and-overdue": { "web": "pass", "ios": "pass", "android": "pass" },
-    "bulk-select": { "web": "pass", "ios": "missing", "android": "pass", "ticket": "REED-7" },
+    "bulk-select": { "web": "pass", "ios": "pass", "android": "pass" },
     "search": { "web": "pass", "ios": "n/a", "android": "n/a" }
   }
 }
