@@ -52,12 +52,12 @@ jobs:
               - 'apps/ios/TodoTrackerUITests/**'
               - 'apps/ios/project.yml'
 
-  lint:
+  lint-web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: pnpm lint
+      - run: pnpm lint # ESLint
 
   lint-android:
     needs: changes
@@ -70,6 +70,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/android
       - run: ./gradlew :app:lintDebug --console=plain
+
+  lint-ios:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
+    runs-on: ubuntu-latest
+    container: ghcr.io/realm/swiftlint:0.65.1
+    defaults:
+      run:
+        working-directory: apps/ios
+    steps:
+      - uses: actions/checkout@v4
+      - run: swiftlint lint --strict --quiet # configured in apps/ios/.swiftlint.yml
 
   # ---------------------------------------------------------------- formatting (every PR)
   # Fix locally with `pnpm format` (or format:web / format:android / format:ios).
@@ -211,8 +223,9 @@ jobs:
   ci:
     name: Required CI Checks
     needs:
-      - lint
+      - lint-web
       - lint-android
+      - lint-ios
       - format-web
       - format-android
       - format-ios

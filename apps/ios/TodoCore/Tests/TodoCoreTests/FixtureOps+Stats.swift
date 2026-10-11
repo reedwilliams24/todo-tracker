@@ -5,7 +5,7 @@ import TodoCore
 extension FixtureOps {
     static var statsOps: [String: Op] {
         [
-            "statsConstants": { g in
+            "statsConstants": { _ in
                 return StatsConstants()
             },
             "computeStats": { g in

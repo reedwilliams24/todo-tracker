@@ -1,0 +1,27 @@
+# SwiftLint (`pnpm lint:ios`, CI job lint-ios) checks the code; layout is swift-format's job
+# (format-ios), so the rules that overlap with it are off.
+included:
+  - TodoCore/Package.swift
+  - TodoCore/Sources
+  - TodoCore/Tests
+  - TodoTracker
+  - TodoTrackerUITests
+disabled_rules:
+  - trailing_comma
+  - opening_brace
+  - line_length
+identifier_name:
+  # `a`/`b` comparators, `g` fixture-group closures, Tailwind-style `sm`/`md`/`lg`.
+  min_length:
+    warning: 1
+    error: 1
+type_name:
+  min_length:
+    warning: 2
+    error: 2
+cyclomatic_complexity:
+  warning: 15
+type_body_length:
+  warning: 350
+nesting:
+  type_level: 2

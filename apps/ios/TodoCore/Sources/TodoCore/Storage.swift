@@ -7,7 +7,7 @@ public func serializeTodos(_ todos: [Todo]) -> String {
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.withoutEscapingSlashes]
     let data = (try? encoder.encode(todos)) ?? Data("[]".utf8)
-    return String(decoding: data, as: UTF8.self)
+    return String(bytes: data, encoding: .utf8) ?? "[]"
 }
 
 /// Missing, empty, corrupt or non-array values load as an empty list.

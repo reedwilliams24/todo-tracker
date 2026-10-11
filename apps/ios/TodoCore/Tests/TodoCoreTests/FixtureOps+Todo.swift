@@ -4,7 +4,7 @@ import TodoCore
 extension FixtureOps {
     static var todoOps: [String: Op] {
         [
-            "constants": { g in
+            "constants": { _ in
                 return Constants()
             },
             "isValidTitle": { g in

@@ -17,6 +17,7 @@ Every product change applies to web, iOS and Android unless the ticket says othe
 ```bash
 pnpm install
 pnpm lint
+pnpm lint:ios             # SwiftLint (apps/ios/.swiftlint.yml)
 pnpm format:check        # Prettier + ktfmt + swift-format; fix with `pnpm format`
 pnpm typecheck
 pnpm test                 # web domain unit tests + the TS fixture runner (packages/spec)

@@ -4,7 +4,7 @@ import TodoCore
 extension FixtureOps {
     static var recurrenceOps: [String: Op] {
         [
-            "recurrenceConstants": { g in
+            "recurrenceConstants": { _ in
                 return RecurrenceConstants()
             },
             "nextOccurrence": { g in

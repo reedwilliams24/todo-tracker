@@ -9,6 +9,7 @@
     "dev": "pnpm --filter web dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
+    "lint:ios": "cd apps/ios && swiftlint lint --strict --quiet",
     "format": "pnpm format:web && pnpm format:android && pnpm format:ios",
     "format:check": "pnpm format:web:check && pnpm format:android:check && pnpm format:ios:check",
     "format:web": "prettier --write .",
