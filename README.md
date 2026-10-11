@@ -9,10 +9,10 @@ the same conformance fixtures in [`spec/`](spec/README.md).
 Every merge to `main` ships automatically to the platforms it touches
 ([#39](https://github.com/reedwilliams24/todo-tracker/issues/39)):
 
-| Changed paths | What deploys |
-| --- | --- |
-| `apps/web/**` only | Web → Vercel production ([`deploy-web.yml`](.github/workflows/deploy-web.yml)) |
-| Root config (`package.json`, lockfile, workspace) | Web |
+| Changed paths                                     | What deploys                                                                   |
+| ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `apps/web/**` only                                | Web → Vercel production ([`deploy-web.yml`](.github/workflows/deploy-web.yml)) |
+| Root config (`package.json`, lockfile, workspace) | Web                                                                            |
 
 - **Web:** https://todo-tracker.vercel.app <!-- replace with the production URL Vercel assigns after the first deploy -->
 - **Android / iOS:** no alpha channel yet. Build from [`apps/android`](apps/android/README.md) or [`apps/ios`](apps/ios/README.md); CI uploads a debug APK on every run.
@@ -54,11 +54,11 @@ curl -fsSL https://ollama.com/install.sh | sh
 ollama pull llama3.2:3b
 ```
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `OLLAMA_URL` | `http://127.0.0.1:11434` | Ollama endpoint |
-| `OLLAMA_MODEL` | `llama3.2:3b` | Model used for parsing |
-| `OLLAMA_TIMEOUT_MS` | `20000` | Per-request timeout before falling back |
+| Variable            | Default                  | Purpose                                 |
+| ------------------- | ------------------------ | --------------------------------------- |
+| `OLLAMA_URL`        | `http://127.0.0.1:11434` | Ollama endpoint                         |
+| `OLLAMA_MODEL`      | `llama3.2:3b`            | Model used for parsing                  |
+| `OLLAMA_TIMEOUT_MS` | `20000`                  | Per-request timeout before falling back |
 
 Speech recognition needs a Chromium-based browser; elsewhere the transcript box
 accepts typed input.
@@ -82,21 +82,29 @@ web-only for now.
 
 ```bash
 pnpm lint
+pnpm format:check   # Prettier (web, docs, config) + ktfmt (Android) + swift-format (iOS)
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
+`pnpm format` rewrites files in place; `format:web`, `format:android` and `format:ios` run one
+formatter. Kotlin uses Meta's ktfmt (kotlinlang style) through the Spotless Gradle plugin. Swift
+uses Apple's swift-format (`swift format`, part of the Swift 6 toolchain, configured in
+`.swift-format`). All three use a 120-column limit. Generated files (`spec/fixtures/`, the Maestro
+flows, `test-ids`) are excluded from Prettier because `spec:check` compares them byte-for-byte.
+
 ## CI
 
 `.github/workflows/ci.yml` runs two tiers:
 
-| Tier | Jobs | When |
-| --- | --- | --- |
-| Fast checks | `lint` (eslint, web + packages), `lint-android` (Android lint), `typecheck`, `spec` | every PR and push (`lint-android` when android files change) |
-| Unit tests | `unit-tests-web` (vitest + TS fixture runner), `unit-tests-android` (`:core:test`), `unit-tests-ios` (`swift test`) | every PR, only for the platforms the PR touches |
-| Builds | `build-web` (`next build`), `build-android` (debug APK), `build-ios` (Simulator build of the SwiftUI app, when the app target changes) | every PR, only for the platforms the PR touches |
-| E2E tests | `e2e-tests-web` (Playwright), `e2e-tests-android` (Maestro on an emulator), `e2e-tests-ios` (XCUITest + Maestro on the Simulator) | push to `main` (or `workflow_dispatch` with `e2e: true`) |
+| Tier        | Jobs                                                                                                                                   | When                                                           |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Fast checks | `lint` (eslint, web + packages), `lint-android` (Android lint), `typecheck`, `spec`                                                    | every PR and push (`lint-android` when android files change)   |
+| Formatting  | `format-web` (Prettier), `format-android` (ktfmt via Spotless), `format-ios` (swift-format, `swift:6.1.2` container)                   | every PR and push (android / ios only when their files change) |
+| Unit tests  | `unit-tests-web` (vitest + TS fixture runner), `unit-tests-android` (`:core:test`), `unit-tests-ios` (`swift test`)                    | every PR, only for the platforms the PR touches                |
+| Builds      | `build-web` (`next build`), `build-android` (debug APK), `build-ios` (Simulator build of the SwiftUI app, when the app target changes) | every PR, only for the platforms the PR touches                |
+| E2E tests   | `e2e-tests-web` (Playwright), `e2e-tests-android` (Maestro on an emulator), `e2e-tests-ios` (XCUITest + Maestro on the Simulator)      | push to `main` (or `workflow_dispatch` with `e2e: true`)       |
 
 Platform detection: files under `apps/<platform>` count for that platform only; everything
 else (`spec/`, `packages/`, root config, workflows) counts for all three.

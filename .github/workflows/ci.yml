@@ -71,6 +71,38 @@ jobs:
       - uses: ./.github/actions/android
       - run: ./gradlew :app:lintDebug --console=plain
 
+  # ---------------------------------------------------------------- formatting (every PR)
+  # Fix locally with `pnpm format` (or format:web / format:android / format:ios).
+
+  format-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm format:web:check # Prettier
+
+  format-android:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/android
+      - run: ./gradlew spotlessCheck --console=plain # ktfmt via Spotless
+
+  # Pinned to the toolchain version `pnpm format:ios` is run with, so local and CI output match.
+  format-ios:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
+    runs-on: ubuntu-latest
+    container: swift:6.1.2
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/swift-format.sh lint --strict # Apple's swift-format
+
   typecheck:
     runs-on: ubuntu-latest
     steps:
@@ -85,7 +117,6 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm spec:check
       - run: pnpm spec:parity
-
 
   # ---------------------------------------------------------------- unit tests (every PR)
 
@@ -179,7 +210,20 @@ jobs:
   # skipped by the path filter, so jobs can be added/renamed here without touching the ruleset.
   ci:
     name: Required CI Checks
-    needs: [lint, lint-android, typecheck, spec, unit-tests-web, unit-tests-android, unit-tests-ios, build-web, build-android, build-ios]
+    needs:
+      - lint
+      - lint-android
+      - format-web
+      - format-android
+      - format-ios
+      - typecheck
+      - spec
+      - unit-tests-web
+      - unit-tests-android
+      - unit-tests-ios
+      - build-web
+      - build-android
+      - build-ios
     if: always()
     runs-on: ubuntu-latest
     steps:
