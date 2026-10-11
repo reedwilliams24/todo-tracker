@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -107,6 +108,7 @@ import com.reedwilliams24.todotracker.core.isValidTitle
 import com.reedwilliams24.todotracker.core.parseQuickAdd
 import com.reedwilliams24.todotracker.core.quickAddToDraft
 import com.reedwilliams24.todotracker.core.sortTodos
+import com.reedwilliams24.todotracker.core.subtaskProgress
 import java.time.Instant
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -317,6 +319,9 @@ fun TodoApp(viewModel: TodoViewModel) {
                                     onToggle = viewModel::toggle,
                                     onRename = viewModel::rename,
                                     onRemove = viewModel::remove,
+                                    onAddSubtask = viewModel::addSubtask,
+                                    onToggleSubtask = viewModel::toggleSubtask,
+                                    onRemoveSubtask = viewModel::removeSubtask,
                                     selection =
                                         if (selecting) {
                                             Selection(todo.id in selectedIds) { id ->
@@ -901,6 +906,9 @@ private fun TodoItem(
     onToggle: (String) -> Unit,
     onRename: (String, String) -> Unit,
     onRemove: (String) -> Unit,
+    onAddSubtask: (String, String) -> Unit,
+    onToggleSubtask: (String, String) -> Unit,
+    onRemoveSubtask: (String, String) -> Unit,
     selection: Selection? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -908,6 +916,7 @@ private fun TodoItem(
         SelectableItem(todo, t, selection)
         return
     }
+    var expanded by rememberSaveable(todo.id) { mutableStateOf(false) }
     var editing by remember { mutableStateOf(false) }
     // onFocusChanged reports "unfocused" when the editor first attaches; only a real blur commits.
     var editorFocused by remember { mutableStateOf(false) }
@@ -928,7 +937,7 @@ private fun TodoItem(
         editorFocused = false
     }
 
-    Row(
+    Column(
         modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(Radius.lg))
@@ -936,136 +945,251 @@ private fun TodoItem(
             .background(Palette.card)
             .testTag(TestIds.item(todo.title))
             .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.s2_5),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s2),
     ) {
-        Box(
-            Modifier.size(Spacing.s5)
-                .clip(RoundedCornerShape(Radius.sm))
-                .border(1.5.dp, Palette.foreground, RoundedCornerShape(Radius.sm))
-                .background(if (todo.completed) Palette.foreground else Palette.card)
-                .toggleable(value = todo.completed, role = Role.Checkbox) { onToggle(todo.id) }
-                .semantics {
-                    contentDescription =
-                        t(if (todo.completed) "item.markActive" else "item.markComplete", "title" to todo.title)
-                }
-                .testTag(TestIds.itemToggle(todo.title)),
-            contentAlignment = Alignment.Center,
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2_5),
         ) {
-            if (todo.completed) Text("✓", color = Palette.card, fontSize = FontSize.xs)
-        }
-
-        if (editing) {
-            LaunchedEffect(Unit) { focus.requestFocus() }
-            Field(
-                value = draft,
-                onValueChange = { draft = it },
-                placeholder = "",
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                modifier =
-                    Modifier.weight(1f)
-                        .focusRequester(focus)
-                        .onFocusChanged { if (it.isFocused) editorFocused = true else if (editorFocused) commit() }
-                        .onPreviewKeyEvent { event ->
-                            if (event.key == Key.Enter) {
-                                focusManager.clearFocus()
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                        .semantics { contentDescription = t("item.editTitle") }
-                        .testTag(TestIds.itemEditInput)
-                        .padding(vertical = Spacing.s1),
-            )
-        } else {
-            Text(
-                todo.title,
-                fontSize = FontSize.base,
-                color = Palette.foreground,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textDecoration = if (todo.completed) TextDecoration.LineThrough else null,
-                modifier =
-                    Modifier.weight(1f)
-                        .alpha(if (todo.completed) 0.7f else 1f)
-                        .clickable(role = Role.Button, onClickLabel = t("item.editClickLabel")) { editing = true }
-                        .semantics { contentDescription = t("item.edit", "title" to todo.title) }
-                        .testTag(TestIds.itemTitle(todo.title)),
-            )
-        }
-
-        todo.dueDate?.let {
-            val color = if (overdue) Palette.danger else Palette.muted
-            Row(
-                Modifier.semantics(mergeDescendants = true) {
-                    contentDescription = t(if (overdue) "item.overdue" else "item.due", "date" to it)
-                },
-                verticalAlignment = Alignment.CenterVertically,
+            Box(
+                Modifier.size(Spacing.s5)
+                    .clip(RoundedCornerShape(Radius.sm))
+                    .border(1.5.dp, Palette.foreground, RoundedCornerShape(Radius.sm))
+                    .background(if (todo.completed) Palette.foreground else Palette.card)
+                    .toggleable(value = todo.completed, role = Role.Checkbox) { onToggle(todo.id) }
+                    .semantics {
+                        contentDescription =
+                            t(if (todo.completed) "item.markActive" else "item.markComplete", "title" to todo.title)
+                    }
+                    .testTag(TestIds.itemToggle(todo.title)),
+                contentAlignment = Alignment.Center,
             ) {
-                if (overdue) {
+                if (todo.completed) Text("✓", color = Palette.card, fontSize = FontSize.xs)
+            }
+
+            if (editing) {
+                LaunchedEffect(Unit) { focus.requestFocus() }
+                Field(
+                    value = draft,
+                    onValueChange = { draft = it },
+                    placeholder = "",
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                    modifier =
+                        Modifier.weight(1f)
+                            .focusRequester(focus)
+                            .onFocusChanged { if (it.isFocused) editorFocused = true else if (editorFocused) commit() }
+                            .onPreviewKeyEvent { event ->
+                                if (event.key == Key.Enter) {
+                                    focusManager.clearFocus()
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                            .semantics { contentDescription = t("item.editTitle") }
+                            .testTag(TestIds.itemEditInput)
+                            .padding(vertical = Spacing.s1),
+                )
+            } else {
+                Text(
+                    todo.title,
+                    fontSize = FontSize.base,
+                    color = Palette.foreground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textDecoration = if (todo.completed) TextDecoration.LineThrough else null,
+                    modifier =
+                        Modifier.weight(1f)
+                            .alpha(if (todo.completed) 0.7f else 1f)
+                            .clickable(role = Role.Button, onClickLabel = t("item.editClickLabel")) { editing = true }
+                            .semantics { contentDescription = t("item.edit", "title" to todo.title) }
+                            .testTag(TestIds.itemTitle(todo.title)),
+                )
+            }
+
+            todo.dueDate?.let {
+                val color = if (overdue) Palette.danger else Palette.muted
+                Row(
+                    Modifier.semantics(mergeDescendants = true) {
+                        contentDescription = t(if (overdue) "item.overdue" else "item.due", "date" to it)
+                    },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (overdue) {
+                        Text(
+                            t("item.overdueBadge"),
+                            fontSize = FontSize.xs,
+                            fontWeight = FontWeight.Medium,
+                            color = color,
+                            modifier = Modifier.testTag(TestIds.itemOverdue(todo.title)),
+                        )
+                    }
                     Text(
-                        t("item.overdueBadge"),
+                        it,
                         fontSize = FontSize.xs,
-                        fontWeight = FontWeight.Medium,
                         color = color,
-                        modifier = Modifier.testTag(TestIds.itemOverdue(todo.title)),
+                        modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)),
                     )
                 }
+            }
+
+            todo.reminder?.let {
                 Text(
-                    it,
+                    t("reminder.${it.key}"),
                     fontSize = FontSize.xs,
-                    color = color,
-                    modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)),
+                    color = Palette.muted,
+                    maxLines = 1,
+                    modifier =
+                        Modifier.semantics {
+                                contentDescription = t("item.reminder", "label" to t("reminder.${it.key}").lowercase())
+                            }
+                            .testTag(TestIds.itemReminder(todo.title)),
+                )
+            }
+
+            todo.recurrence?.let {
+                Text(
+                    t("item.recurrence", "label" to t("recurrence.${it.key}")),
+                    fontSize = FontSize.xs,
+                    color = Palette.muted,
+                    modifier = Modifier.testTag(TestIds.itemRecurrence(todo.title)),
+                )
+            }
+
+            val progress = subtaskProgress(todo)
+            Row(
+                Modifier.clip(CircleShape)
+                    .background(Palette.border)
+                    .clickable(role = Role.Button) { expanded = !expanded }
+                    .semantics {
+                        contentDescription =
+                            t(if (expanded) "subtasks.collapse" else "subtasks.expand", "title" to todo.title)
+                    }
+                    .testTag(TestIds.itemSubtasksToggle(todo.title))
+                    .padding(horizontal = Spacing.s2, vertical = Spacing.s0_5),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    if (progress.total > 0) progress.label else "+",
+                    fontSize = FontSize.xs,
+                    color = Palette.foreground,
+                    modifier = Modifier.testTag(TestIds.itemSubtaskProgress(todo.title)),
+                )
+                Text(if (expanded) "▾" else "▸", fontSize = FontSize.xs, color = Palette.muted)
+            }
+
+            val (badgeBg, badgeText) = Palette.priority(todo.priority)
+            Text(
+                t("priority.${todo.priority.key}"),
+                fontSize = FontSize.xs,
+                color = badgeText,
+                modifier =
+                    Modifier.clip(CircleShape)
+                        .background(badgeBg)
+                        .testTag(TestIds.itemPriority(todo.title))
+                        .padding(horizontal = Spacing.s2, vertical = Spacing.s0_5),
+            )
+
+            Text(
+                "×",
+                fontSize = FontSize.lg,
+                color = Palette.muted,
+                modifier =
+                    Modifier.clickable(role = Role.Button) { onRemove(todo.id) }
+                        .semantics { contentDescription = t("item.delete", "title" to todo.title) }
+                        .testTag(TestIds.itemDelete(todo.title))
+                        .padding(horizontal = Spacing.s1_5, vertical = Spacing.s0_5),
+            )
+        }
+        if (expanded) SubtaskPanel(todo, t, onAddSubtask, onToggleSubtask, onRemoveSubtask)
+    }
+}
+
+@Composable
+private fun SubtaskPanel(
+    todo: Todo,
+    t: Translator,
+    onAdd: (String, String) -> Unit,
+    onToggle: (String, String) -> Unit,
+    onRemove: (String, String) -> Unit,
+) {
+    var title by remember(todo.id) { mutableStateOf("") }
+
+    fun submit() {
+        if (!isValidTitle(title)) return
+        onAdd(todo.id, title)
+        title = ""
+    }
+
+    Column(Modifier.fillMaxWidth().padding(start = Spacing.s5 + Spacing.s2_5)) {
+        todo.subtasks.orEmpty().forEach { subtask ->
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag(TestIds.subtask(subtask.title)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+            ) {
+                Box(
+                    Modifier.size(Spacing.s4)
+                        .clip(RoundedCornerShape(Radius.sm))
+                        .border(1.5.dp, Palette.foreground, RoundedCornerShape(Radius.sm))
+                        .background(if (subtask.completed) Palette.foreground else Palette.card)
+                        .toggleable(value = subtask.completed, role = Role.Checkbox) { onToggle(todo.id, subtask.id) }
+                        .semantics {
+                            contentDescription =
+                                t(
+                                    if (subtask.completed) "subtask.markActive" else "subtask.markComplete",
+                                    "title" to subtask.title,
+                                )
+                        }
+                        .testTag(TestIds.subtaskToggle(subtask.title)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (subtask.completed) Text("✓", color = Palette.card, fontSize = FontSize.xs)
+                }
+                Text(
+                    subtask.title,
+                    fontSize = FontSize.sm,
+                    color = Palette.foreground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textDecoration = if (subtask.completed) TextDecoration.LineThrough else null,
+                    modifier = Modifier.weight(1f).alpha(if (subtask.completed) 0.5f else 1f),
+                )
+                Text(
+                    "×",
+                    fontSize = FontSize.base,
+                    color = Palette.muted,
+                    modifier =
+                        Modifier.clickable(role = Role.Button) { onRemove(todo.id, subtask.id) }
+                            .semantics { contentDescription = t("subtask.delete", "title" to subtask.title) }
+                            .testTag(TestIds.subtaskDelete(subtask.title))
+                            .padding(horizontal = Spacing.s1_5),
                 )
             }
         }
-
-        todo.reminder?.let {
-            Text(
-                t("reminder.${it.key}"),
-                fontSize = FontSize.xs,
-                color = Palette.muted,
-                maxLines = 1,
-                modifier =
-                    Modifier.semantics {
-                            contentDescription = t("item.reminder", "label" to t("reminder.${it.key}").lowercase())
+        Field(
+            value = title,
+            onValueChange = { title = it },
+            placeholder = t("subtasks.add.placeholder"),
+            style = inputStyle().copy(fontSize = FontSize.sm),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { submit() }),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .onPreviewKeyEvent { event ->
+                        if (event.key == Key.Enter) {
+                            submit()
+                            true
+                        } else {
+                            false
                         }
-                        .testTag(TestIds.itemReminder(todo.title)),
-            )
-        }
-
-        todo.recurrence?.let {
-            Text(
-                t("item.recurrence", "label" to t("recurrence.${it.key}")),
-                fontSize = FontSize.xs,
-                color = Palette.muted,
-                modifier = Modifier.testTag(TestIds.itemRecurrence(todo.title)),
-            )
-        }
-
-        val (badgeBg, badgeText) = Palette.priority(todo.priority)
-        Text(
-            t("priority.${todo.priority.key}"),
-            fontSize = FontSize.xs,
-            color = badgeText,
-            modifier =
-                Modifier.clip(CircleShape)
-                    .background(badgeBg)
-                    .testTag(TestIds.itemPriority(todo.title))
-                    .padding(horizontal = Spacing.s2, vertical = Spacing.s0_5),
-        )
-
-        Text(
-            "×",
-            fontSize = FontSize.lg,
-            color = Palette.muted,
-            modifier =
-                Modifier.clickable(role = Role.Button) { onRemove(todo.id) }
-                    .semantics { contentDescription = t("item.delete", "title" to todo.title) }
-                    .testTag(TestIds.itemDelete(todo.title))
-                    .padding(horizontal = Spacing.s1_5, vertical = Spacing.s0_5),
+                    }
+                    .semantics { contentDescription = t("subtasks.add.label", "title" to todo.title) }
+                    .testTag(TestIds.subtaskInput(todo.title))
+                    .padding(vertical = Spacing.s1),
         )
     }
 }

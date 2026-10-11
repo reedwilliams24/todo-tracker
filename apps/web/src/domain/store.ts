@@ -1,4 +1,13 @@
-import { bulkToggle, clearCompletedInList, moveVisibleTodo, removeFromList, renameInList, toggleInList } from "./list";
+import {
+  bulkToggle,
+  clearCompletedInList,
+  moveVisibleTodo,
+  removeFromList,
+  renameInList,
+  toggleInList,
+  updateInList,
+} from "./list";
+import { addSubtask, removeSubtask, toggleSubtaskInList } from "./subtasks";
 import type { Todo } from "./types";
 import { createUndoEntry, describeUndo, isUndoExpired, type UndoEntry } from "./undo";
 
@@ -14,6 +23,9 @@ export type TodoAction =
   | { type: "remove"; ids: string[] }
   | { type: "reorder"; visibleIds: string[]; id: string; targetId: string }
   | { type: "clearCompleted" }
+  | { type: "addSubtask"; id: string; title: string }
+  | { type: "toggleSubtask"; id: string; subtaskId: string }
+  | { type: "removeSubtask"; id: string; subtaskId: string }
   | { type: "undo" }
   | { type: "expireUndo" };
 
@@ -57,6 +69,17 @@ export function reduceTodos(state: TodoState, action: TodoAction, now: Date = ne
       if (removed === 0) return state;
       return { todos: next, undoable: snapshot(describeUndo("delete", removed)) };
     }
+    case "addSubtask":
+      return { ...state, todos: updateInList(todos, action.id, (todo) => addSubtask(todo, action.title, now)) };
+    case "toggleSubtask": {
+      const next = toggleSubtaskInList(todos, action.id, action.subtaskId, now);
+      const before = todos.find((todo) => todo.id === action.id);
+      const after = next.find((todo) => todo.id === action.id);
+      const completedParent = before && after && !before.completed && after.completed;
+      return { todos: next, undoable: completedParent ? snapshot(describeUndo("complete", 1)) : state.undoable };
+    }
+    case "removeSubtask":
+      return { ...state, todos: updateInList(todos, action.id, (todo) => removeSubtask(todo, action.subtaskId, now)) };
     case "undo":
       return state.undoable ? { todos: [...state.undoable.before], undoable: null } : state;
     case "expireUndo":

@@ -30,6 +30,8 @@ enum TestID {
     static func itemRecurrence(_ title: String) -> String { "todo-recurrence-\(title)" }
     static func itemReminder(_ title: String) -> String { "todo-reminder-\(title)" }
     static func itemSelect(_ title: String) -> String { "todo-select-item-\(title)" }
+    static func itemSubtaskProgress(_ title: String) -> String { "todo-subtasks-progress-\(title)" }
+    static func itemSubtasksToggle(_ title: String) -> String { "todo-subtasks-toggle-\(title)" }
     static func itemTitle(_ title: String) -> String { "todo-title-\(title)" }
     static func itemToggle(_ title: String) -> String { "todo-toggle-\(title)" }
     static let list = "todo-list"
@@ -46,6 +48,10 @@ enum TestID {
     static let statsLongest = "stat-longest"
     static let statsToggle = "stats-toggle"
     static let statsTotal = "stat-total"
+    static func subtask(_ title: String) -> String { "todo-subtask-\(title)" }
+    static func subtaskDelete(_ title: String) -> String { "todo-subtask-delete-\(title)" }
+    static func subtaskInput(_ title: String) -> String { "todo-subtask-input-\(title)" }
+    static func subtaskToggle(_ title: String) -> String { "todo-subtask-toggle-\(title)" }
     static func themeOption(_ theme: ThemePreference) -> String { "theme-option-\(theme.rawValue)" }
     static let themeToggle = "theme-toggle"
     static let undoAction = "undo-toast-action"

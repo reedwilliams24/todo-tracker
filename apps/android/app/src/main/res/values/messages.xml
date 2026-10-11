@@ -61,6 +61,13 @@
     <string name="item_editA11yHint">Opens the title for editing</string>
     <string name="item_editClickLabel">open the title for editing</string>
     <string name="item_delete">Delete \"%1$s\"</string>
+    <string name="subtasks_expand">Expand subtasks of \"%1$s\"</string>
+    <string name="subtasks_collapse">Collapse subtasks of \"%1$s\"</string>
+    <string name="subtasks_add_label">New subtask for \"%1$s\"</string>
+    <string name="subtasks_add_placeholder">Add a subtask and press Enter</string>
+    <string name="subtask_markComplete">Mark subtask \"%1$s\" as complete</string>
+    <string name="subtask_markActive">Mark subtask \"%1$s\" as active</string>
+    <string name="subtask_delete">Delete subtask \"%1$s\"</string>
     <string name="quickAdd_willAdd">Will add:</string>
     <string name="quickAdd_due">Due %1$s</string>
     <string name="quickAdd_priority">%1$s priority</string>

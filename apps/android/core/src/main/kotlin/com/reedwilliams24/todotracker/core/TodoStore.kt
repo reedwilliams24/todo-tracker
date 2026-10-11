@@ -21,6 +21,12 @@ sealed interface TodoAction {
 
     data object ClearCompleted : TodoAction
 
+    data class AddSubtask(val id: String, val title: String) : TodoAction
+
+    data class ToggleSubtask(val id: String, val subtaskId: String) : TodoAction
+
+    data class RemoveSubtask(val id: String, val subtaskId: String) : TodoAction
+
     data object Undo : TodoAction
 
     data object ExpireUndo : TodoAction
@@ -68,6 +74,17 @@ fun reduceTodos(state: TodoState, action: TodoAction, now: Instant = Instant.now
             val removed = todos.size - next.size
             if (removed == 0) state else TodoState(next, snapshot(describeUndo(UndoKind.DELETE, removed)))
         }
+        is TodoAction.AddSubtask ->
+            state.copy(todos = updateInList(todos, action.id) { addSubtask(it, action.title, now) })
+        is TodoAction.ToggleSubtask -> {
+            val next = toggleSubtaskInList(todos, action.id, action.subtaskId, now)
+            val before = todos.firstOrNull { it.id == action.id }
+            val after = next.firstOrNull { it.id == action.id }
+            val completedParent = before != null && after != null && !before.completed && after.completed
+            TodoState(next, if (completedParent) snapshot(describeUndo(UndoKind.COMPLETE, 1)) else state.undoable)
+        }
+        is TodoAction.RemoveSubtask ->
+            state.copy(todos = updateInList(todos, action.id) { removeSubtask(it, action.subtaskId, now) })
         TodoAction.Undo -> state.undoable?.let { TodoState(it.before.toList(), null) } ?: state
         TodoAction.ExpireUndo ->
             if (state.undoable != null && isUndoExpired(state.undoable, now.toEpochMilli())) state.copy(undoable = null)

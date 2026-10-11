@@ -54,7 +54,10 @@ data class Todo(
     val updatedAt: String,
     /** When the todo was last completed; null while open and for data from before REED-19. */
     val completedAt: String? = null,
+    val subtasks: List<Subtask>? = null,
 )
+
+@Serializable data class Subtask(val id: String, val title: String, val completed: Boolean)
 
 enum class TodoFilter {
     ALL,

@@ -91,6 +91,9 @@ final class TodoViewModel {
         confirmingDelete = false
     }
     func undo() { dispatch(.undo) }
+    func addSubtask(_ id: String, title: String) { dispatch(.addSubtask(id: id, title: title)) }
+    func toggleSubtask(_ id: String, subtaskId: String) { dispatch(.toggleSubtask(id: id, subtaskId: subtaskId)) }
+    func removeSubtask(_ id: String, subtaskId: String) { dispatch(.removeSubtask(id: id, subtaskId: subtaskId)) }
 
     /// Drops `id` onto `targetId` within the shown rows and switches to manual sort so the new order shows.
     func reorder(_ id: String, onto targetId: String) {

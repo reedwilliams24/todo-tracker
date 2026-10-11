@@ -52,6 +52,9 @@ private fun applyStep(state: TodoState, step: JsonObject): TodoState {
             "remove" -> TodoAction.Remove(step.getValue("ids").jsonArray.map { it.jsonPrimitive.content })
             "reorder" -> TodoAction.Reorder(step.strings("visibleIds"), step.str("id"), step.str("targetId"))
             "clearCompleted" -> TodoAction.ClearCompleted
+            "addSubtask" -> TodoAction.AddSubtask(step.str("id"), step.str("title"))
+            "toggleSubtask" -> TodoAction.ToggleSubtask(step.str("id"), step.str("subtaskId"))
+            "removeSubtask" -> TodoAction.RemoveSubtask(step.str("id"), step.str("subtaskId"))
             "undo" -> TodoAction.Undo
             "expireUndo" -> TodoAction.ExpireUndo
             else -> error("Unknown applyActions step \"$name\"")

@@ -1,0 +1,91 @@
+{
+  "name": "subtasks",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
+  "steps": [
+    {
+      "do": "add",
+      "title": "Plan trip"
+    },
+    {
+      "do": "expandSubtasks",
+      "title": "Plan trip"
+    },
+    {
+      "do": "addSubtask",
+      "title": "Plan trip",
+      "subtask": "Book flight"
+    },
+    {
+      "do": "addSubtask",
+      "title": "Plan trip",
+      "subtask": "Book hotel"
+    },
+    {
+      "expect": "subtaskProgress",
+      "title": "Plan trip",
+      "text": "0/2"
+    },
+    {
+      "do": "toggleSubtask",
+      "subtask": "Book flight"
+    },
+    {
+      "expect": "subtaskProgress",
+      "title": "Plan trip",
+      "text": "1/2"
+    },
+    {
+      "expect": "completed",
+      "title": "Plan trip",
+      "value": false
+    },
+    {
+      "do": "toggleSubtask",
+      "subtask": "Book hotel"
+    },
+    {
+      "expect": "subtaskProgress",
+      "title": "Plan trip",
+      "text": "2/2"
+    },
+    {
+      "expect": "completed",
+      "title": "Plan trip",
+      "value": true
+    },
+    {
+      "expect": "undo",
+      "label": "Completed todo"
+    },
+    {
+      "do": "toggleSubtask",
+      "subtask": "Book hotel"
+    },
+    {
+      "expect": "completed",
+      "title": "Plan trip",
+      "value": false
+    },
+    {
+      "do": "deleteSubtask",
+      "subtask": "Book hotel"
+    },
+    {
+      "expect": "subtaskProgress",
+      "title": "Plan trip",
+      "text": "1/1"
+    },
+    {
+      "do": "relaunch"
+    },
+    {
+      "expect": "subtaskProgress",
+      "title": "Plan trip",
+      "text": "1/1"
+    }
+  ]
+}

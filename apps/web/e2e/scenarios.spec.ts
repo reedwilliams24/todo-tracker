@@ -46,6 +46,10 @@ async function run(page: Page, step: Step) {
       await page.getByTestId(id("formSubmit")).click();
       await expect(page.getByTestId(id("item", s.title!))).toBeVisible();
       return;
+    case "addSubtask":
+      await page.getByTestId(id("subtaskInput", s.title!)).fill(s.subtask!);
+      await page.getByTestId(id("subtaskInput", s.title!)).press("Enter");
+      return expect(page.getByTestId(id("subtask", s.subtask!))).toBeVisible();
     case "bulkDelete":
       await page.getByTestId(id("bulkDelete")).click();
       return page.getByTestId(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel")).click();
@@ -55,6 +59,10 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("clearCompleted")).click();
     case "delete":
       return page.getByTestId(id("itemDelete", s.title!)).click();
+    case "deleteSubtask":
+      return page.getByTestId(id("subtaskDelete", s.subtask!)).click();
+    case "expandSubtasks":
+      return page.getByTestId(id("itemSubtasksToggle", s.title!)).click();
     case "filter":
       return page.getByTestId(id("filter", s.filter)).click();
     case "move":
@@ -83,6 +91,8 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("themeOption", s.theme)).click();
     case "toggle":
       return page.getByTestId(id("itemToggle", s.title!)).click();
+    case "toggleSubtask":
+      return page.getByTestId(id("subtaskToggle", s.subtask!)).click();
     case "type":
       return page.getByTestId(id("formTitle")).fill(s.text!);
     case "undo":
@@ -121,6 +131,8 @@ async function run(page: Page, step: Step) {
       await expect(page.getByTestId(id("statsTotal"))).toHaveText(s.total!);
       await expect(page.getByTestId(id("statsCurrent"))).toHaveText(s.current!);
       return expect(page.getByTestId(id("statsLongest"))).toHaveText(s.longest!);
+    case "subtaskProgress":
+      return expect(page.getByTestId(id("itemSubtaskProgress", s.title!))).toHaveText(s.text!);
     case "theme":
       await expect(page.getByTestId(id("themeOption", s.theme))).toHaveAttribute("aria-checked", "true");
       if (s.theme === "dark") await expect(page.locator("html")).toHaveClass(/\bdark\b/);

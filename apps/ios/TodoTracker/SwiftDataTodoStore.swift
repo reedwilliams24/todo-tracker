@@ -9,6 +9,7 @@ protocol TodoStore {
 }
 
 /// One row per todo; `position` keeps the list order the reducer produced.
+/// `subtasksJSON` holds the `subtasks` array from spec/schema/todo.schema.json, or nil when there are none.
 @Model
 final class StoredTodo {
     @Attribute(.unique) var id: String
@@ -24,6 +25,7 @@ final class StoredTodo {
     var createdAt: String
     var updatedAt: String
     var completedAt: String?
+    var subtasksJSON: String?
 
     init(_ todo: Todo, position: Int) {
         id = todo.id
@@ -38,6 +40,7 @@ final class StoredTodo {
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
         completedAt = todo.completedAt
+        subtasksJSON = Self.encode(todo.subtasks)
     }
 
     func update(_ todo: Todo, position: Int) {
@@ -52,6 +55,7 @@ final class StoredTodo {
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
         completedAt = todo.completedAt
+        subtasksJSON = Self.encode(todo.subtasks)
     }
 
     var todo: Todo? {
@@ -67,8 +71,14 @@ final class StoredTodo {
             recurrence: recurrence.flatMap(Recurrence.init(rawValue:)),
             createdAt: createdAt,
             updatedAt: updatedAt,
-            completedAt: completedAt
+            completedAt: completedAt,
+            subtasks: subtasksJSON.flatMap { try? JSONDecoder().decode([Subtask].self, from: Data($0.utf8)) }
         )
+    }
+
+    private static func encode(_ subtasks: [Subtask]?) -> String? {
+        guard let subtasks, !subtasks.isEmpty, let data = try? JSONEncoder().encode(subtasks) else { return nil }
+        return String(bytes: data, encoding: .utf8)
     }
 }
 

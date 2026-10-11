@@ -14,10 +14,18 @@ import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import com.reedwilliams24.todotracker.core.Recurrence
 import com.reedwilliams24.todotracker.core.ReminderOffset
+import com.reedwilliams24.todotracker.core.Subtask
 import com.reedwilliams24.todotracker.core.Todo
+import com.reedwilliams24.todotracker.core.TodoJson
 import com.reedwilliams24.todotracker.core.TodoPriority
+import kotlinx.serialization.builtins.ListSerializer
 
-/** One row per todo; `position` keeps storage order (newest first), like the spec's stored array. */
+private val subtaskList = ListSerializer(Subtask.serializer())
+
+/**
+ * One row per todo; `position` keeps storage order (newest first), like the spec's stored array. `subtasks` is the JSON
+ * array from spec/schema/todo.schema.json, or null when there are none.
+ */
 @Entity(tableName = "todos")
 data class TodoEntity(
     @PrimaryKey val id: String,
@@ -32,6 +40,7 @@ data class TodoEntity(
     val createdAt: String,
     val updatedAt: String,
     val completedAt: String? = null,
+    val subtasks: String? = null,
 ) {
     fun toTodo() =
         Todo(
@@ -46,6 +55,10 @@ data class TodoEntity(
             createdAt = createdAt,
             updatedAt = updatedAt,
             completedAt = completedAt,
+            subtasks =
+                subtasks
+                    ?.let { runCatching { TodoJson.decodeFromString(subtaskList, it) }.getOrNull() }
+                    ?.ifEmpty { null },
         )
 
     companion object {
@@ -63,6 +76,7 @@ data class TodoEntity(
                 createdAt = todo.createdAt,
                 updatedAt = todo.updatedAt,
                 completedAt = todo.completedAt,
+                subtasks = todo.subtasks?.ifEmpty { null }?.let { TodoJson.encodeToString(subtaskList, it) },
             )
     }
 }
@@ -84,8 +98,14 @@ interface TodoDao {
 
 @Database(
     entities = [TodoEntity::class],
-    version = 4,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
+    version = 5,
+    autoMigrations =
+        [
+            AutoMigration(from = 1, to = 2),
+            AutoMigration(from = 2, to = 3),
+            AutoMigration(from = 3, to = 4),
+            AutoMigration(from = 4, to = 5),
+        ],
 )
 abstract class TodoDatabase : RoomDatabase() {
     abstract fun todos(): TodoDao
