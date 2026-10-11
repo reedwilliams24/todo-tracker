@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT, readJson, SPEC_DIR } from "./paths";
 
-/** Generates platform test-ID constants from spec/test-ids.json. Run with --check in CI. */
+/** Generates platform test-ID constants, message catalogs and Maestro flows from spec/. Run with --check in CI. */
 const ids = readJson<Record<string, string>>(join(SPEC_DIR, "test-ids.json"));
 const entries = Object.entries(ids).filter(([key]) => !key.startsWith("$"));
 const HEADER = "Generated from spec/test-ids.json by `pnpm spec:generate`. Do not edit.";
@@ -97,8 +97,29 @@ function maestroFlows(): Record<string, string> {
   return flows;
 }
 
+const messages = Object.entries(readJson<Record<string, string>>(join(SPEC_DIR, "i18n/en.json"))).filter(
+  ([key]) => !key.startsWith("$"),
+);
+const I18N_HEADER = "Generated from spec/i18n/en.json by `pnpm spec:generate`. Do not edit.";
+const kotlinString = (value: string) => q(value).replace(/\$/g, "\\$");
+
+function catalogs(): Record<string, string> {
+  return {
+    "apps/web/src/domain/i18n/en.ts": `// ${I18N_HEADER}\n\nexport const en = {\n${messages
+      .map(([key, value]) => `  ${q(key)}: ${q(value)},`)
+      .join("\n")}\n} as const;\n\nexport type MessageKey = keyof typeof en;\nexport type Messages = Record<MessageKey, string>;\n`,
+    "apps/android/core/src/main/kotlin/com/reedwilliams24/todotracker/core/Messages.kt": `// ${I18N_HEADER}\npackage com.reedwilliams24.todotracker.core\n\n/** English UI copy, keyed like spec/i18n/en.json. */\nval EN_MESSAGES: Map<String, String> = linkedMapOf(\n${messages
+      .map(([key, value]) => `    ${q(key)} to ${kotlinString(value)},`)
+      .join("\n")}\n)\n`,
+    "apps/ios/TodoCore/Sources/TodoCore/Messages.swift": `// ${I18N_HEADER}\n\n/// English UI copy, keyed like spec/i18n/en.json.\npublic let enMessages: [String: String] = [\n${messages
+      .map(([key, value]) => `    ${q(key)}: ${q(value)},`)
+      .join("\n")}\n]\n`,
+  };
+}
+
 const outputs: Record<string, string> = {
   "apps/web/src/domain/test-ids.ts": `// ${HEADER}\n\nexport const TEST_IDS = {\n${entries.map(tsEntry).join("\n")}\n} as const;\n`,
+  ...catalogs(),
   ...maestroFlows(),
 };
 
@@ -116,7 +137,7 @@ for (const [relative, content] of Object.entries(outputs)) {
   else writeFileSync(path, content);
 }
 if (check && stale) {
-  console.error("Generated test IDs are out of date. Run `pnpm spec:generate`.");
+  console.error("Generated files are out of date. Run `pnpm spec:generate`.");
   process.exit(1);
 }
 console.log(check ? "generated files up to date" : `wrote ${stale} file(s)`);

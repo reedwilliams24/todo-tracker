@@ -101,4 +101,3 @@ fun sortTodos(todos: List<Todo>): List<Todo> = sortByPriority(todos)
 
 fun countRemaining(todos: List<Todo>): Int = todos.count { !it.completed }
 
-fun remainingLabel(remaining: Int): String = "$remaining ${if (remaining == 1) "task" else "tasks"} remaining"

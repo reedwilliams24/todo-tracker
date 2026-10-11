@@ -12,5 +12,5 @@ Fixtures: [`../fixtures/list.json`](../fixtures/list.json).
   4. `createdAt` ascending (older first).
 - **Filter**: `all | active | completed`.
 - **Search**: case-insensitive substring match on title or notes. The query is trimmed; a blank query matches everything. Search applies after the status filter.
-- **Remaining**: number of todos that are not completed. Shown as `1 task remaining` / `N tasks remaining`.
+- **Remaining**: number of todos that are not completed. Shown with the `list.remaining` message (`1 task remaining` / `N tasks remaining`; see [localization](localization.md)).
 - **Delete** removes by id; unknown ids are ignored. **Clear completed** removes every completed todo.

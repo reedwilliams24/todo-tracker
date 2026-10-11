@@ -9,6 +9,7 @@ import {
   TEST_IDS,
   type TodoFilter,
 } from "@/domain";
+import { useT } from "@/hooks/use-t";
 import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
@@ -30,6 +31,7 @@ export function TodoApp() {
     undoable,
     undo,
   } = useTodos();
+  const t = useT();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
 
@@ -54,17 +56,17 @@ export function TodoApp() {
           onKeyDown={(event) => {
             if (event.key === "Escape") setQuery("");
           }}
-          placeholder="Search todos…"
-          aria-label="Search todos"
           data-testid={TEST_IDS.search}
+          placeholder={t("search.placeholder")}
+          aria-label={t("search.label")}
           className="w-full rounded-xl border [&::-webkit-search-cancel-button]:appearance-none border-black/10 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-white/5 dark:focus:border-white/40"
         />
         {searching && (
           <button
             type="button"
             onClick={() => setQuery("")}
-            aria-label="Clear search"
             data-testid={TEST_IDS.searchClear}
+            aria-label={t("search.clear")}
             className="absolute inset-y-0 right-2 px-2 text-sm opacity-50 transition hover:opacity-100"
           >
             ×
@@ -73,7 +75,7 @@ export function TodoApp() {
       </div>
 
       <div className="flex items-center justify-between gap-3 text-sm">
-        <div className="flex gap-1" role="tablist" aria-label="Filter todos">
+        <div className="flex gap-1" role="tablist" aria-label={t("filter.label")}>
           {FILTERS.map((option) => (
             <button
               key={option}
@@ -82,13 +84,13 @@ export function TodoApp() {
               aria-selected={filter === option}
               onClick={() => setFilter(option)}
               data-testid={TEST_IDS.filter(option)}
-              className={`rounded-full px-3 py-1 capitalize transition ${
+              className={`rounded-full px-3 py-1 transition ${
                 filter === option
                   ? "bg-foreground text-background"
                   : "opacity-70 hover:opacity-100"
               }`}
             >
-              {option}
+              {t(`filter.${option}`)}
             </button>
           ))}
         </div>
@@ -99,23 +101,25 @@ export function TodoApp() {
             data-testid={TEST_IDS.clearCompleted}
             className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
           >
-            Clear completed
+            {t("list.clearCompleted")}
           </button>
         )}
       </div>
 
       {!hydrated ? (
-        <p className="py-10 text-center text-sm opacity-60">Loading…</p>
+        <p className="py-10 text-center text-sm opacity-60">{t("list.loading")}</p>
       ) : visible.length === 0 ? (
         <p data-testid={TEST_IDS.empty} className="py-10 text-center text-sm opacity-60">
           {todos.length === 0
-            ? "No todos yet. Add your first one above."
+            ? t("list.empty")
             : searching
-              ? `No ${filter === "all" ? "" : `${filter} `}todos match “${query.trim()}”.`
-              : `No ${filter} todos.`}
+              ? filter === "all"
+                ? t("list.noMatchAll", { query: query.trim() })
+                : t("list.noMatch", { filter: t(`filter.${filter}`).toLowerCase(), query: query.trim() })
+              : t("list.emptyFiltered", { filter: t(`filter.${filter}`).toLowerCase() })}
         </p>
       ) : (
-        <ul data-testid={TEST_IDS.list} className="flex flex-col gap-2">
+        <ul data-testid={TEST_IDS.list} className="flex flex-col gap-2" aria-label={t("list.label")}>
           {visible.map((todo) => (
             <TodoItem
               key={todo.id}
@@ -129,7 +133,7 @@ export function TodoApp() {
       )}
 
       <p data-testid={TEST_IDS.remaining} className="text-xs opacity-60">
-        {remaining} {remaining === 1 ? "task" : "tasks"} remaining
+        {t("list.remaining", { count: remaining })}
       </p>
 
       {undoable && (
@@ -146,7 +150,7 @@ export function TodoApp() {
             data-testid={TEST_IDS.undoAction}
             className="font-medium underline underline-offset-4"
           >
-            Undo
+            {t("undo.action")}
           </button>
         </div>
       )}

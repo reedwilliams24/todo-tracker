@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useT } from "@/hooks/use-t";
 import { isValidTitle, TEST_IDS, type Todo } from "@/domain";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
@@ -17,6 +18,7 @@ type TodoItemProps = {
 };
 
 export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) {
+  const t = useT();
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
   const cancelled = useRef(false);
@@ -50,7 +52,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         checked={todo.completed}
         onChange={() => onToggle(todo.id)}
         data-testid={TEST_IDS.itemToggle(todo.title)}
-        aria-label={`Mark "${todo.title}" as ${todo.completed ? "active" : "complete"}`}
+        aria-label={t(todo.completed ? "item.markActive" : "item.markComplete", { title: todo.title })}
         className="size-4 accent-current"
       />
 
@@ -64,8 +66,8 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
             if (event.key === "Enter") commit();
             if (event.key === "Escape") cancel();
           }}
-          aria-label="Edit title"
           data-testid={TEST_IDS.itemEditInput}
+          aria-label={t("item.editTitle")}
           className="flex-1 rounded-lg bg-transparent px-1 py-1 outline-none"
         />
       ) : (
@@ -73,8 +75,8 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           type="button"
           onDoubleClick={startEditing}
           data-testid={TEST_IDS.itemTitle(todo.title)}
-          aria-label={`Edit "${todo.title}"`}
-          title="Double-click to edit"
+          aria-label={t("item.edit", { title: todo.title })}
+          title={t("item.editHint")}
           className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
         >
           {todo.title}
@@ -89,15 +91,15 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
 
       <span
         data-testid={TEST_IDS.itemPriority(todo.title)}
-        className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
-        {todo.priority}
+        className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[todo.priority]}`}>
+        {t(`priority.${todo.priority}`)}
       </span>
 
       <button
         type="button"
         onClick={() => onRemove(todo.id)}
         data-testid={TEST_IDS.itemDelete(todo.title)}
-        aria-label={`Delete "${todo.title}"`}
+        aria-label={t("item.delete", { title: todo.title })}
         className="rounded-lg px-2 py-1 text-sm opacity-50 transition hover:opacity-100"
       >
         ×

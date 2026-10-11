@@ -77,6 +77,15 @@ enum FixtureOps {
             return coerceDrafts(g.raw["value"] ?? .null)
         case "reconcileDrafts":
             return reconcileDrafts(heuristic: try g.decode("heuristic"), llm: try g.decode("llm"))
+        case "messages":
+            return enMessages
+        case "resolveLocale":
+            let supported: [String]? = try g.decode("supported")
+            return resolveLocale(try g.decode("preferred", as: [String].self), supported: supported ?? Array(catalogs.keys))
+        case "formatMessage":
+            return formatMessage(try g.decode("locale"), try g.decode("message"), try g.params())
+        case "translate":
+            return Translator(locale: try g.decode("locale"))(try g.decode("key"), try g.params())
         default:
             throw UnknownOp(op: op)
         }
@@ -148,6 +157,18 @@ enum FixtureOps {
                 return try JSONDecoder().decode(T.self, from: data)
             } catch {
                 throw BadGiven(description: "given.\(key) is not \(T.self): \(value)")
+            }
+        }
+
+        /// `given.params` as message parameters: strings stay strings, numbers become `Double`.
+        func params() throws -> MessageParams {
+            guard case .object(let fields)? = raw["params"] else { return [:] }
+            return try fields.mapValues { value -> any Sendable in
+                switch value {
+                case .string(let text): return text
+                case .number(let number): return number
+                default: throw BadGiven(description: "given.params value \(value) is not a string or number")
+                }
             }
         }
 

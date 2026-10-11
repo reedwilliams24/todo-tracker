@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -68,11 +69,12 @@ import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoFilter
 import com.reedwilliams24.todotracker.core.TodoPriority
+import com.reedwilliams24.todotracker.core.Translator
 import com.reedwilliams24.todotracker.core.countRemaining
 import com.reedwilliams24.todotracker.core.filterTodos
 import com.reedwilliams24.todotracker.core.isValidDueDate
 import com.reedwilliams24.todotracker.core.isValidTitle
-import com.reedwilliams24.todotracker.core.remainingLabel
+import com.reedwilliams24.todotracker.core.resolveLocale
 import com.reedwilliams24.todotracker.core.sortTodos
 import com.reedwilliams24.todotracker.core.toTodoDraft
 
@@ -84,6 +86,7 @@ fun TodoApp(viewModel: TodoViewModel) {
     val todos = ui.state.todos
     val visible = remember(todos, filter) { sortTodos(filterTodos(todos, filter)) }
     val remaining = countRemaining(todos)
+    val t = rememberTranslator()
 
     Box(
         Modifier
@@ -101,11 +104,11 @@ fun TodoApp(viewModel: TodoViewModel) {
             verticalArrangement = Arrangement.spacedBy(Spacing.s4),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-                Text("Todo Tracker", fontSize = FontSize.xl2, fontWeight = FontWeight.SemiBold, color = Palette.foreground)
-                Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
+                Text(t("app.title"), fontSize = FontSize.xl2, fontWeight = FontWeight.SemiBold, color = Palette.foreground)
+                Text(t("app.tagline.mobile"), fontSize = FontSize.sm, color = Palette.muted)
             }
 
-            TodoForm(onAdd = viewModel::add)
+            TodoForm(t, onAdd = viewModel::add)
 
             Row(
                 Modifier.fillMaxWidth(),
@@ -113,13 +116,13 @@ fun TodoApp(viewModel: TodoViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
-                    Modifier.selectableGroup().semantics { contentDescription = "Filter todos" },
+                    Modifier.selectableGroup().semantics { contentDescription = t("filter.label") },
                     horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
                 ) {
                     TodoFilter.entries.forEach { option ->
                         val selected = filter == option
                         Text(
-                            option.key.replaceFirstChar(Char::uppercase),
+                            t("filter.${option.key}"),
                             fontSize = FontSize.sm,
                             color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
                             modifier = Modifier
@@ -133,7 +136,7 @@ fun TodoApp(viewModel: TodoViewModel) {
                 }
                 if (todos.size > remaining) {
                     Text(
-                        "Clear completed",
+                        t("list.clearCompleted"),
                         fontSize = FontSize.sm,
                         color = Palette.foreground.copy(alpha = 0.7f),
                         modifier = Modifier
@@ -145,9 +148,9 @@ fun TodoApp(viewModel: TodoViewModel) {
 
             Box(Modifier.weight(1f)) {
                 when {
-                    !ui.hydrated -> EmptyText("Loading…", Modifier)
+                    !ui.hydrated -> EmptyText(t("list.loading"), Modifier)
                     visible.isEmpty() -> EmptyText(
-                        if (todos.isEmpty()) "No todos yet. Add your first one above." else "No ${filter.key} todos.",
+                        if (todos.isEmpty()) t("list.empty") else t("list.emptyFiltered", "filter" to filter.key),
                         Modifier.testTag(TestIds.empty),
                     )
                     else -> LazyColumn(
@@ -155,14 +158,14 @@ fun TodoApp(viewModel: TodoViewModel) {
                         verticalArrangement = Arrangement.spacedBy(Spacing.s2),
                     ) {
                         items(visible, key = { it.id }) { todo ->
-                            TodoItem(todo, onToggle = viewModel::toggle, onRename = viewModel::rename, onRemove = viewModel::remove)
+                            TodoItem(todo, t, onToggle = viewModel::toggle, onRename = viewModel::rename, onRemove = viewModel::remove)
                         }
                     }
                 }
             }
 
             Text(
-                remainingLabel(remaining),
+                t("list.remaining", "count" to remaining),
                 fontSize = FontSize.xs,
                 color = Palette.muted,
                 modifier = Modifier.testTag(TestIds.remaining),
@@ -185,7 +188,7 @@ fun TodoApp(viewModel: TodoViewModel) {
             ) {
                 Text(entry.label, fontSize = FontSize.sm, color = Palette.card, modifier = Modifier.testTag(TestIds.undoLabel))
                 Text(
-                    "Undo",
+                    t("undo.action"),
                     fontSize = FontSize.sm,
                     fontWeight = FontWeight.SemiBold,
                     color = Palette.card,
@@ -198,6 +201,13 @@ fun TodoApp(viewModel: TodoViewModel) {
             }
         }
     }
+}
+
+/** UI copy for the device's preferred locales (spec/features/localization.md). */
+@Composable
+private fun rememberTranslator(): Translator {
+    val locales = LocalConfiguration.current.locales
+    return remember(locales) { Translator(resolveLocale(List(locales.size()) { locales[it].toLanguageTag() })) }
 }
 
 @Composable
@@ -242,7 +252,7 @@ private fun Field(
 }
 
 @Composable
-private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
+private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
@@ -269,12 +279,12 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
         Field(
             value = title,
             onValueChange = { title = it },
-            placeholder = "What needs doing?",
+            placeholder = t("form.title.placeholder"),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { submit() }),
             modifier = Modifier
                 .fillMaxWidth()
-                .semantics { contentDescription = "Todo title" }
+                .semantics { contentDescription = t("form.title.label") }
                 .testTag(TestIds.formTitle)
                 .padding(horizontal = Spacing.s2, vertical = Spacing.s2),
         )
@@ -284,13 +294,13 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
                     .clip(RoundedCornerShape(Radius.md))
                     .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
                     .selectableGroup()
-                    .semantics { contentDescription = "Priority" }
+                    .semantics { contentDescription = t("form.priority.label") }
                     .testTag(TestIds.formPriority),
             ) {
                 listOf(TodoPriority.LOW, TodoPriority.MEDIUM, TodoPriority.HIGH).forEach { option ->
                     val selected = option == priority
                     Text(
-                        option.key.replaceFirstChar(Char::uppercase),
+                        t("priority.${option.key}"),
                         fontSize = FontSize.sm,
                         color = if (selected) Palette.card else Palette.foreground,
                         modifier = Modifier
@@ -304,19 +314,19 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
             Field(
                 value = dueDate,
                 onValueChange = { dueDate = it },
-                placeholder = "YYYY-MM-DD",
+                placeholder = t("form.dueDate.placeholder"),
                 style = inputStyle.copy(fontSize = FontSize.sm),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 modifier = Modifier
                     .weight(1f)
                     .border(1.dp, if (dateOk) Palette.border else Palette.danger, RoundedCornerShape(Radius.md))
-                    .semantics { contentDescription = "Due date" }
+                    .semantics { contentDescription = t("form.dueDate.label") }
                     .testTag(TestIds.formDueDate)
                     .padding(horizontal = Spacing.s2, vertical = Spacing.s1_5),
             )
         }
         Text(
-            "Add",
+            t("form.add"),
             fontSize = FontSize.sm,
             fontWeight = FontWeight.Medium,
             color = Palette.card,
@@ -335,6 +345,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
 @Composable
 private fun TodoItem(
     todo: Todo,
+    t: Translator,
     onToggle: (String) -> Unit,
     onRename: (String, String) -> Unit,
     onRemove: (String) -> Unit,
@@ -372,7 +383,7 @@ private fun TodoItem(
                 .background(if (todo.completed) Palette.foreground else Palette.card)
                 .toggleable(value = todo.completed, role = Role.Checkbox) { onToggle(todo.id) }
                 .semantics {
-                    contentDescription = "Mark \"${todo.title}\" as ${if (todo.completed) "active" else "complete"}"
+                    contentDescription = t(if (todo.completed) "item.markActive" else "item.markComplete", "title" to todo.title)
                 }
                 .testTag(TestIds.itemToggle(todo.title)),
             contentAlignment = Alignment.Center,
@@ -402,7 +413,7 @@ private fun TodoItem(
                             false
                         }
                     }
-                    .semantics { contentDescription = "Edit title" }
+                    .semantics { contentDescription = t("item.editTitle") }
                     .testTag(TestIds.itemEditInput)
                     .padding(vertical = Spacing.s1),
             )
@@ -418,7 +429,7 @@ private fun TodoItem(
                     .weight(1f)
                     .alpha(if (todo.completed) 0.5f else 1f)
                     .clickable { editing = true }
-                    .semantics { contentDescription = "Edit \"${todo.title}\"" }
+                    .semantics { contentDescription = t("item.edit", "title" to todo.title) }
                     .testTag(TestIds.itemTitle(todo.title)),
             )
         }
@@ -429,7 +440,7 @@ private fun TodoItem(
 
         val (badgeBg, badgeText) = Palette.priority(todo.priority)
         Text(
-            todo.priority.key.replaceFirstChar(Char::uppercase),
+            t("priority.${todo.priority.key}"),
             fontSize = FontSize.xs,
             color = badgeText,
             modifier = Modifier
@@ -445,7 +456,7 @@ private fun TodoItem(
             color = Palette.muted,
             modifier = Modifier
                 .clickable(role = Role.Button) { onRemove(todo.id) }
-                .semantics { contentDescription = "Delete \"${todo.title}\"" }
+                .semantics { contentDescription = t("item.delete", "title" to todo.title) }
                 .testTag(TestIds.itemDelete(todo.title))
                 .padding(horizontal = Spacing.s1_5, vertical = Spacing.s0_5),
         )

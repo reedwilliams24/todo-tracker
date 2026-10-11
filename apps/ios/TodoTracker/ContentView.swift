@@ -8,10 +8,10 @@ struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Todo Tracker")
+                    Text(t("app.title"))
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundStyle(Theme.foreground)
-                    Text("A tiny local-first todo list.")
+                    Text(t("app.tagline.mobile"))
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.muted)
                 }
@@ -45,7 +45,7 @@ struct ContentView: View {
                 ForEach(TodoFilter.allCases, id: \.self) { option in
                     let selected = model.filter == option
                     Button { model.filter = option } label: {
-                        Text(option.rawValue.capitalized)
+                        Text(t("filter.\(option.rawValue)"))
                             .font(.system(size: 14))
                             .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
                             .padding(.horizontal, 12)
@@ -58,10 +58,10 @@ struct ContentView: View {
                 }
             }
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("Filter todos")
+            .accessibilityLabel(t("filter.label"))
             Spacer()
             if model.hasCompleted {
-                Button("Clear completed", action: model.clearCompleted)
+                Button(t("list.clearCompleted"), action: model.clearCompleted)
                     .buttonStyle(.plain)
                     .font(.system(size: 14))
                     .foregroundStyle(Theme.foreground.opacity(0.7))
@@ -106,7 +106,7 @@ struct ContentView: View {
                     .foregroundStyle(Theme.card)
                     .accessibilityIdentifier(TestID.undoLabel)
                 Button(action: model.undo) {
-                    Text("Undo")
+                    Text(t("undo.action"))
                         .font(.system(size: 14, weight: .semibold))
                         .underline()
                         .foregroundStyle(Theme.card)

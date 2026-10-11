@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useT } from "@/hooks/use-t";
 import {
   EMPTY_TODO_FORM,
   isValidTitle,
@@ -13,6 +14,7 @@ import {
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
+  const t = useT();
   const [form, setForm] = useState(EMPTY_TODO_FORM);
   const { title, priority, dueDate } = form;
 
@@ -31,9 +33,9 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
       <input
         value={title}
         onChange={(event) => setForm((f) => ({ ...f, title: event.target.value }))}
-        placeholder="What needs doing?"
-        aria-label="Todo title"
         data-testid={TEST_IDS.formTitle}
+        placeholder={t("form.title.placeholder")}
+        aria-label={t("form.title.label")}
         className="flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50"
       />
       <select
@@ -41,9 +43,9 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         onChange={(event) =>
           setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))
         }
-        aria-label="Priority"
         data-testid={TEST_IDS.formPriority}
-        className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm capitalize dark:border-white/15"
+        aria-label={t("form.priority.label")}
+        className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
       >
         {PRIORITIES.map((option) => (
           <option
@@ -52,7 +54,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
             data-testid={TEST_IDS.formPriorityOption(option)}
             className="text-foreground"
           >
-            {option}
+            {t(`priority.${option}`)}
           </option>
         ))}
       </select>
@@ -60,8 +62,8 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         type="date"
         value={dueDate}
         onChange={(event) => setForm((f) => ({ ...f, dueDate: event.target.value }))}
-        aria-label="Due date"
         data-testid={TEST_IDS.formDueDate}
+        aria-label={t("form.dueDate.label")}
         className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
       />
       <button
@@ -70,7 +72,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         disabled={!isValidTitle(title)}
         className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
       >
-        Add
+        {t("form.add")}
       </button>
     </form>
   );

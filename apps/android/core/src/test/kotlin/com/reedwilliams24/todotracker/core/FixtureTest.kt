@@ -55,6 +55,11 @@ private fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 private fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
 private fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
 private fun JsonObject.drafts(key: String): List<TodoDraft> = TodoJson.decodeFromJsonElement(draftList, getValue(key))
+private fun JsonObject.strings(key: String): List<String> = getValue(key).jsonArray.map { it.jsonPrimitive.content }
+private fun JsonObject.params(): Map<String, Any> = (get("params") as? JsonObject).orEmpty().mapValues { (_, value) ->
+    val p = value.jsonPrimitive
+    if (p.isString) p.content else p.content.toLongOrNull() ?: p.content.toDouble()
+}
 private fun encode(todos: List<Todo>): JsonElement = TodoJson.encodeToJsonElement(todoList, todos)
 private fun encodeDrafts(drafts: List<TodoDraft>): JsonElement = TodoJson.encodeToJsonElement(draftList, drafts)
 
@@ -135,6 +140,12 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "cleanTitle" -> JsonPrimitive(cleanTitle(g.str("text")))
     "coerceDrafts" -> encodeDrafts(coerceDrafts(g["value"]))
     "reconcileDrafts" -> encodeDrafts(reconcileDrafts(g.drafts("heuristic"), g.drafts("llm")))
+    "messages" -> JsonObject(EN_MESSAGES.mapValues { JsonPrimitive(it.value) })
+    "resolveLocale" -> JsonPrimitive(
+        resolveLocale(g.strings("preferred"), if (g.containsKey("supported")) g.strings("supported") else CATALOGS.keys.toList()),
+    )
+    "formatMessage" -> JsonPrimitive(formatMessage(g.str("locale"), g.str("message"), g.params()))
+    "translate" -> JsonPrimitive(Translator(g.str("locale"))(g.str("key"), g.params()))
     else -> error("Unknown op \"$op\"")
 }
 

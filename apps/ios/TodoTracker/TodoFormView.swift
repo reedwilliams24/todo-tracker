@@ -11,17 +11,17 @@ struct TodoFormView: View {
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
-            TextField("What needs doing?", text: $form.title, prompt: Text("What needs doing?").foregroundStyle(Theme.muted))
+            TextField(t("form.title.placeholder"), text: $form.title, prompt: Text(t("form.title.placeholder")).foregroundStyle(Theme.muted))
                 .font(.system(size: 16))
                 .foregroundStyle(Theme.foreground)
                 .padding(8)
                 .submitLabel(.done)
                 .onSubmit(submit)
-                .accessibilityLabel("Todo title")
+                .accessibilityLabel(t("form.title.label"))
                 .accessibilityIdentifier(TestID.formTitle)
             HStack(spacing: 8) {
                 priorityPicker
-                TextField("YYYY-MM-DD", text: $form.dueDate, prompt: Text("YYYY-MM-DD").foregroundStyle(Theme.muted))
+                TextField(t("form.dueDate.placeholder"), text: $form.dueDate, prompt: Text(t("form.dueDate.placeholder")).foregroundStyle(Theme.muted))
                     .font(.system(size: 14))
                     .foregroundStyle(Theme.foreground)
                     .keyboardType(.numbersAndPunctuation)
@@ -33,11 +33,11 @@ struct TodoFormView: View {
                         RoundedRectangle(cornerRadius: Theme.Radius.md)
                             .stroke(dateOk ? Theme.border : Theme.danger, lineWidth: 1)
                     )
-                    .accessibilityLabel("Due date")
+                    .accessibilityLabel(t("form.dueDate.label"))
                     .accessibilityIdentifier(TestID.formDueDate)
             }
             Button(action: submit) {
-                Text("Add")
+                Text(t("form.add"))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.card)
                     .padding(.horizontal, 16)
@@ -58,7 +58,7 @@ struct TodoFormView: View {
             ForEach([TodoPriority.low, .medium, .high], id: \.self) { option in
                 let selected = option == form.priority
                 Button { form.priority = option } label: {
-                    Text(option.rawValue.capitalized)
+                    Text(t("priority.\(option.rawValue)"))
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground)
                         .padding(.horizontal, 10)
@@ -73,7 +73,7 @@ struct TodoFormView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Priority")
+        .accessibilityLabel(t("form.priority.label"))
         .accessibilityIdentifier(TestID.formPriority)
     }
 

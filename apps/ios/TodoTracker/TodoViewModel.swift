@@ -22,10 +22,10 @@ final class TodoViewModel {
     var visibleTodos: [Todo] { sortByPriority(filterTodos(state.todos, filter)) }
     var remaining: Int { countRemaining(state.todos) }
     var hasCompleted: Bool { state.todos.count > remaining }
-    var remainingText: String { "\(remaining) \(remaining == 1 ? "task" : "tasks") remaining" }
+    var remainingText: String { t("list.remaining", ["count": remaining]) }
     var undoLabel: String? { state.undoable?.label }
     var emptyText: String {
-        state.todos.isEmpty ? "No todos yet. Add your first one above." : "No \(filter.rawValue) todos."
+        state.todos.isEmpty ? t("list.empty") : t("list.emptyFiltered", ["filter": filter.rawValue])
     }
 
     func add(_ draft: TodoDraft) {

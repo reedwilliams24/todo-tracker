@@ -13,14 +13,15 @@ struct TodoRowView: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Toggle("Mark \"\(todo.title)\" as \(todo.completed ? "active" : "complete")",
+            let toggleLabel = t(todo.completed ? "item.markActive" : "item.markComplete", ["title": todo.title])
+            Toggle(toggleLabel,
                    isOn: Binding(get: { todo.completed }, set: { _ in onToggle() }))
             .toggleStyle(CheckboxToggleStyle())
-            .accessibilityLabel("Mark \"\(todo.title)\" as \(todo.completed ? "active" : "complete")")
+            .accessibilityLabel(toggleLabel)
             .accessibilityIdentifier(TestID.itemToggle(todo.title))
 
             if editing {
-                TextField("Edit title", text: $draftTitle)
+                TextField(t("item.editTitle"), text: $draftTitle)
                     .font(.system(size: 16))
                     .foregroundStyle(Theme.foreground)
                     .padding(.vertical, 4)
@@ -31,7 +32,7 @@ struct TodoRowView: View {
                         if !focused { commit() }
                     }
                     .onAppear { editFocused = true }
-                    .accessibilityLabel("Edit title")
+                    .accessibilityLabel(t("item.editTitle"))
                     .accessibilityIdentifier(TestID.itemEditInput)
             } else {
                 Button {
@@ -48,7 +49,7 @@ struct TodoRowView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Edit \"\(todo.title)\"")
+                .accessibilityLabel(t("item.edit", ["title": todo.title]))
                 .accessibilityIdentifier(TestID.itemTitle(todo.title))
             }
 
@@ -60,7 +61,7 @@ struct TodoRowView: View {
             }
 
             let colors = Theme.priority(todo.priority)
-            Text(todo.priority.rawValue.capitalized)
+            Text(t("priority.\(todo.priority.rawValue)"))
                 .font(.system(size: 12))
                 .foregroundStyle(colors.text)
                 .padding(.horizontal, 8)
@@ -77,7 +78,7 @@ struct TodoRowView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Delete \"\(todo.title)\"")
+            .accessibilityLabel(t("item.delete", ["title": todo.title]))
             .accessibilityIdentifier(TestID.itemDelete(todo.title))
         }
         .padding(.horizontal, 12)

@@ -74,6 +74,18 @@
       ]
     },
     {
+      "name": "pluralized-remaining",
+      "steps": [
+        { "expect": "remaining", "text": "0 tasks remaining" },
+        { "do": "add", "title": "Buy milk" },
+        { "expect": "remaining", "text": "1 task remaining" },
+        { "do": "add", "title": "Call mom" },
+        { "expect": "remaining", "text": "2 tasks remaining" },
+        { "do": "toggle", "title": "Buy milk" },
+        { "expect": "remaining", "text": "1 task remaining" }
+      ]
+    },
+    {
       "name": "search",
       "platforms": ["web"],
       "steps": [
