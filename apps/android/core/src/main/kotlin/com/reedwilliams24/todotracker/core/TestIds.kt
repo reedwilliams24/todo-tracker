@@ -41,6 +41,8 @@ object TestIds {
     const val statsLongest = "stat-longest"
     const val statsToggle = "stats-toggle"
     const val statsTotal = "stat-total"
+    fun themeOption(theme: String) = "theme-option-$theme"
+    const val themeToggle = "theme-toggle"
     const val undoAction = "undo-toast-action"
     const val undoLabel = "undo-toast-label"
     const val undoToast = "undo-toast"
