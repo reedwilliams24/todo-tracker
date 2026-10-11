@@ -2,7 +2,7 @@
 
 Fixtures: [`../fixtures/realtime.json`](../fixtures/realtime.json). Ticket: REED-70 (parent plan REED-61).
 
-Live updates for a signed-in client over the Supabase Realtime websocket. Rows arriving here go through the [sync](sync.md) rules (`applyRemote`, `advanceCursor`); this feature only covers the connection. The banner and read-only mode that sit on the connection state are REED-71.
+Live updates for a signed-in client over the Supabase Realtime websocket. Rows arriving here go through the [sync](sync.md) rules (`applyRemote`, `advanceCursor`); this feature only covers the connection. The banner and read-only mode on top of the connection state (REED-71) are under [Connection status](#connection-status).
 
 ## Channel
 
@@ -20,3 +20,13 @@ Live updates for a signed-in client over the Supabase Realtime websocket. Rows a
 ## State
 
 The manager exposes a stream of `ConnectionState`: `offline`, `connecting` or `connected`. Signed-out (guest) clients and builds without Supabase config have no manager, and behave exactly as before.
+
+## Connection status
+
+What a client shows about its connection, from four inputs: whether the shown list is an **account** list (signed in, or the session expired) rather than the guest list, whether the session **expired**, whether the device is **online**, and the manager's **connection** state (none when there is no manager).
+
+- `connectionStatus` picks the first that applies: not an account list → `guest`; session expired → `expired`; no network → `offline`; connection `connected` → `connected`; anything else → `reconnecting`.
+- `canEdit(status)` is true only for `guest` and `connected`. `connected` is only set after the cursor pull finishes (see the connect sequence), so the list is read-only until it has caught up.
+- **Banner** (`connectionBanner`): `reconnecting` shows `connection.reconnecting` with a spinner and the `connection.readOnly` hint; `offline` shows `connection.offline`. `expired` shows the existing session-expired banner (sign in again) instead; `guest` and `connected` show nothing. The guest list never shows a connection state.
+- **While `canEdit` is false** the cached list stays visible, but add, edit (rename, subtasks), complete, delete (row, bulk, clear completed), reorder, undo and voice add are disabled, using each platform's disabled state so assistive tech reports them as unavailable. Select mode is left. Filtering, search, sort and stats still work.
+- **Online state** comes from the platform: web `navigator.onLine` with `online`/`offline` events, iOS `NWPathMonitor`, Android `ConnectivityManager` default-network callbacks. Getting the network back calls `connect()`, which retries now instead of waiting for the backoff timer.

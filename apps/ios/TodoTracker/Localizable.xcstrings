@@ -452,6 +452,39 @@
         }
       }
     },
+    "connection.offline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're offline. Editing is paused."
+          }
+        }
+      }
+    },
+    "connection.readOnly" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editing is paused until your list is up to date."
+          }
+        }
+      }
+    },
+    "connection.reconnecting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconnecting…"
+          }
+        }
+      }
+    },
     "filter.active" : {
       "extractionState" : "manual",
       "localizations" : {

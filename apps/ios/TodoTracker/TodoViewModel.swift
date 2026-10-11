@@ -1,4 +1,5 @@
 import Foundation
+import Network
 import Observation
 import TodoCore
 
@@ -27,6 +28,9 @@ final class TodoViewModel {
     private var realtime: RealtimeConnection?
     /// The live connection while the account list syncs over Realtime; nil for the guest list.
     private(set) var connection: ConnectionState?
+    /// The device has a network (`NWPathMonitor`).
+    private(set) var online = true
+    private let pathMonitor = NWPathMonitor()
     private var pushFailedTimer: Task<Void, Never>?
 
     init(
@@ -40,6 +44,18 @@ final class TodoViewModel {
         sort = parseStoredSort(defaults.string(forKey: sortStorageKey))
         state = reduceTodos(state, .load(store.load()), now: now())
         reminders?.sync(state.todos)
+        pathMonitor.pathUpdateHandler = { [weak self] path in
+            let online = path.status == .satisfied
+            Task { @MainActor in self?.setOnline(online) }
+        }
+        pathMonitor.start(queue: .main)
+    }
+
+    /// Getting the network back reconnects now instead of waiting for the backoff (spec/features/realtime.md).
+    private func setOnline(_ next: Bool) {
+        let regained = next && !online
+        online = next
+        if regained { resume() }
     }
 
     /// Switches between the guest list and the signed-in account's local cache.
@@ -168,6 +184,11 @@ final class TodoViewModel {
     func deleteSelected() {
         dispatch(.remove(ids: selected))
         exitSelectMode()
+    }
+
+    /// The list went read-only (spec/features/realtime.md#connection-status).
+    func leaveSelectMode() {
+        if selecting { exitSelectMode() }
     }
 
     private func exitSelectMode() {
