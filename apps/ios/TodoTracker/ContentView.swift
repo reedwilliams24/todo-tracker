@@ -11,6 +11,7 @@ struct ContentView: View {
                     Text("Todo Tracker")
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundStyle(Theme.foreground)
+                        .accessibilityAddTraits(.isHeader)
                     Text("A tiny local-first todo list.")
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.muted)
@@ -23,6 +24,10 @@ struct ContentView: View {
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.muted)
                     .accessibilityIdentifier(TestID.remaining)
+                    // Like aria-live="polite" on web: VoiceOver reads the new count after toggles and deletes.
+                    .onChange(of: model.remainingText) { _, text in
+                        UIAccessibility.post(notification: .announcement, argument: text)
+                    }
             }
             .padding(16)
             .padding(.bottom, 72)

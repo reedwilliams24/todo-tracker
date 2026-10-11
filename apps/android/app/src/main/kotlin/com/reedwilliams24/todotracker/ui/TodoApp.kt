@@ -49,6 +49,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -106,7 +107,13 @@ fun TodoApp(viewModel: TodoViewModel) {
             verticalArrangement = Arrangement.spacedBy(Spacing.s4),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-                Text("Todo Tracker", fontSize = FontSize.xl2, fontWeight = FontWeight.SemiBold, color = Palette.foreground)
+                Text(
+                    "Todo Tracker",
+                    fontSize = FontSize.xl2,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Palette.foreground,
+                    modifier = Modifier.semantics { heading() },
+                )
                 Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
             }
 
@@ -195,7 +202,9 @@ fun TodoApp(viewModel: TodoViewModel) {
                 remainingLabel(remaining),
                 fontSize = FontSize.xs,
                 color = Palette.muted,
-                modifier = Modifier.testTag(TestIds.remaining),
+                modifier = Modifier
+                    .semantics { liveRegion = LiveRegionMode.Polite }
+                    .testTag(TestIds.remaining),
             )
         }
 
@@ -381,6 +390,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
                 .clip(RoundedCornerShape(Radius.md))
                 .background(Palette.foreground)
                 .clickable(enabled = canAdd, role = Role.Button) { submit() }
+                .semantics { contentDescription = "Add todo" }
                 .testTag(TestIds.formSubmit)
                 .padding(horizontal = Spacing.s4, vertical = Spacing.s2),
         )
@@ -472,8 +482,8 @@ private fun TodoItem(
                 textDecoration = if (todo.completed) TextDecoration.LineThrough else null,
                 modifier = Modifier
                     .weight(1f)
-                    .alpha(if (todo.completed) 0.5f else 1f)
-                    .clickable { editing = true }
+                    .alpha(if (todo.completed) 0.7f else 1f)
+                    .clickable(role = Role.Button, onClickLabel = "open the title for editing") { editing = true }
                     .semantics { contentDescription = "Edit \"${todo.title}\"" }
                     .testTag(TestIds.itemTitle(todo.title)),
             )
