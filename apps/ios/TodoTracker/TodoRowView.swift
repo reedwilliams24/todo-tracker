@@ -19,71 +19,74 @@ struct TodoRowView: View {
             .accessibilityLabel("Mark \"\(todo.title)\" as \(todo.completed ? "active" : "complete")")
             .accessibilityIdentifier(TestID.itemToggle(todo.title))
 
-            if editing {
-                TextField("Edit title", text: $draftTitle)
-                    .font(.system(size: 16))
-                    .foregroundStyle(Theme.foreground)
-                    .padding(.vertical, 4)
-                    .focused($editFocused)
-                    .submitLabel(.done)
-                    .onSubmit(commit)
-                    .onChange(of: editFocused) { _, focused in
-                        if !focused { commit() }
-                    }
-                    .onAppear { editFocused = true }
-                    .accessibilityLabel("Edit title")
-                    .accessibilityIdentifier(TestID.itemEditInput)
-            } else {
-                Button {
-                    draftTitle = todo.title
-                    editing = true
-                } label: {
-                    Text(todo.title)
+            VStack(alignment: .leading, spacing: 4) {
+                if editing {
+                    TextField("Edit title", text: $draftTitle)
                         .font(.system(size: 16))
                         .foregroundStyle(Theme.foreground)
-                        .strikethrough(todo.completed)
-                        .opacity(todo.completed ? 0.5 : 1)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
+                        .padding(.vertical, 4)
+                        .focused($editFocused)
+                        .submitLabel(.done)
+                        .onSubmit(commit)
+                        .onChange(of: editFocused) { _, focused in
+                            if !focused { commit() }
+                        }
+                        .onAppear { editFocused = true }
+                        .accessibilityLabel("Edit title")
+                        .accessibilityIdentifier(TestID.itemEditInput)
+                } else {
+                    Button {
+                        draftTitle = todo.title
+                        editing = true
+                    } label: {
+                        Text(todo.title)
+                            .font(.system(size: 16))
+                            .foregroundStyle(Theme.foreground)
+                            .strikethrough(todo.completed)
+                            .opacity(todo.completed ? 0.5 : 1)
+                            .lineLimit(1)
+                            .layoutPriority(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Edit \"\(todo.title)\"")
+                    .accessibilityIdentifier(TestID.itemTitle(todo.title))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Edit \"\(todo.title)\"")
-                .accessibilityIdentifier(TestID.itemTitle(todo.title))
-            }
 
-            if let dueDate = todo.dueDate {
-                Text(dueDate)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.muted)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .layoutPriority(1)
-                    .accessibilityIdentifier(TestID.itemDueDate(todo.title))
-            }
+                HStack(spacing: 8) {
+                    if let dueDate = todo.dueDate {
+                        Text(dueDate)
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.muted)
+                            .lineLimit(1)
+                            .fixedSize()
+                            .accessibilityIdentifier(TestID.itemDueDate(todo.title))
+                    }
 
-            if let reminder = todo.reminder {
-                Text(reminder.label)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.muted)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .layoutPriority(1)
-                    .accessibilityHint("Reminder")
-                    .accessibilityIdentifier(TestID.itemReminder(todo.title))
-            }
+                    if let reminder = todo.reminder {
+                        Text(reminder.label)
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.muted)
+                            .lineLimit(1)
+                            .fixedSize()
+                            .accessibilityHint("Reminder")
+                            .accessibilityIdentifier(TestID.itemReminder(todo.title))
+                    }
 
-            let colors = Theme.priority(todo.priority)
-            Text(todo.priority.rawValue.capitalized)
-                .font(.system(size: 12))
-                .foregroundStyle(colors.text)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background(colors.bg, in: Capsule())
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                .layoutPriority(1)
-                .accessibilityIdentifier(TestID.itemPriority(todo.title))
+                    let colors = Theme.priority(todo.priority)
+                    Text(todo.priority.rawValue.capitalized)
+                        .font(.system(size: 12))
+                        .foregroundStyle(colors.text)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(colors.bg, in: Capsule())
+                        .lineLimit(1)
+                        .fixedSize()
+                        .accessibilityIdentifier(TestID.itemPriority(todo.title))
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Button(action: onRemove) {
                 Text("×")
