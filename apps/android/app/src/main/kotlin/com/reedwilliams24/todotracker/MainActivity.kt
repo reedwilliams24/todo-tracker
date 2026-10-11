@@ -74,6 +74,7 @@ class MainActivity : ComponentActivity() {
                             changeEmail = auth::changeEmail,
                             resolveGuestTodos = auth::resolveGuestTodos,
                             signOut = auth::signOut,
+                            deleteAccount = auth::deleteAccount,
                         )
                     }
                     TodoApp(

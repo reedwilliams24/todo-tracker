@@ -153,6 +153,11 @@
     <string name="auth_account_label">Account</string>
     <string name="auth_account_signedInAs">Signed in as %1$s</string>
     <string name="auth_signOut">Sign out</string>
+    <string name="auth_delete_menu">Delete account</string>
+    <string name="auth_delete_title">Delete your account?</string>
+    <string name="auth_delete_message">This permanently deletes %1$s and all of its todos, on every device. This can\'t be undone.</string>
+    <string name="auth_delete_confirm">Delete account</string>
+    <string name="auth_delete_deleting">Deleting…</string>
     <string name="auth_expired_banner">Your session expired. Sign in again to keep syncing.</string>
     <string name="auth_expired_signIn">Sign in again</string>
     <string name="sync_pushFailed">Couldn\'t save your change. Check your connection and try again.</string>

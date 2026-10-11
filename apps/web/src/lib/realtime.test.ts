@@ -21,11 +21,11 @@ function row(id: string, seq: number): TodoRow {
     due_date: null,
     recurrence: null,
     completed_at: null,
+    subtasks: null,
     created_at: "2026-01-05T09:00:00.000Z",
     updated_at: "2026-01-05T09:00:00.000Z",
     deleted_at: null,
     server_seq: seq,
-    subtasks: null,
   };
 }
 

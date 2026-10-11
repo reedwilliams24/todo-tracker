@@ -34,4 +34,5 @@ let messageArgs: [String: MessageArgs] = [
     "auth.resendIn": MessageArgs(["seconds"]),
     "auth.move.prompt": MessageArgs(["count"], plural: "count"),
     "auth.account.signedInAs": MessageArgs(["email"]),
+    "auth.delete.message": MessageArgs(["email"]),
 ]

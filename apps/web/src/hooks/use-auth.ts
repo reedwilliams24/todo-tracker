@@ -110,17 +110,28 @@ export function useAuth(client: AuthClient | null, mover: GuestTodoMover) {
     [dispatch, mover, session],
   );
 
+  const endSession = useCallback(() => {
+    wipeAccount();
+    wipeGuest();
+    setSession(null);
+    dispatch({ type: "signedOut", initiated: true });
+  }, [dispatch]);
+
   const signOut = useCallback(async () => {
     if (!client) return;
     try {
       await client.signOut();
     } finally {
-      wipeAccount();
-      wipeGuest();
-      setSession(null);
-      dispatch({ type: "signedOut", initiated: true });
+      endSession();
     }
-  }, [client, dispatch]);
+  }, [client, endSession]);
+
+  /** Throws an `AuthFailure` (and keeps the session) when the server call fails. */
+  const deleteAccount = useCallback(async () => {
+    if (!client) return;
+    await client.deleteAccount();
+    endSession();
+  }, [client, endSession]);
 
   return {
     state,
@@ -135,6 +146,7 @@ export function useAuth(client: AuthClient | null, mover: GuestTodoMover) {
     verify,
     resolveGuestTodos,
     signOut,
+    deleteAccount,
   };
 }
 
