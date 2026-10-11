@@ -168,6 +168,20 @@ export const FEATURES: Feature[] = [
       { name: "removeFromList removes several", op: "removeFromList", given: { todos: sample, ids: ["a", "c"] } },
       { name: "removeFromList ignores unknown ids", op: "removeFromList", given: { todos: sample, ids: ["zzz"] } },
       { name: "clearCompletedInList", op: "clearCompletedInList", given: { todos: sample } },
+      { name: "countCompleted", op: "countCompleted", given: { todos: sample } },
+      { name: "countCompleted empty", op: "countCompleted", given: { todos: [] } },
+      {
+        name: "bulkToggle completes a mixed selection",
+        op: "bulkToggle",
+        given: { todos: sample, ids: ["a", "b"], now: T1 },
+      },
+      {
+        name: "bulkToggle reopens an all-complete selection",
+        op: "bulkToggle",
+        given: { todos: sample, ids: ["b"], now: T1 },
+      },
+      { name: "bulkToggle ignores unknown ids", op: "bulkToggle", given: { todos: sample, ids: ["zzz"], now: T1 } },
+      { name: "bulkToggle with empty selection", op: "bulkToggle", given: { todos: sample, ids: [], now: T1 } },
     ],
   },
   {
@@ -204,6 +218,32 @@ export const FEATURES: Feature[] = [
         name: "reopening a completed todo does not offer undo",
         op: "applyActions",
         given: { todos: sample, steps: [{ action: "toggle", id: "b", now: T1 }] },
+      },
+      {
+        name: "bulk complete offers undo counting newly completed todos",
+        op: "applyActions",
+        given: { todos: sample, steps: [{ action: "toggleMany", ids: ["a", "b", "c"], now: T1 }] },
+      },
+      {
+        name: "undo restores a bulk complete",
+        op: "applyActions",
+        given: {
+          todos: sample,
+          steps: [
+            { action: "toggleMany", ids: ["a", "c"], now: T1 },
+            { action: "undo", now: T2 },
+          ],
+        },
+      },
+      {
+        name: "bulk reopen does not offer undo",
+        op: "applyActions",
+        given: { todos: sample, steps: [{ action: "toggleMany", ids: ["b"], now: T1 }] },
+      },
+      {
+        name: "bulk toggle of unknown ids changes nothing",
+        op: "applyActions",
+        given: { todos: sample, steps: [{ action: "toggleMany", ids: ["zzz"], now: T1 }] },
       },
       {
         name: "deleting one offers undo",

@@ -6,6 +6,12 @@ struct TodoRowView: View {
     let onToggle: () -> Void
     let onRename: (String) -> Void
     let onRemove: () -> Void
+    var selection: Selection?
+
+    struct Selection {
+        let selected: Bool
+        let onSelect: () -> Void
+    }
 
     @State private var editing = false
     @State private var draftTitle = ""
@@ -14,6 +20,60 @@ struct TodoRowView: View {
     private var overdue: Bool { isOverdue(todo) }
 
     var body: some View {
+        if let selection {
+            selectableRow(selection)
+        } else {
+            row
+        }
+    }
+
+    private func selectableRow(_ selection: Selection) -> some View {
+        Button(action: selection.onSelect) {
+            HStack(spacing: 10) {
+                Circle()
+                    .strokeBorder(Theme.foreground, lineWidth: 1.5)
+                    .background(Circle().fill(selection.selected ? Theme.foreground : .clear))
+                    .overlay {
+                        if selection.selected {
+                            Text("✓").font(.system(size: 12)).foregroundStyle(Theme.card)
+                        }
+                    }
+                    .frame(width: 20, height: 20)
+                    .accessibilityLabel("Select \"\(todo.title)\"")
+                    .accessibilityValue(selection.selected ? "1" : "0")
+                    .accessibilityAddTraits(.isToggle)
+                    .accessibilityIdentifier(TestID.itemSelect(todo.title))
+                Text(todo.title)
+                    .font(.system(size: 16))
+                    .foregroundStyle(Theme.foreground)
+                    .strikethrough(todo.completed)
+                    .opacity(todo.completed ? 0.5 : 1)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                let colors = Theme.priority(todo.priority)
+                Text(todo.priority.rawValue.capitalized)
+                    .font(.system(size: 12))
+                    .foregroundStyle(colors.text)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(colors.bg, in: Capsule())
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .cardStyle()
+        .overlay {
+            if selection.selected {
+                RoundedRectangle(cornerRadius: Theme.Radius.lg).strokeBorder(Theme.foreground, lineWidth: 1.5)
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(TestID.item(todo.title))
+    }
+
+    private var row: some View {
         HStack(spacing: 10) {
             Toggle("Mark \"\(todo.title)\" as \(todo.completed ? "active" : "complete")",
                    isOn: Binding(get: { todo.completed }, set: { _ in onToggle() }))

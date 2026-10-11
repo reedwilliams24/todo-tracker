@@ -18,6 +18,7 @@ struct ContentView: View {
                 TodoFormView(onAdd: model.add)
                 toolbar
                 sortControl
+                if model.selecting { bulkBar }
                 list
                 Text(model.remainingText)
                     .font(.system(size: 12))
@@ -61,8 +62,15 @@ struct ContentView: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Filter todos")
             Spacer()
-            if model.hasCompleted {
-                Button("Clear completed", action: model.clearCompleted)
+            if !model.state.todos.isEmpty {
+                Button(model.selecting ? "Done" : "Select", action: model.toggleSelectMode)
+                    .buttonStyle(.plain)
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.foreground.opacity(0.7))
+                    .accessibilityIdentifier(TestID.selectMode)
+            }
+            if model.completedCount > 0, !model.selecting {
+                Button("Clear completed (\(model.completedCount))", action: model.clearCompleted)
                     .buttonStyle(.plain)
                     .font(.system(size: 14))
                     .foregroundStyle(Theme.foreground.opacity(0.7))
@@ -97,6 +105,57 @@ struct ContentView: View {
         .accessibilityIdentifier(TestID.sort)
     }
 
+    private var bulkBar: some View {
+        let count = model.selected.count
+        return HStack(spacing: 12) {
+            if model.confirmingDelete {
+                Text("Delete \(count) \(count == 1 ? "todo" : "todos")?")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Theme.foreground)
+                Spacer()
+                actionButton("Cancel", id: TestID.bulkDeleteCancel) { model.confirmingDelete = false }
+                actionButton("Delete", id: TestID.bulkDeleteConfirm, danger: true, action: model.deleteSelected)
+            } else {
+                Text("\(count) selected")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.muted)
+                    .accessibilityIdentifier(TestID.selectedCount)
+                Button(model.allVisibleSelected ? "Select none" : "Select all", action: model.toggleSelectAll)
+                    .buttonStyle(.plain)
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.foreground)
+                    .accessibilityIdentifier(TestID.selectAll)
+                Spacer()
+                actionButton("Toggle complete", id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
+                actionButton("Delete", id: TestID.bulkDelete, enabled: count > 0, danger: true) { model.confirmingDelete = true }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .cardStyle()
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Bulk actions")
+        .accessibilityIdentifier(TestID.bulkBar)
+    }
+
+    private func actionButton(
+        _ title: String, id: String, enabled: Bool = true, danger: Bool = false, action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(danger ? Theme.card : Theme.foreground)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(danger ? Theme.danger : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
+                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).strokeBorder(danger ? Theme.danger : Theme.border))
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
+        .accessibilityIdentifier(id)
+    }
+
     @ViewBuilder
     private var list: some View {
         let todos = model.visibleTodos
@@ -115,7 +174,10 @@ struct ContentView: View {
                         todo: todo,
                         onToggle: { model.toggle(todo.id) },
                         onRename: { model.rename(todo.id, title: $0) },
-                        onRemove: { model.remove(todo.id) }
+                        onRemove: { model.remove(todo.id) },
+                        selection: model.selecting
+                            ? TodoRowView.Selection(selected: model.selectedIds.contains(todo.id), onSelect: { model.toggleSelected(todo.id) })
+                            : nil
                     )
                 }
             }

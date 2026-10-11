@@ -69,6 +69,7 @@ import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoFilter
 import com.reedwilliams24.todotracker.core.TodoPriority
 import com.reedwilliams24.todotracker.core.TodoSort
+import com.reedwilliams24.todotracker.core.countCompleted
 import com.reedwilliams24.todotracker.core.countRemaining
 import com.reedwilliams24.todotracker.core.filterTodos
 import com.reedwilliams24.todotracker.core.hasQuickAddMeta
@@ -89,6 +90,18 @@ fun TodoApp(viewModel: TodoViewModel) {
     val todos = ui.state.todos
     val visible = remember(todos, filter, sort) { sortTodos(filterTodos(todos, filter), sort) }
     val remaining = countRemaining(todos)
+    val completedCount = countCompleted(todos)
+    var selecting by rememberSaveable { mutableStateOf(false) }
+    var selectedIds by remember { mutableStateOf(emptySet<String>()) }
+    var confirmingDelete by remember { mutableStateOf(false) }
+    val selected = visible.filter { it.id in selectedIds }.map { it.id }
+    val allVisibleSelected = visible.isNotEmpty() && selected.size == visible.size
+
+    fun exitSelectMode() {
+        selecting = false
+        selectedIds = emptySet()
+        confirmingDelete = false
+    }
 
     Box(
         Modifier
@@ -136,15 +149,15 @@ fun TodoApp(viewModel: TodoViewModel) {
                         )
                     }
                 }
-                if (todos.size > remaining) {
-                    Text(
-                        "Clear completed",
-                        fontSize = FontSize.sm,
-                        color = Palette.foreground.copy(alpha = 0.7f),
-                        modifier = Modifier
-                            .clickable(role = Role.Button, onClick = viewModel::clearCompleted)
-                            .testTag(TestIds.clearCompleted),
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+                    if (todos.isNotEmpty()) {
+                        LinkText(if (selecting) "Done" else "Select", TestIds.selectMode) {
+                            if (selecting) exitSelectMode() else selecting = true
+                        }
+                    }
+                    if (completedCount > 0 && !selecting) {
+                        LinkText("Clear completed ($completedCount)", TestIds.clearCompleted, onClick = viewModel::clearCompleted)
+                    }
                 }
             }
 
@@ -173,6 +186,25 @@ fun TodoApp(viewModel: TodoViewModel) {
                 }
             }
 
+            if (selecting) {
+                BulkBar(
+                    count = selected.size,
+                    allSelected = allVisibleSelected,
+                    confirmingDelete = confirmingDelete,
+                    onSelectAll = { selectedIds = if (allVisibleSelected) emptySet() else visible.map { it.id }.toSet() },
+                    onToggle = {
+                        viewModel.toggleMany(selected)
+                        exitSelectMode()
+                    },
+                    onDelete = { confirmingDelete = true },
+                    onConfirmDelete = {
+                        viewModel.removeMany(selected)
+                        exitSelectMode()
+                    },
+                    onCancelDelete = { confirmingDelete = false },
+                )
+            }
+
             Box(Modifier.weight(1f)) {
                 when {
                     !ui.hydrated -> EmptyText("Loading…", Modifier)
@@ -185,7 +217,19 @@ fun TodoApp(viewModel: TodoViewModel) {
                         verticalArrangement = Arrangement.spacedBy(Spacing.s2),
                     ) {
                         items(visible, key = { it.id }) { todo ->
-                            TodoItem(todo, onToggle = viewModel::toggle, onRename = viewModel::rename, onRemove = viewModel::remove)
+                            TodoItem(
+                                todo,
+                                onToggle = viewModel::toggle,
+                                onRename = viewModel::rename,
+                                onRemove = viewModel::remove,
+                                selection = if (selecting) {
+                                    Selection(todo.id in selectedIds) { id ->
+                                        selectedIds = if (id in selectedIds) selectedIds - id else selectedIds + id
+                                    }
+                                } else {
+                                    null
+                                },
+                            )
                         }
                     }
                 }
@@ -227,6 +271,140 @@ fun TodoApp(viewModel: TodoViewModel) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun LinkText(label: String, tag: String, onClick: () -> Unit) {
+    Text(
+        label,
+        fontSize = FontSize.sm,
+        color = Palette.foreground.copy(alpha = 0.7f),
+        modifier = Modifier
+            .clickable(role = Role.Button, onClick = onClick)
+            .testTag(tag),
+    )
+}
+
+@Composable
+private fun ActionButton(label: String, tag: String, enabled: Boolean = true, danger: Boolean = false, onClick: () -> Unit) {
+    Text(
+        label,
+        fontSize = FontSize.sm,
+        fontWeight = FontWeight.Medium,
+        color = if (danger) Palette.card else Palette.foreground,
+        modifier = Modifier
+            .alpha(if (enabled) 1f else 0.4f)
+            .clip(RoundedCornerShape(Radius.md))
+            .background(if (danger) Palette.danger else Palette.card)
+            .border(1.dp, if (danger) Palette.danger else Palette.border, RoundedCornerShape(Radius.md))
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .testTag(tag)
+            .padding(horizontal = Spacing.s3, vertical = Spacing.s1),
+    )
+}
+
+@Composable
+private fun BulkBar(
+    count: Int,
+    allSelected: Boolean,
+    confirmingDelete: Boolean,
+    onSelectAll: () -> Unit,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit,
+    onConfirmDelete: () -> Unit,
+    onCancelDelete: () -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.lg))
+            .border(1.dp, Palette.border, RoundedCornerShape(Radius.lg))
+            .background(Palette.card)
+            .semantics { contentDescription = "Bulk actions" }
+            .testTag(TestIds.bulkBar)
+            .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (confirmingDelete) {
+            Text(
+                "Delete $count ${if (count == 1) "todo" else "todos"}?",
+                fontSize = FontSize.sm,
+                fontWeight = FontWeight.Medium,
+                color = Palette.foreground,
+                modifier = Modifier.weight(1f),
+            )
+            ActionButton("Cancel", TestIds.bulkDeleteCancel, onClick = onCancelDelete)
+            ActionButton("Delete", TestIds.bulkDeleteConfirm, danger = true, onClick = onConfirmDelete)
+        } else {
+            Text("$count selected", fontSize = FontSize.sm, color = Palette.muted, modifier = Modifier.testTag(TestIds.selectedCount))
+            Text(
+                if (allSelected) "Select none" else "Select all",
+                fontSize = FontSize.sm,
+                color = Palette.foreground,
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(role = Role.Button, onClick = onSelectAll)
+                    .testTag(TestIds.selectAll),
+            )
+            ActionButton("Toggle complete", TestIds.bulkToggle, enabled = count > 0, onClick = onToggle)
+            ActionButton("Delete", TestIds.bulkDelete, enabled = count > 0, danger = true, onClick = onDelete)
+        }
+    }
+}
+
+private data class Selection(val selected: Boolean, val onSelect: (String) -> Unit)
+
+@Composable
+private fun SelectableItem(todo: Todo, selection: Selection) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.lg))
+            .border(
+                if (selection.selected) 1.5.dp else 1.dp,
+                if (selection.selected) Palette.foreground else Palette.border,
+                RoundedCornerShape(Radius.lg),
+            )
+            .background(Palette.card)
+            .toggleable(value = selection.selected, role = Role.Checkbox) { selection.onSelect(todo.id) }
+            .testTag(TestIds.item(todo.title))
+            .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s2_5),
+    ) {
+        Box(
+            Modifier
+                .size(Spacing.s5)
+                .clip(CircleShape)
+                .border(1.5.dp, Palette.foreground, CircleShape)
+                .background(if (selection.selected) Palette.foreground else Palette.card)
+                .semantics { contentDescription = "Select \"${todo.title}\"" }
+                .testTag(TestIds.itemSelect(todo.title)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (selection.selected) Text("✓", color = Palette.card, fontSize = FontSize.xs)
+        }
+        Text(
+            todo.title,
+            fontSize = FontSize.base,
+            color = Palette.foreground,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textDecoration = if (todo.completed) TextDecoration.LineThrough else null,
+            modifier = Modifier.weight(1f).alpha(if (todo.completed) 0.5f else 1f),
+        )
+        val (badgeBg, badgeText) = Palette.priority(todo.priority)
+        Text(
+            todo.priority.key.replaceFirstChar(Char::uppercase),
+            fontSize = FontSize.xs,
+            color = badgeText,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(badgeBg)
+                .padding(horizontal = Spacing.s2, vertical = Spacing.s0_5),
+        )
     }
 }
 
@@ -393,7 +571,12 @@ private fun TodoItem(
     onToggle: (String) -> Unit,
     onRename: (String, String) -> Unit,
     onRemove: (String) -> Unit,
+    selection: Selection? = null,
 ) {
+    if (selection != null) {
+        SelectableItem(todo, selection)
+        return
+    }
     var editing by remember { mutableStateOf(false) }
     // onFocusChanged reports "unfocused" when the editor first attaches; only a real blur commits.
     var editorFocused by remember { mutableStateOf(false) }

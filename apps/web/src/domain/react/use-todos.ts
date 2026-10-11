@@ -47,6 +47,7 @@ export function useTodos(storage: TodoStorage) {
 
   const addTodo = useCallback((draft: TodoDraft) => void addMany([draft]), [addMany]);
   const toggle = useCallback((id: string) => dispatch({ type: "toggle", id }), []);
+  const toggleMany = useCallback((ids: string[]) => dispatch({ type: "toggleMany", ids }), []);
   const rename = useCallback((id: string, title: string) => dispatch({ type: "rename", id, title }), []);
   const remove = useCallback((id: string) => dispatch({ type: "remove", ids: [id] }), []);
   const removeMany = useCallback((ids: string[]) => dispatch({ type: "remove", ids }), []);
@@ -59,6 +60,7 @@ export function useTodos(storage: TodoStorage) {
     addTodo,
     addMany,
     toggle,
+    toggleMany,
     rename,
     remove,
     removeMany,
