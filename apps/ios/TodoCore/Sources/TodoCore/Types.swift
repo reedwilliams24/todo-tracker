@@ -6,6 +6,10 @@ public enum TodoFilter: String, Codable, CaseIterable, Sendable {
     case all, active, completed
 }
 
+public enum TodoSort: String, Codable, CaseIterable, Sendable {
+    case priority, due
+}
+
 public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
     public var id: String
     public var title: String

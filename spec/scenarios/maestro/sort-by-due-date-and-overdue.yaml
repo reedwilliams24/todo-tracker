@@ -1,0 +1,63 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: sort-by-due-date-and-overdue
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Yesterday low"
+- tapOn:
+    id: "todo-form-priority-low"
+- tapOn:
+    id: "todo-form-due-date"
+- inputText: "2000-01-02"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Yesterday low"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Far future high"
+- tapOn:
+    id: "todo-form-priority-high"
+- tapOn:
+    id: "todo-form-due-date"
+- inputText: "2999-12-31"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Far future high"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Undated medium"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Undated medium"
+- assertVisible:
+    id: "todo-item-Far future high"
+- assertVisible:
+    id: "todo-item-Undated medium"
+- assertVisible:
+    id: "todo-item-Yesterday low"
+- assertVisible:
+    id: "todo-overdue-Yesterday low"
+- assertNotVisible:
+    id: "todo-overdue-Far future high"
+- tapOn:
+    id: "todo-sort-due"
+- assertVisible:
+    id: "todo-item-Yesterday low"
+- assertVisible:
+    id: "todo-item-Far future high"
+- assertVisible:
+    id: "todo-item-Undated medium"
+- tapOn:
+    id: "todo-toggle-Yesterday low"
+- assertNotVisible:
+    id: "todo-overdue-Yesterday low"

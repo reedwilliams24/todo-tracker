@@ -68,8 +68,10 @@ import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoFilter
 import com.reedwilliams24.todotracker.core.TodoPriority
+import com.reedwilliams24.todotracker.core.TodoSort
 import com.reedwilliams24.todotracker.core.countRemaining
 import com.reedwilliams24.todotracker.core.filterTodos
+import com.reedwilliams24.todotracker.core.isOverdue
 import com.reedwilliams24.todotracker.core.isValidDueDate
 import com.reedwilliams24.todotracker.core.isValidTitle
 import com.reedwilliams24.todotracker.core.remainingLabel
@@ -81,8 +83,9 @@ import com.reedwilliams24.todotracker.core.toTodoDraft
 fun TodoApp(viewModel: TodoViewModel) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(TodoFilter.ALL) }
+    var sort by rememberSaveable { mutableStateOf(TodoSort.PRIORITY) }
     val todos = ui.state.todos
-    val visible = remember(todos, filter) { sortTodos(filterTodos(todos, filter)) }
+    val visible = remember(todos, filter, sort) { sortTodos(filterTodos(todos, filter), sort) }
     val remaining = countRemaining(todos)
 
     Box(
@@ -139,6 +142,31 @@ fun TodoApp(viewModel: TodoViewModel) {
                         modifier = Modifier
                             .clickable(role = Role.Button, onClick = viewModel::clearCompleted)
                             .testTag(TestIds.clearCompleted),
+                    )
+                }
+            }
+
+            Row(
+                Modifier
+                    .selectableGroup()
+                    .semantics { contentDescription = "Sort todos" }
+                    .testTag(TestIds.sort),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Sort", fontSize = FontSize.sm, color = Palette.muted, modifier = Modifier.padding(end = Spacing.s1))
+                TodoSort.entries.forEach { option ->
+                    val selected = sort == option
+                    Text(
+                        if (option == TodoSort.DUE) "Due date" else "Priority",
+                        fontSize = FontSize.sm,
+                        color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(if (selected) Palette.foreground else Palette.background)
+                            .selectable(selected = selected, role = Role.Tab) { sort = option }
+                            .testTag(TestIds.sortOption(option.key))
+                            .padding(horizontal = Spacing.s3, vertical = Spacing.s1),
                     )
                 }
             }
@@ -345,6 +373,7 @@ private fun TodoItem(
     var draftTitle by remember(todo.title) { mutableStateOf(todo.title) }
     val focus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+    val overdue = isOverdue(todo)
 
     fun commit() {
         if (!editing) return
@@ -357,7 +386,7 @@ private fun TodoItem(
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(Radius.lg))
-            .border(1.dp, Palette.border, RoundedCornerShape(Radius.lg))
+            .border(1.dp, if (overdue) Palette.danger else Palette.border, RoundedCornerShape(Radius.lg))
             .background(Palette.card)
             .testTag(TestIds.item(todo.title))
             .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
@@ -424,7 +453,24 @@ private fun TodoItem(
         }
 
         todo.dueDate?.let {
-            Text(it, fontSize = FontSize.xs, color = Palette.muted, modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)))
+            val color = if (overdue) Palette.danger else Palette.muted
+            Row(
+                Modifier.semantics(mergeDescendants = true) {
+                    contentDescription = if (overdue) "Overdue, was due $it" else "Due $it"
+                },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (overdue) {
+                    Text(
+                        "Overdue · ",
+                        fontSize = FontSize.xs,
+                        fontWeight = FontWeight.Medium,
+                        color = color,
+                        modifier = Modifier.testTag(TestIds.itemOverdue(todo.title)),
+                    )
+                }
+                Text(it, fontSize = FontSize.xs, color = color, modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)))
+            }
         }
 
         val (badgeBg, badgeText) = Palette.priority(todo.priority)
