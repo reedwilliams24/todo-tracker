@@ -15,6 +15,7 @@ Every merge to `main` ships automatically to the platforms it touches
 | ------------------------------------------------- | ------------------------------------------------ |
 | `apps/web/**`                                     | Web → Vercel production (PRs get a preview link) |
 | Root config (`package.json`, lockfile, workspace) | Web                                              |
+| `supabase/migrations/**`                          | Database → Supabase dev, then prod               |
 
 - **Web:** _URL goes here after the first deploy._
 - **Android / iOS:** no install channel yet ([REED-74](https://linear.app/reed-williams/issue/REED-74), [REED-75](https://linear.app/reed-williams/issue/REED-75)). Build from [`apps/android`](apps/android/README.md) or [`apps/ios`](apps/ios/README.md); CI uploads a debug APK on every run.
@@ -94,6 +95,25 @@ Sign-in codes sent locally land in Mailpit at http://127.0.0.1:54324. Auth setti
 code, 10-minute expiry, 60 s resend) are in `supabase/config.toml`, and the code-only email template
 is `supabase/templates/otp-code.html`.
 
+#### Local, dev and prod
+
+| Backend | Project                                | Used by                                                  |
+| ------- | -------------------------------------- | -------------------------------------------------------- |
+| local   | `pnpm exec supabase start` (Docker)    | `pnpm dev` via `.env.local`, CI's `db-tests-supabase`    |
+| dev     | hosted `todo-tracker-dev` (us-east-1)  | Vercel preview deployments                               |
+| prod    | hosted `todo-tracker-prod` (us-west-2) | Vercel production (https://todo-tracker-puce.vercel.app) |
+
+The web app picks its backend from `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+(the publishable key, never the `service_role` one). Vercel sets them per environment: Preview gets dev,
+Production gets prod. To run the web app against a backend locally, put that backend's values in
+`apps/web/.env.local` (git-ignored) and run `pnpm dev`:
+
+- local: the API URL and anon key that `supabase start` prints (`pnpm exec supabase status` shows them again)
+- dev / prod: the Project URL and publishable key from
+  https://supabase.com/dashboard/project/_/settings/api-keys
+
+With neither variable set the app stays guest-only (local storage). Native app config is below.
+
 #### Building the apps against Supabase
 
 Sign-in (REED-66) only appears when a build has a Supabase URL and publishable (anon) key. Default and
@@ -110,6 +130,43 @@ CI builds have none, so they stay guest-only. The URL and key are public; never 
 they come from the Management API (`GET /v1/projects/{ref}/api-keys`, the `sb_publishable_` key).
 Android debug builds allow cleartext HTTP to `10.0.2.2`/`localhost` only, for the local stack. Web e2e
 against the local stack: `pnpm --filter web e2e:auth` (reads codes from Mailpit).
+
+#### Migrations on hosted projects
+
+Merging a change under `supabase/migrations/` to `main` runs
+[`.github/workflows/supabase-migrations.yml`](.github/workflows/supabase-migrations.yml): `deploy-supabase-dev`
+applies the new migrations to dev, and only if that succeeds `deploy-supabase-prod` applies them to prod. It
+can also be started by hand from https://github.com/reedwilliams24/todo-tracker/actions/workflows/supabase-migrations.yml
+(**Run workflow**). Both jobs run [`scripts/supabase-db-push.sh`](scripts/supabase-db-push.sh), which calls
+`supabase db push --db-url` through the session pooler (the direct database host is IPv6-only), using the
+`SUPABASE_{DEV,PROD}_PROJECT_REF` and `SUPABASE_{DEV,PROD}_DB_PASSWORD` repo secrets; no access token is
+stored in CI. The workflow isn't a PR check: `db-tests-supabase` tests migrations on PRs. Migrations are
+forward-only, so fix a bad one with a new migration rather than editing a merged file.
+
+To see what would be applied without changing anything:
+
+```bash
+PROJECT_REF=<ref> DB_PASSWORD=<password> POOLER_HOST=aws-0-us-east-1.pooler.supabase.com \
+  scripts/supabase-db-push.sh --dry-run   # prod: aws-1-us-west-2.pooler.supabase.com
+```
+
+#### Auth settings on hosted projects
+
+`supabase/config.toml` only configures the local stack. The hosted projects get the same auth settings
+(email code only, 6 digits, 10-minute expiry, 60 s resend, sign-ups on, 30 emails/hour, the code-only
+template for the confirmation and magic-link emails) plus each project's site URL and redirect allow-list
+from [`scripts/supabase-auth-config.mjs`](scripts/supabase-auth-config.mjs), through the Management API.
+Re-run it after changing the template or any of those settings:
+
+```bash
+pnpm supabase:auth-config dev prod --dry-run   # list the settings that differ
+pnpm supabase:auth-config dev prod             # apply them
+```
+
+It needs `SUPABASE_ACCESS_TOKEN` (a scoped token with Auth Config + Project Settings read-write) and
+`SUPABASE_{DEV,PROD}_PROJECT_REF`. It never sends SMTP fields, so the Gmail SMTP configured in each project
+(sign-in codes are sent from Reed's Gmail until [REED-78](https://linear.app/reed-williams/issue/REED-78)) is
+left as is; after applying it prints whether each SMTP field is still set, never the values.
 
 ## Checks
 
