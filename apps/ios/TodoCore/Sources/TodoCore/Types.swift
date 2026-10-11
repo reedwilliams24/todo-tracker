@@ -21,6 +21,10 @@ public enum ReminderOffset: String, Codable, CaseIterable, Sendable {
     }
 }
 
+public enum TodoSort: String, Codable, CaseIterable, Sendable {
+    case priority, due
+}
+
 public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
     public var id: String
     public var title: String

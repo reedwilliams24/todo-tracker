@@ -7,12 +7,13 @@ struct TodoFormView: View {
 
     @State private var form = TodoFormState.empty
 
+    private var parsed: QuickAddParse { parseQuickAdd(form.title) }
     private var dateOk: Bool { isValidDueDate(form.dueDate) }
-    private var canAdd: Bool { isValidTitle(form.title) && dateOk }
+    private var canAdd: Bool { isValidTitle(parsed.title) && dateOk }
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
-            TextField("What needs doing?", text: $form.title, prompt: Text("What needs doing?").foregroundStyle(Theme.muted))
+            TextField("What needs doing?", text: $form.title, prompt: Text("What needs doing? e.g. tomorrow !p1 #tag").foregroundStyle(Theme.muted))
                 .font(.system(size: 16))
                 .foregroundStyle(Theme.foreground)
                 .padding(8)
@@ -38,6 +39,10 @@ struct TodoFormView: View {
                     .accessibilityIdentifier(TestID.formDueDate)
             }
             reminderPicker
+            let preview = parsed
+            if hasQuickAddMeta(preview) {
+                QuickAddPreview(parse: preview)
+            }
             Button(action: submit) {
                 Text("Add")
                     .font(.system(size: 14, weight: .medium))
@@ -49,6 +54,7 @@ struct TodoFormView: View {
             .buttonStyle(UndimmedButtonStyle())
             .disabled(!canAdd)
             .opacity(canAdd ? 1 : 0.4)
+            .accessibilityLabel("Add todo")
             .accessibilityIdentifier(TestID.formSubmit)
         }
         .padding(12)
@@ -115,8 +121,43 @@ struct TodoFormView: View {
 
     private func submit() {
         guard canAdd else { return }
-        onAdd(toTodoDraft(form))
+        var draft = quickAddToDraft(parsed, fallbackPriority: form.priority, fallbackDueDate: form.dueDate)
+        draft.reminder = draft.dueDate == nil ? nil : ReminderOffset(rawValue: form.reminder)
+        onAdd(draft)
         form = .empty
+    }
+}
+
+private struct QuickAddPreview: View {
+    let parse: QuickAddParse
+
+    private var meta: String {
+        var parts: [String] = []
+        if let dueDate = parse.dueDate { parts.append("Due \(dueDate)") }
+        if let priority = parse.priority { parts.append("\(priority.rawValue.capitalized) priority") }
+        parts += parse.tags.map { "#\($0)" }
+        return parts.joined(separator: "  ·  ")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Text("Will add:")
+                    .foregroundStyle(Theme.muted)
+                Text(parse.title.isEmpty ? "…" : parse.title)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Theme.foreground)
+                    .accessibilityIdentifier(TestID.quickAddPreviewTitle)
+            }
+            if !meta.isEmpty {
+                Text(meta).foregroundStyle(Theme.muted)
+            }
+        }
+        .font(.system(size: 12))
+        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(TestID.quickAddPreview)
     }
 }
 

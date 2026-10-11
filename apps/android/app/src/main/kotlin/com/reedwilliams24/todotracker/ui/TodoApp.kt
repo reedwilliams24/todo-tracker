@@ -55,6 +55,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -70,26 +71,32 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reedwilliams24.todotracker.TodoViewModel
 import com.reedwilliams24.todotracker.core.EMPTY_TODO_FORM
 import com.reedwilliams24.todotracker.core.REMINDER_OFFSETS
+import com.reedwilliams24.todotracker.core.ReminderOffset
 import com.reedwilliams24.todotracker.core.TestIds
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoFilter
 import com.reedwilliams24.todotracker.core.TodoPriority
+import com.reedwilliams24.todotracker.core.TodoSort
 import com.reedwilliams24.todotracker.core.countRemaining
 import com.reedwilliams24.todotracker.core.filterTodos
+import com.reedwilliams24.todotracker.core.hasQuickAddMeta
+import com.reedwilliams24.todotracker.core.isOverdue
 import com.reedwilliams24.todotracker.core.isValidDueDate
 import com.reedwilliams24.todotracker.core.isValidTitle
+import com.reedwilliams24.todotracker.core.parseQuickAdd
+import com.reedwilliams24.todotracker.core.quickAddToDraft
 import com.reedwilliams24.todotracker.core.remainingLabel
 import com.reedwilliams24.todotracker.core.sortTodos
-import com.reedwilliams24.todotracker.core.toTodoDraft
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TodoApp(viewModel: TodoViewModel) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(TodoFilter.ALL) }
+    var sort by rememberSaveable { mutableStateOf(TodoSort.PRIORITY) }
     val todos = ui.state.todos
-    val visible = remember(todos, filter) { sortTodos(filterTodos(todos, filter)) }
+    val visible = remember(todos, filter, sort) { sortTodos(filterTodos(todos, filter), sort) }
     val remaining = countRemaining(todos)
 
     Box(
@@ -108,7 +115,13 @@ fun TodoApp(viewModel: TodoViewModel) {
             verticalArrangement = Arrangement.spacedBy(Spacing.s4),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-                Text("Todo Tracker", fontSize = FontSize.xl2, fontWeight = FontWeight.SemiBold, color = Palette.foreground)
+                Text(
+                    "Todo Tracker",
+                    fontSize = FontSize.xl2,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Palette.foreground,
+                    modifier = Modifier.semantics { heading() },
+                )
                 Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
             }
 
@@ -163,6 +176,31 @@ fun TodoApp(viewModel: TodoViewModel) {
                 }
             }
 
+            Row(
+                Modifier
+                    .selectableGroup()
+                    .semantics { contentDescription = "Sort todos" }
+                    .testTag(TestIds.sort),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Sort", fontSize = FontSize.sm, color = Palette.muted, modifier = Modifier.padding(end = Spacing.s1))
+                TodoSort.entries.forEach { option ->
+                    val selected = sort == option
+                    Text(
+                        if (option == TodoSort.DUE) "Due date" else "Priority",
+                        fontSize = FontSize.sm,
+                        color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(if (selected) Palette.foreground else Palette.background)
+                            .selectable(selected = selected, role = Role.Tab) { sort = option }
+                            .testTag(TestIds.sortOption(option.key))
+                            .padding(horizontal = Spacing.s3, vertical = Spacing.s1),
+                    )
+                }
+            }
+
             Box(Modifier.weight(1f)) {
                 when {
                     !ui.hydrated -> EmptyText("Loading…", Modifier)
@@ -185,7 +223,9 @@ fun TodoApp(viewModel: TodoViewModel) {
                 remainingLabel(remaining),
                 fontSize = FontSize.xs,
                 color = Palette.muted,
-                modifier = Modifier.testTag(TestIds.remaining),
+                modifier = Modifier
+                    .semantics { liveRegion = LiveRegionMode.Polite }
+                    .testTag(TestIds.remaining),
             )
         }
 
@@ -267,12 +307,14 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
     var reminder by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.reminder) }
+    val parsed = remember(title) { parseQuickAdd(title) }
     val dateOk = isValidDueDate(dueDate)
-    val canAdd = isValidTitle(title) && dateOk
+    val canAdd = isValidTitle(parsed.title) && dateOk
 
     fun submit() {
         if (!canAdd) return
-        onAdd(toTodoDraft(EMPTY_TODO_FORM.copy(title = title, priority = priority, dueDate = dueDate, reminder = reminder)))
+        val draft = quickAddToDraft(parsed, priority, dueDate)
+        onAdd(draft.copy(reminder = if (draft.dueDate == null) null else ReminderOffset.fromKey(reminder)))
         title = EMPTY_TODO_FORM.title
         priority = EMPTY_TODO_FORM.priority
         dueDate = EMPTY_TODO_FORM.dueDate
@@ -291,7 +333,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
         Field(
             value = title,
             onValueChange = { title = it },
-            placeholder = "What needs doing?",
+            placeholder = "What needs doing? e.g. tomorrow !p1 #tag",
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { submit() }),
             modifier = Modifier
@@ -368,6 +410,30 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                 )
             }
         }
+        if (hasQuickAddMeta(parsed)) {
+            Column(
+                Modifier
+                    .testTag(TestIds.quickAddPreview)
+                    .padding(horizontal = Spacing.s2),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s0_5),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                    Text("Will add:", fontSize = FontSize.xs, color = Palette.muted)
+                    Text(
+                        parsed.title.ifEmpty { "…" },
+                        fontSize = FontSize.xs,
+                        fontWeight = FontWeight.Medium,
+                        color = Palette.foreground,
+                        modifier = Modifier.testTag(TestIds.quickAddPreviewTitle),
+                    )
+                }
+                val meta = listOfNotNull(
+                    parsed.dueDate?.let { "Due $it" },
+                    parsed.priority?.let { "${it.key.replaceFirstChar(Char::uppercase)} priority" },
+                ) + parsed.tags.map { "#$it" }
+                if (meta.isNotEmpty()) Text(meta.joinToString("  ·  "), fontSize = FontSize.xs, color = Palette.muted)
+            }
+        }
         Text(
             "Add",
             fontSize = FontSize.sm,
@@ -379,6 +445,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                 .clip(RoundedCornerShape(Radius.md))
                 .background(Palette.foreground)
                 .clickable(enabled = canAdd, role = Role.Button) { submit() }
+                .semantics { contentDescription = "Add todo" }
                 .testTag(TestIds.formSubmit)
                 .padding(horizontal = Spacing.s4, vertical = Spacing.s2),
         )
@@ -398,6 +465,7 @@ private fun TodoItem(
     var draftTitle by remember(todo.title) { mutableStateOf(todo.title) }
     val focus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+    val overdue = isOverdue(todo)
 
     fun commit() {
         if (!editing) return
@@ -410,7 +478,7 @@ private fun TodoItem(
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(Radius.lg))
-            .border(1.dp, Palette.border, RoundedCornerShape(Radius.lg))
+            .border(1.dp, if (overdue) Palette.danger else Palette.border, RoundedCornerShape(Radius.lg))
             .background(Palette.card)
             .testTag(TestIds.item(todo.title))
             .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
@@ -469,15 +537,32 @@ private fun TodoItem(
                 textDecoration = if (todo.completed) TextDecoration.LineThrough else null,
                 modifier = Modifier
                     .weight(1f)
-                    .alpha(if (todo.completed) 0.5f else 1f)
-                    .clickable { editing = true }
+                    .alpha(if (todo.completed) 0.7f else 1f)
+                    .clickable(role = Role.Button, onClickLabel = "open the title for editing") { editing = true }
                     .semantics { contentDescription = "Edit \"${todo.title}\"" }
                     .testTag(TestIds.itemTitle(todo.title)),
             )
         }
 
         todo.dueDate?.let {
-            Text(it, fontSize = FontSize.xs, color = Palette.muted, modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)))
+            val color = if (overdue) Palette.danger else Palette.muted
+            Row(
+                Modifier.semantics(mergeDescendants = true) {
+                    contentDescription = if (overdue) "Overdue, was due $it" else "Due $it"
+                },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (overdue) {
+                    Text(
+                        "Overdue · ",
+                        fontSize = FontSize.xs,
+                        fontWeight = FontWeight.Medium,
+                        color = color,
+                        modifier = Modifier.testTag(TestIds.itemOverdue(todo.title)),
+                    )
+                }
+                Text(it, fontSize = FontSize.xs, color = color, modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)))
+            }
         }
 
         todo.reminder?.let {

@@ -34,6 +34,16 @@ const reminderList = [
   todo("trip", { title: "Book trip", dueDate: "2026-05-11", reminder: "1d" }),
 ];
 
+const dueSample = [
+  todo("undated-high", { priority: "high" }),
+  todo("done-soonest", { dueDate: "2026-01-01", completed: true }),
+  todo("late-high", { priority: "high", dueDate: "2026-03-01" }),
+  todo("soon-low", { priority: "low", dueDate: "2026-01-10" }),
+  todo("soon-high", { priority: "high", dueDate: "2026-01-10" }),
+  todo("undated-low-older", { priority: "low", createdAt: "2026-01-01T00:00:00.000Z" }),
+  todo("undated-low-newer", { priority: "low", createdAt: "2026-01-02T00:00:00.000Z" }),
+];
+
 export const FEATURES: Feature[] = [
   {
     feature: "todo",
@@ -120,6 +130,25 @@ export const FEATURES: Feature[] = [
         op: "updateTodoText",
         given: { todos: sample, id: "a", text: "x".repeat(201), now: T1 },
       },
+      // Overdue uses the local calendar date of `now` (local time, no Z).
+      ...([
+        ["due yesterday", { dueDate: "2026-01-04" }, "2026-01-05T09:00:00"],
+        ["due today", { dueDate: "2026-01-05" }, "2026-01-05T09:00:00"],
+        ["due tomorrow", { dueDate: "2026-01-06" }, "2026-01-05T09:00:00"],
+        ["undated", {}, "2026-01-05T09:00:00"],
+        ["completed and past due", { dueDate: "2026-01-04", completed: true }, "2026-01-05T09:00:00"],
+        ["due today, just before midnight", { dueDate: "2026-01-05" }, "2026-01-05T23:59:00"],
+        ["due yesterday, just after midnight", { dueDate: "2026-01-04" }, "2026-01-05T00:01:00"],
+      ] as const).map(([label, overrides, now]) => ({
+        name: `isOverdue: ${label}`,
+        op: "isOverdue",
+        given: { todo: todo("a", overrides), now },
+      })),
+      ...["2026-01-05T00:00:00", "2026-01-05T23:59:59", "2026-12-31T12:00:00"].map((now) => ({
+        name: `toDateKey: ${now}`,
+        op: "toDateKey",
+        given: { now },
+      })),
     ],
   },
   {
@@ -156,6 +185,14 @@ export const FEATURES: Feature[] = [
           ],
         },
       },
+      {
+        name: "sortByDue: completed last, then due date (undated last), priority, creation",
+        op: "sortByDue",
+        given: { todos: dueSample },
+      },
+      { name: "sortTodos: priority", op: "sortTodos", given: { todos: dueSample, sort: "priority" } },
+      { name: "sortTodos: due", op: "sortTodos", given: { todos: dueSample, sort: "due" } },
+      { name: "sortTodos: defaults to priority", op: "sortTodos", given: { todos: dueSample } },
       {
         name: "addTodos prepends in draft order",
         op: "addTodos",
@@ -441,6 +478,63 @@ export const FEATURES: Feature[] = [
         name: "pruneDelivered drops keys with no planned reminder",
         op: "pruneDelivered",
         given: { todos: reminderList, delivered: ["later:2026-05-10:at", "rent:2026-05-09:1h", "done:2026-05-01:at", "gone:x:at"] },
+      },
+    ],
+  },
+  {
+    feature: "quick-add",
+    spec: "features/quick-add.md",
+    cases: [
+      // Monday 2026-01-05, local time.
+      ...[
+        "call mom tomorrow 5pm #family !p1",
+        "file taxes !low #Money #money",
+        "x !med",
+        "x !Medium",
+        "x !p2",
+        "x !P3",
+        "x !p4",
+        "pay rent asap",
+        "email bob !urgent",
+        "gym friday",
+        "gym monday",
+        "review next week",
+        "renew passport in 10 days",
+        "water plants in 1 day",
+        "dentist on 2026-12-01",
+        "rent due 2026-02-01 !high",
+        "pay due 2026-02-30",
+        "read issue#31 and page#2",
+        "plan trip #café #2026 #road-trip",
+        "remind me to buy milk today",
+        "!p1 #tag",
+        "plain text",
+      ].map((input) => ({
+        name: `parseQuickAdd: ${input}`,
+        op: "parseQuickAdd",
+        given: { input, now: "2026-01-05T09:00:00" },
+      })),
+      { name: "hasQuickAddMeta: plain", op: "hasQuickAddMeta", given: { parse: { title: "plain text", tags: [] } } },
+      { name: "hasQuickAddMeta: tag only", op: "hasQuickAddMeta", given: { parse: { title: "plain", tags: ["tag"] } } },
+      { name: "hasQuickAddMeta: priority only", op: "hasQuickAddMeta", given: { parse: { title: "x", priority: "low", tags: [] } } },
+      {
+        name: "quickAddToDraft prefers parsed values",
+        op: "quickAddToDraft",
+        given: {
+          parse: { title: "call mom", priority: "high", dueDate: "2026-01-06", tags: ["family"] },
+          fallbackPriority: "low",
+          fallbackDueDate: "2026-02-01",
+        },
+      },
+      {
+        name: "quickAddToDraft falls back to the form controls",
+        op: "quickAddToDraft",
+        given: { parse: { title: "a", tags: [] }, fallbackPriority: "high", fallbackDueDate: "2026-02-01" },
+      },
+      {
+        name: "quickAddToDraft treats an empty fallback date as none",
+        op: "quickAddToDraft",
+        given: { parse: { title: "a", priority: "low", tags: [] }, fallbackPriority: "medium", fallbackDueDate: "" },
       },
     ],
   },

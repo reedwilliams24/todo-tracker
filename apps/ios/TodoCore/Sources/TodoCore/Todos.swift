@@ -118,28 +118,70 @@ public func searchTodos(_ todos: [Todo], query: String) -> [Todo] {
     }
 }
 
+/// Local calendar date of `now` in YYYY-MM-DD form, matching how `dueDate` is stored.
+public func toDateKey(_ now: Date, timeZone: TimeZone = .current) -> String {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = timeZone
+    let parts = calendar.dateComponents([.year, .month, .day], from: now)
+    return String(format: "%04d-%02d-%02d", parts.year!, parts.month!, parts.day!)
+}
+
+/// True for an incomplete todo whose due date is before today (local time).
+public func isOverdue(_ todo: Todo, now: Date = Date()) -> Bool {
+    guard !todo.completed, let dueDate = todo.dueDate, !dueDate.isEmpty else { return false }
+    return dueDate < toDateKey(now)
+}
+
 /// Priority high→low, then due date (undated last), then creation; completed sink.
-///
-/// The TS comparator returns 1 (never 0) for equal `createdAt`, which V8's stable TimSort
-/// treats like a tie. A stable sort with ties kept in input order gives the same result.
 public func sortByPriority(_ todos: [Todo]) -> [Todo] {
+    stableSorted(todos) { a, b in
+        if a.completed != b.completed { return a.completed ? 1 : -1 }
+        let byPriority = a.priority.order - b.priority.order
+        if byPriority != 0 { return byPriority }
+        let byDue = compareDue(a, b)
+        if byDue != 0 { return byDue }
+        return compareCreated(a, b)
+    }
+}
+
+/// Due date ascending (undated last), then priority, then creation; completed sink.
+public func sortByDue(_ todos: [Todo]) -> [Todo] {
+    stableSorted(todos) { a, b in
+        if a.completed != b.completed { return a.completed ? 1 : -1 }
+        let byDue = compareDue(a, b)
+        if byDue != 0 { return byDue }
+        let byPriority = a.priority.order - b.priority.order
+        if byPriority != 0 { return byPriority }
+        return compareCreated(a, b)
+    }
+}
+
+public func sortTodos(_ todos: [Todo], _ sort: TodoSort = .priority) -> [Todo] {
+    switch sort {
+    case .priority: sortByPriority(todos)
+    case .due: sortByDue(todos)
+    }
+}
+
+/// The TS comparators return 1 (never 0) for equal `createdAt`, which V8's stable TimSort
+/// treats like a tie. A stable sort with ties kept in input order gives the same result.
+private func stableSorted(_ todos: [Todo], by compare: (Todo, Todo) -> Int) -> [Todo] {
     todos.enumerated()
         .sorted { lhs, rhs in
-            let order = compareForDisplay(lhs.element, rhs.element)
+            let order = compare(lhs.element, rhs.element)
             return order != 0 ? order < 0 : lhs.offset < rhs.offset
         }
         .map(\.element)
 }
 
-private func compareForDisplay(_ a: Todo, _ b: Todo) -> Int {
-    if a.completed != b.completed { return a.completed ? 1 : -1 }
-    let byPriority = a.priority.order - b.priority.order
-    if byPriority != 0 { return byPriority }
-    if a.dueDate != b.dueDate {
-        guard let left = a.dueDate else { return 1 }
-        guard let right = b.dueDate else { return -1 }
-        return left < right ? -1 : 1
-    }
+private func compareDue(_ a: Todo, _ b: Todo) -> Int {
+    if a.dueDate == b.dueDate { return 0 }
+    guard let left = a.dueDate, !left.isEmpty else { return 1 }
+    guard let right = b.dueDate, !right.isEmpty else { return -1 }
+    return left < right ? -1 : 1
+}
+
+private func compareCreated(_ a: Todo, _ b: Todo) -> Int {
     if a.createdAt == b.createdAt { return 0 }
     return a.createdAt < b.createdAt ? -1 : 1
 }

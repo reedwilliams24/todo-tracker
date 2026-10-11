@@ -41,6 +41,15 @@ enum FixtureOps {
             return searchTodos(try g.decode("todos"), query: try g.decode("query"))
         case "sortByPriority":
             return sortByPriority(try g.decode("todos"))
+        case "sortByDue":
+            return sortByDue(try g.decode("todos"))
+        case "sortTodos":
+            let sort = try g.decode("sort", as: String?.self).flatMap(TodoSort.init(rawValue:)) ?? .priority
+            return sortTodos(try g.decode("todos"), sort)
+        case "isOverdue":
+            return isOverdue(try g.decode("todo"), now: try g.date("now"))
+        case "toDateKey":
+            return toDateKey(try g.date("now"))
         case "countRemaining":
             return countRemaining(try g.decode("todos"))
         case "addTodos":
@@ -88,6 +97,16 @@ enum FixtureOps {
                 .map(ReminderResult.init)
         case "pruneDelivered":
             return pruneDelivered(try g.decode("delivered"), todos: try g.decode("todos")).sorted()
+        case "parseQuickAdd":
+            return parseQuickAdd(try g.decode("input"), now: try g.date("now"))
+        case "hasQuickAddMeta":
+            return hasQuickAddMeta(try g.decode("parse"))
+        case "quickAddToDraft":
+            return quickAddToDraft(
+                try g.decode("parse"),
+                fallbackPriority: try g.decode("fallbackPriority"),
+                fallbackDueDate: try g.decode("fallbackDueDate", as: String?.self)
+            )
         default:
             throw UnknownOp(op: op)
         }

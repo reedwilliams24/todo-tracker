@@ -1,12 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { REMINDER_LABELS, isValidTitle, TEST_IDS, type Todo } from "@/domain";
+import { REMINDER_LABELS, isOverdue, isValidTitle, TEST_IDS, type Todo } from "@/domain";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
-  high: "bg-red-500/15 text-red-600 dark:text-red-400",
-  medium: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  low: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  high: "bg-red-500/15 text-red-700 dark:text-red-400",
+  medium: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
+  low: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
 };
 
 type TodoItemProps = {
@@ -43,8 +43,15 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
     setEditing(false);
   }
 
+  const overdue = isOverdue(todo);
+
   return (
-    <li data-testid={TEST_IDS.item(todo.title)} className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/60 px-3 py-2 dark:border-white/15 dark:bg-white/5">
+    <li
+      data-testid={TEST_IDS.item(todo.title)}
+      className={`flex items-center gap-3 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
+        overdue ? "border-red-500/40" : "border-black/10 dark:border-white/15"
+      }`}
+    >
       <input
         type="checkbox"
         checked={todo.completed}
@@ -75,14 +82,19 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
           data-testid={TEST_IDS.itemTitle(todo.title)}
           aria-label={`Edit "${todo.title}"`}
           title="Double-click to edit"
-          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
+          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-70" : ""}`}
         >
           {todo.title}
         </button>
       )}
 
       {todo.dueDate && (
-        <span data-testid={TEST_IDS.itemDueDate(todo.title)} className="text-xs opacity-60">
+        <span
+          data-testid={TEST_IDS.itemDueDate(todo.title)}
+          className={`text-xs ${overdue ? "font-medium text-red-700 dark:text-red-400" : "opacity-70"}`}
+          aria-label={overdue ? `Overdue, was due ${todo.dueDate}` : `Due ${todo.dueDate}`}
+        >
+          {overdue && <span data-testid={TEST_IDS.itemOverdue(todo.title)}>Overdue · </span>}
           {todo.dueDate}
         </span>
       )}
@@ -108,7 +120,7 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         onClick={() => onRemove(todo.id)}
         data-testid={TEST_IDS.itemDelete(todo.title)}
         aria-label={`Delete "${todo.title}"`}
-        className="rounded-lg px-2 py-1 text-sm opacity-50 transition hover:opacity-100"
+        className="rounded-lg px-2 py-1 text-sm opacity-70 transition hover:opacity-100"
       >
         ×
       </button>

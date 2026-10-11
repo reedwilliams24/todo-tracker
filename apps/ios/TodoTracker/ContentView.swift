@@ -11,17 +11,23 @@ struct ContentView: View {
                     Text("Todo Tracker")
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundStyle(Theme.foreground)
+                        .accessibilityAddTraits(.isHeader)
                     Text("A tiny local-first todo list.")
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.muted)
                 }
                 TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
                 toolbar
+                sortControl
                 list
                 Text(model.remainingText)
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.muted)
                     .accessibilityIdentifier(TestID.remaining)
+                    // Like aria-live="polite" on web: VoiceOver reads the new count after toggles and deletes.
+                    .onChange(of: model.remainingText) { _, text in
+                        UIAccessibility.post(notification: .announcement, argument: text)
+                    }
             }
             .padding(16)
             .padding(.bottom, 72)
@@ -68,6 +74,32 @@ struct ContentView: View {
                     .accessibilityIdentifier(TestID.clearCompleted)
             }
         }
+    }
+
+    private var sortControl: some View {
+        HStack(spacing: 4) {
+            Text("Sort")
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.muted)
+                .padding(.trailing, 4)
+            ForEach(TodoSort.allCases, id: \.self) { option in
+                let selected = model.sort == option
+                Button { model.sort = option } label: {
+                    Text(option == .due ? "Due date" : "Priority")
+                        .font(.system(size: 14))
+                        .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(selected ? Theme.foreground : .clear, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier(TestID.sortOption(option))
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Sort todos")
+        .accessibilityIdentifier(TestID.sort)
     }
 
     @ViewBuilder

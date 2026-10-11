@@ -83,6 +83,33 @@
       ]
     },
     {
+      "name": "quick-add-shorthand",
+      "steps": [
+        { "do": "type", "text": "Call mom 2030-01-15 #family !p1" },
+        { "expect": "quickAddPreview", "title": "Call mom" },
+        { "do": "submit" },
+        { "expect": "titles", "titles": ["Call mom"] },
+        { "expect": "priority", "title": "Call mom", "priority": "high" },
+        { "expect": "dueDate", "title": "Call mom", "dueDate": "2030-01-15" },
+        { "expect": "quickAddPreview", "title": null }
+      ]
+    },
+    {
+      "name": "sort-by-due-date-and-overdue",
+      "steps": [
+        { "do": "add", "title": "Yesterday low", "priority": "low", "dueDate": "2000-01-02" },
+        { "do": "add", "title": "Far future high", "priority": "high", "dueDate": "2999-12-31" },
+        { "do": "add", "title": "Undated medium" },
+        { "expect": "titles", "titles": ["Far future high", "Undated medium", "Yesterday low"] },
+        { "expect": "overdue", "title": "Yesterday low", "value": true },
+        { "expect": "overdue", "title": "Far future high", "value": false },
+        { "do": "sort", "sort": "due" },
+        { "expect": "titles", "titles": ["Yesterday low", "Far future high", "Undated medium"] },
+        { "do": "toggle", "title": "Yesterday low" },
+        { "expect": "overdue", "title": "Yesterday low", "value": false }
+      ]
+    },
+    {
       "name": "search",
       "platforms": ["web"],
       "steps": [

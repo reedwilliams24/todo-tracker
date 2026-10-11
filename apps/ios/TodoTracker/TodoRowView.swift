@@ -11,6 +11,8 @@ struct TodoRowView: View {
     @State private var draftTitle = ""
     @FocusState private var editFocused: Bool
 
+    private var overdue: Bool { isOverdue(todo) }
+
     var body: some View {
         HStack(spacing: 10) {
             Toggle("Mark \"\(todo.title)\" as \(todo.completed ? "active" : "complete")",
@@ -43,7 +45,7 @@ struct TodoRowView: View {
                             .font(.system(size: 16))
                             .foregroundStyle(Theme.foreground)
                             .strikethrough(todo.completed)
-                            .opacity(todo.completed ? 0.5 : 1)
+                            .opacity(todo.completed ? 0.7 : 1)
                             .lineLimit(1)
                             .layoutPriority(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -51,17 +53,28 @@ struct TodoRowView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Edit \"\(todo.title)\"")
+                    .accessibilityHint("Opens the title for editing")
                     .accessibilityIdentifier(TestID.itemTitle(todo.title))
                 }
 
                 HStack(spacing: 8) {
                     if let dueDate = todo.dueDate {
-                        Text(dueDate)
-                            .font(.system(size: 12))
-                            .foregroundStyle(Theme.muted)
-                            .lineLimit(1)
-                            .fixedSize()
-                            .accessibilityIdentifier(TestID.itemDueDate(todo.title))
+                        HStack(spacing: 0) {
+                            if overdue {
+                                Text("Overdue · ")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .accessibilityIdentifier(TestID.itemOverdue(todo.title))
+                            }
+                            Text(dueDate)
+                                .font(.system(size: 12))
+                                .accessibilityIdentifier(TestID.itemDueDate(todo.title))
+                        }
+                        .foregroundStyle(overdue ? Theme.danger : Theme.muted)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .layoutPriority(1)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityLabel(overdue ? "Overdue, was due \(dueDate)" : "Due \(dueDate)")
                     }
 
                     if let reminder = todo.reminder {
@@ -103,6 +116,11 @@ struct TodoRowView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .cardStyle()
+        .overlay {
+            if overdue {
+                RoundedRectangle(cornerRadius: Theme.Radius.lg).stroke(Theme.danger, lineWidth: 1)
+            }
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(TestID.item(todo.title))
     }

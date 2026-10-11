@@ -29,28 +29,38 @@ function id(key: string, value = ""): string {
 }
 
 const q = (value: unknown) => JSON.stringify(value);
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 const tap = (testId: string) => [`- tapOn:`, `    id: ${q(testId)}`];
 const visible = (testId: string, extra: string[] = []) => [`- assertVisible:`, `    id: ${q(testId)}`, ...extra];
 
 /** Maestro commands for one scenario step; mirrors apps/web/e2e/scenarios.spec.ts. */
 function maestroStep(step: Step): string[] {
-  const s = step as Record<string, string> & { value?: boolean; titles?: string[]; label?: string | null };
+  const s = step as Record<string, string> & {
+    value?: boolean;
+    titles?: string[];
+    label?: string | null;
+    title?: string | null;
+  };
   switch (step.do) {
+    case "type":
+      return [...tap(id("formTitle")), `- inputText: ${q(s.text)}`];
+    case "submit":
+      return ["- hideKeyboard", ...tap(id("formSubmit"))];
     case "add":
       return [
         ...tap(id("formTitle")),
-        `- inputText: ${q(s.title)}`,
+        `- inputText: ${q(s.title!)}`,
         ...(s.priority ? tap(id("formPriorityOption", s.priority)) : []),
         ...(s.dueDate ? [...tap(id("formDueDate")), `- inputText: ${q(s.dueDate)}`] : []),
         "- hideKeyboard",
         ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
         ...tap(id("formSubmit")),
-        ...visible(id("item", s.title)),
+        ...visible(id("item", s.title!)),
       ];
     case "toggle":
-      return tap(id("itemToggle", s.title));
+      return tap(id("itemToggle", s.title!));
     case "delete":
-      return tap(id("itemDelete", s.title));
+      return tap(id("itemDelete", s.title!));
     case "rename":
       return [
         ...tap(id("itemTitle", s.from)),
@@ -60,6 +70,8 @@ function maestroStep(step: Step): string[] {
       ];
     case "filter":
       return tap(id("filter", s.filter));
+    case "sort":
+      return tap(id("sortOption", s.sort));
     case "search":
       return [...tap(id("search")), `- inputText: ${q(s.query)}`, "- hideKeyboard"];
     case "clearCompleted":
@@ -77,9 +89,21 @@ function maestroStep(step: Step): string[] {
     case "remaining":
       return visible(id("remaining"), [`    text: ${q(s.text)}`]);
     case "reminder":
-      return visible(id("itemReminder", s.title), [`    text: ${q(s.text)}`]);
+      return visible(id("itemReminder", s.title!), [`    text: ${q(s.text)}`]);
     case "completed":
-      return visible(id("itemToggle", s.title), [`    checked: ${s.value}`]);
+      return visible(id("itemToggle", s.title!), [`    checked: ${s.value}`]);
+    case "quickAddPreview":
+      return s.title === null
+        ? [`- assertNotVisible:`, `    id: ${q(id("quickAddPreview"))}`]
+        : visible(id("quickAddPreviewTitle"), [`    text: ${q(s.title)}`]);
+    case "priority":
+      return visible(id("itemPriority", s.title!), [`    text: ${q(capitalize(s.priority!))}`]);
+    case "dueDate":
+      return visible(id("itemDueDate", s.title!), [`    text: ${q(s.dueDate)}`]);
+    case "overdue":
+      return step.value
+        ? visible(id("itemOverdue", s.title!))
+        : [`- assertNotVisible:`, `    id: ${q(id("itemOverdue", s.title!))}`];
     case "undo":
       return s.label === null
         ? [`- assertNotVisible:`, `    id: ${q(id("undoToast"))}`]

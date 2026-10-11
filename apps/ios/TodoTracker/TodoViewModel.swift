@@ -8,6 +8,7 @@ import TodoCore
 final class TodoViewModel {
     private(set) var state = TodoState.initial
     var filter: TodoFilter = .all
+    var sort: TodoSort = .priority
 
     private let store: TodoStore
     private let reminders: ReminderScheduling?
@@ -30,7 +31,7 @@ final class TodoViewModel {
         }
     }
 
-    var visibleTodos: [Todo] { sortByPriority(filterTodos(state.todos, filter)) }
+    var visibleTodos: [Todo] { sortTodos(filterTodos(state.todos, filter), sort) }
     var remaining: Int { countRemaining(state.todos) }
     var hasCompleted: Bool { state.todos.count > remaining }
     var remainingText: String { "\(remaining) \(remaining == 1 ? "task" : "tasks") remaining" }

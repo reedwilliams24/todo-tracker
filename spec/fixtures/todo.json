@@ -708,6 +708,148 @@
           "dueDate": "2026-01-06"
         }
       ]
+    },
+    {
+      "name": "isOverdue: due yesterday",
+      "op": "isOverdue",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-04"
+        },
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": true
+    },
+    {
+      "name": "isOverdue: due today",
+      "op": "isOverdue",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-05"
+        },
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": false
+    },
+    {
+      "name": "isOverdue: due tomorrow",
+      "op": "isOverdue",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        },
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": false
+    },
+    {
+      "name": "isOverdue: undated",
+      "op": "isOverdue",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": false
+    },
+    {
+      "name": "isOverdue: completed and past due",
+      "op": "isOverdue",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-04"
+        },
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": false
+    },
+    {
+      "name": "isOverdue: due today, just before midnight",
+      "op": "isOverdue",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-05"
+        },
+        "now": "2026-01-05T23:59:00"
+      },
+      "then": false
+    },
+    {
+      "name": "isOverdue: due yesterday, just after midnight",
+      "op": "isOverdue",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-04"
+        },
+        "now": "2026-01-05T00:01:00"
+      },
+      "then": true
+    },
+    {
+      "name": "toDateKey: 2026-01-05T00:00:00",
+      "op": "toDateKey",
+      "given": {
+        "now": "2026-01-05T00:00:00"
+      },
+      "then": "2026-01-05"
+    },
+    {
+      "name": "toDateKey: 2026-01-05T23:59:59",
+      "op": "toDateKey",
+      "given": {
+        "now": "2026-01-05T23:59:59"
+      },
+      "then": "2026-01-05"
+    },
+    {
+      "name": "toDateKey: 2026-12-31T12:00:00",
+      "op": "toDateKey",
+      "given": {
+        "now": "2026-12-31T12:00:00"
+      },
+      "then": "2026-12-31"
     }
   ]
 }

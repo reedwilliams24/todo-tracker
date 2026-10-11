@@ -56,6 +56,7 @@ private fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 private fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
 private fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
 private fun JsonObject.drafts(key: String): List<TodoDraft> = TodoJson.decodeFromJsonElement(draftList, getValue(key))
+private fun JsonObject.quickAddParse(): QuickAddParse = TodoJson.decodeFromJsonElement(QuickAddParse.serializer(), getValue("parse"))
 private fun encode(todos: List<Todo>): JsonElement = TodoJson.encodeToJsonElement(todoList, todos)
 private fun encodeDrafts(drafts: List<TodoDraft>): JsonElement = TodoJson.encodeToJsonElement(draftList, drafts)
 
@@ -117,6 +118,12 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "filterTodos" -> encode(filterTodos(g.todos(), TodoFilter.fromKey(g.str("filter"))))
     "searchTodos" -> encode(searchTodos(g.todos(), g.str("query")))
     "sortByPriority" -> encode(sortByPriority(g.todos()))
+    "sortByDue" -> encode(sortByDue(g.todos()))
+    "sortTodos" -> encode(sortTodos(g.todos(), g["sort"]?.jsonPrimitive?.content?.let(TodoSort::fromKey) ?: TodoSort.PRIORITY))
+    "isOverdue" -> JsonPrimitive(
+        isOverdue(TodoJson.decodeFromJsonElement(Todo.serializer(), g.getValue("todo")), g.local("now")),
+    )
+    "toDateKey" -> JsonPrimitive(toDateKey(g.local("now")))
     "countRemaining" -> JsonPrimitive(countRemaining(g.todos()))
     "addTodos" -> addTodos(g.todos(), g.drafts("drafts"), g.instant("now")).let {
         buildJsonObject {
@@ -157,6 +164,16 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "planReminders" -> encodeReminders(planReminders(g.todos()))
     "dueReminders" -> encodeReminders(dueReminders(g.todos(), g.strings("delivered"), g.local("now")))
     "pruneDelivered" -> JsonArray(pruneDelivered(g.strings("delivered"), g.todos()).sorted().map(::JsonPrimitive))
+    "parseQuickAdd" -> TodoJson.encodeToJsonElement(QuickAddParse.serializer(), parseQuickAdd(g.str("input"), g.local("now")))
+    "hasQuickAddMeta" -> JsonPrimitive(hasQuickAddMeta(g.quickAddParse()))
+    "quickAddToDraft" -> TodoJson.encodeToJsonElement(
+        TodoDraft.serializer(),
+        quickAddToDraft(
+            g.quickAddParse(),
+            TodoJson.decodeFromJsonElement(TodoPriority.serializer(), g.getValue("fallbackPriority")),
+            (g["fallbackDueDate"] as? JsonPrimitive)?.content,
+        ),
+    )
     else -> error("Unknown op \"$op\"")
 }
 

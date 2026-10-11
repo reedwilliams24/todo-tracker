@@ -10,7 +10,11 @@ enum TestID {
     /// `reminder` is a `ReminderOffset` raw value, or "" for "No reminder".
     static func formReminderOption(_ reminder: String) -> String { "todo-form-reminder-\(reminder)" }
     static let formSubmit = "todo-form-submit"
+    static let quickAddPreview = "todo-quick-add-preview"
+    static let quickAddPreviewTitle = "todo-quick-add-preview-title"
     static func filter(_ filter: TodoFilter) -> String { "todo-filter-\(filter.rawValue)" }
+    static let sort = "todo-sort"
+    static func sortOption(_ sort: TodoSort) -> String { "todo-sort-\(sort.rawValue)" }
     static let clearCompleted = "todo-clear-completed"
     static let list = "todo-list"
     static let empty = "todo-empty"
@@ -21,6 +25,7 @@ enum TestID {
     static let itemEditInput = "todo-edit-input"
     static func itemDueDate(_ title: String) -> String { "todo-due-\(title)" }
     static func itemReminder(_ title: String) -> String { "todo-reminder-\(title)" }
+    static func itemOverdue(_ title: String) -> String { "todo-overdue-\(title)" }
     static func itemPriority(_ title: String) -> String { "todo-priority-\(title)" }
     static func itemDelete(_ title: String) -> String { "todo-delete-\(title)" }
     static let undoToast = "undo-toast"
