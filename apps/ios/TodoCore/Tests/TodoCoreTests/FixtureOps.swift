@@ -77,6 +77,12 @@ enum FixtureOps {
             return coerceDrafts(g.raw["value"] ?? .null)
         case "reconcileDrafts":
             return reconcileDrafts(heuristic: try g.decode("heuristic"), llm: try g.decode("llm"))
+        case "parseTags":
+            return parseTags(try g.decode("input"))
+        case "allTags":
+            return allTags(try g.decode("todos"))
+        case "filterByTag":
+            return filterByTag(try g.decode("todos"), tag: try g.decode("tag", as: String?.self))
         default:
             throw UnknownOp(op: op)
         }

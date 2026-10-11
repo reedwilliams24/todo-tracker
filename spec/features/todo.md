@@ -11,4 +11,5 @@ Fixtures: [`../fixtures/todo.json`](../fixtures/todo.json). Shape: [`../schema/t
 - **Timestamps**: `createdAt` and `updatedAt` are UTC ISO-8601 with milliseconds (`2026-01-05T09:00:00.000Z`). Create sets both to now; toggle and rename set `updatedAt` to now.
 - **Ids**: opaque, unique strings. Fixtures write freshly created ids as `new-1`, `new-2`, … (see [README](../README.md#normalization)).
 - **Toggle** flips `completed` and bumps `updatedAt`.
-- **Form → draft**: the add form holds `{title, priority, dueDate}` strings; `toTodoDraft` trims the title and omits an empty due date.
+- **Tags**: optional list of normalized strings; see [tags.md](tags.md).
+- **Form → draft**: the add form holds `{title, priority, dueDate, tags}` strings; `toTodoDraft` omits an empty due date and parses `tags` (omitted when no tags survive).

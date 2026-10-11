@@ -2,23 +2,53 @@ import Foundation
 
 public let defaultPriority: TodoPriority = .medium
 
-/// Controlled-input state for the add-todo form; `dueDate` is "" when unset.
+/// Controlled-input state for the add-todo form; `dueDate` is "" when unset, `tags` is comma-separated text.
 public struct TodoFormState: Codable, Equatable, Sendable {
     public var title: String
     public var priority: TodoPriority
     public var dueDate: String
+    public var tags: String
 
-    public init(title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "") {
+    public init(title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "", tags: String = "") {
         self.title = title
         self.priority = priority
         self.dueDate = dueDate
+        self.tags = tags
     }
 
     public static let empty = TodoFormState()
 }
 
 public func toTodoDraft(_ form: TodoFormState) -> TodoDraft {
-    TodoDraft(title: form.title, priority: form.priority, dueDate: form.dueDate.isEmpty ? nil : form.dueDate)
+    let tags = parseTags(form.tags)
+    return TodoDraft(
+        title: form.title,
+        priority: form.priority,
+        dueDate: form.dueDate.isEmpty ? nil : form.dueDate,
+        tags: tags.isEmpty ? nil : tags
+    )
+}
+
+/// Comma-separated text → trimmed, lowercased, `#`-stripped, deduped tags in first-seen order.
+public func parseTags(_ input: String) -> [String] {
+    var tags: [String] = []
+    for raw in input.components(separatedBy: ",") {
+        var tag = raw.jsTrimmed
+        if tag.hasPrefix("#") { tag.removeFirst() }
+        tag = tag.jsTrimmed.lowercased()
+        if !tag.isEmpty, !tags.contains(tag) { tags.append(tag) }
+    }
+    return tags
+}
+
+/// Every distinct tag, sorted by UTF-16 code units like JS `sort()`.
+public func allTags(_ todos: [Todo]) -> [String] {
+    Set(todos.flatMap { $0.tags ?? [] }).sorted { $0.utf16.lexicographicallyPrecedes($1.utf16) }
+}
+
+public func filterByTag(_ todos: [Todo], tag: String?) -> [Todo] {
+    guard let tag, !tag.isEmpty else { return todos }
+    return todos.filter { $0.tags?.contains(tag) ?? false }
 }
 
 extension TodoPriority {
@@ -54,6 +84,7 @@ public func generateId() -> String {
 public func createTodo(_ draft: TodoDraft, now: Date = Date()) -> Todo {
     let timestamp = Timestamp.iso(now)
     let notes = draft.notes?.jsTrimmed
+    let tags = parseTags((draft.tags ?? []).joined(separator: ","))
     return Todo(
         id: generateId(),
         title: draft.title.jsTrimmed,
@@ -61,6 +92,7 @@ public func createTodo(_ draft: TodoDraft, now: Date = Date()) -> Todo {
         completed: false,
         priority: draft.priority ?? defaultPriority,
         dueDate: draft.dueDate,
+        tags: tags.isEmpty ? nil : tags,
         createdAt: timestamp,
         updatedAt: timestamp
     )

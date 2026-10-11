@@ -22,8 +22,22 @@ private val ISO_DATE = Regex("""^\d{4}-\d{2}-\d{2}$""")
 private val STRICT_DATE = DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT)
 private val TIMESTAMP = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(java.time.ZoneOffset.UTC)
 
-fun toTodoDraft(form: TodoFormState): TodoDraft =
-    TodoDraft(title = form.title, priority = form.priority, dueDate = form.dueDate.ifEmpty { null })
+fun toTodoDraft(form: TodoFormState): TodoDraft = TodoDraft(
+    title = form.title,
+    priority = form.priority,
+    dueDate = form.dueDate.ifEmpty { null },
+    tags = parseTags(form.tags).ifEmpty { null },
+)
+
+/** Comma-separated text → trimmed, lowercased, `#`-stripped, deduped tags in first-seen order. */
+fun parseTags(input: String): List<String> =
+    input.split(',').map { it.trim().removePrefix("#").trim().lowercase() }.filter { it.isNotEmpty() }.distinct()
+
+/** Every distinct tag, sorted by UTF-16 code units like JS `sort()`. */
+fun allTags(todos: List<Todo>): List<String> = todos.flatMap { it.tags.orEmpty() }.distinct().sorted()
+
+fun filterByTag(todos: List<Todo>, tag: String?): List<Todo> =
+    if (tag.isNullOrEmpty()) todos.toList() else todos.filter { it.tags?.contains(tag) == true }
 
 /** Accepts an empty value or a real calendar date in YYYY-MM-DD form. */
 fun isValidDueDate(value: String?): Boolean {
@@ -53,6 +67,7 @@ fun createTodo(draft: TodoDraft, now: Instant = Instant.now()): Todo {
         completed = false,
         priority = draft.priority ?: DEFAULT_PRIORITY,
         dueDate = draft.dueDate,
+        tags = parseTags(draft.tags.orEmpty().joinToString(",")).ifEmpty { null },
         createdAt = stamp,
         updatedAt = stamp,
     )

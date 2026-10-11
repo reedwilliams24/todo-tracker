@@ -26,6 +26,13 @@ const sample = [
   todo("c", { title: "Call mom", priority: "low", dueDate: "2026-01-06", createdAt: "2026-01-03T09:00:00.000Z" }),
 ];
 
+const tagged = [
+  todo("t1", { title: "Email boss", tags: ["work", "urgent"] }),
+  todo("t2", { title: "Water plants", tags: ["home"] }),
+  todo("t3", { title: "Read" }),
+  todo("t4", { title: "Plan sprint", completed: true, tags: ["work"] }),
+];
+
 export const FEATURES: Feature[] = [
   {
     feature: "todo",
@@ -54,12 +61,12 @@ export const FEATURES: Feature[] = [
       {
         name: "toTodoDraft trims title and drops empty due date",
         op: "toTodoDraft",
-        given: { form: { title: "  Buy milk ", priority: "high", dueDate: "" } },
+        given: { form: { title: "  Buy milk ", priority: "high", dueDate: "", tags: "" } },
       },
       {
         name: "toTodoDraft keeps due date",
         op: "toTodoDraft",
-        given: { form: { title: "Pay rent", priority: "low", dueDate: "2026-02-01" } },
+        given: { form: { title: "Pay rent", priority: "low", dueDate: "2026-02-01", tags: "" } },
       },
       { name: "createTodo defaults", op: "createTodo", given: { draft: { title: "  Buy milk  " }, now: T0 } },
       {
@@ -346,6 +353,60 @@ export const FEATURES: Feature[] = [
         },
       },
       { name: "reconcileDrafts falls back to heuristic", op: "reconcileDrafts", given: { heuristic: [{ title: "buy milk" }], llm: [] } },
+    ],
+  },
+  {
+    feature: "tags",
+    spec: "features/tags.md",
+    cases: [
+      ...[
+        ["empty input", ""],
+        ["blank pieces are dropped", " , ,, "],
+        ["trims, lowercases and strips #", " Work, #Home ,URGENT "],
+        ["dedupes keeping first position", "work, home, #WORK, home"],
+        ["strips only one leading #", "##meta"],
+        ["trims after stripping #", "#  errands "],
+        ["a lone # is dropped", "#, a"],
+        ["inner spaces are kept", "deep work"],
+      ].map(([label, input]) => ({ name: `parseTags: ${label}`, op: "parseTags", given: { input } })),
+      {
+        name: "toTodoDraft parses tag text",
+        op: "toTodoDraft",
+        given: { form: { title: "Email boss", priority: "medium", dueDate: "", tags: "Work, #urgent" } },
+      },
+      {
+        name: "toTodoDraft omits tags when none survive parsing",
+        op: "toTodoDraft",
+        given: { form: { title: "Email boss", priority: "medium", dueDate: "", tags: " # , " } },
+      },
+      {
+        name: "createTodo normalizes draft tags",
+        op: "createTodo",
+        given: { draft: { title: "Email boss", tags: ["Work", "#work", " urgent "] }, now: T0 },
+      },
+      { name: "createTodo omits an empty tag list", op: "createTodo", given: { draft: { title: "Read", tags: [] }, now: T0 } },
+      { name: "createTodo omits tags that normalize to nothing", op: "createTodo", given: { draft: { title: "Read", tags: ["#", " "] }, now: T0 } },
+      { name: "allTags: none", op: "allTags", given: { todos: sample } },
+      { name: "allTags: distinct and sorted", op: "allTags", given: { todos: tagged } },
+      { name: "filterByTag: matching todos in list order", op: "filterByTag", given: { todos: tagged, tag: "work" } },
+      { name: "filterByTag: null returns everything", op: "filterByTag", given: { todos: tagged, tag: null } },
+      { name: "filterByTag: empty tag returns everything", op: "filterByTag", given: { todos: tagged, tag: "" } },
+      { name: "filterByTag: unknown tag returns nothing", op: "filterByTag", given: { todos: tagged, tag: "nope" } },
+      {
+        name: "toggling keeps tags",
+        op: "toggleTodo",
+        given: { todo: todo("a", { tags: ["work"] }), now: T1 },
+      },
+      {
+        name: "renaming keeps tags",
+        op: "updateTodoText",
+        given: { todos: tagged, id: "t1", text: "Email the boss", now: T1 },
+      },
+      {
+        name: "storage round-trips tags",
+        op: "parseStoredTodos",
+        given: { raw: JSON.stringify(tagged) },
+      },
     ],
   },
 ];

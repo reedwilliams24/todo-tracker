@@ -74,6 +74,24 @@
       ]
     },
     {
+      "name": "filter-by-tag",
+      "steps": [
+        { "do": "add", "title": "Email boss", "tags": "Work, #urgent" },
+        { "do": "add", "title": "Water plants", "tags": "home" },
+        { "do": "add", "title": "Read" },
+        { "expect": "tags", "title": "Email boss", "text": "#work #urgent" },
+        { "do": "filterTag", "tag": "work" },
+        { "expect": "titles", "titles": ["Email boss"] },
+        { "do": "filter", "filter": "completed" },
+        { "expect": "empty" },
+        { "do": "filter", "filter": "all" },
+        { "do": "filterTag", "tag": "work" },
+        { "expect": "titles", "titles": ["Email boss", "Water plants", "Read"] },
+        { "do": "relaunch" },
+        { "expect": "tags", "title": "Water plants", "text": "#home" }
+      ]
+    },
+    {
       "name": "search",
       "platforms": ["web"],
       "steps": [

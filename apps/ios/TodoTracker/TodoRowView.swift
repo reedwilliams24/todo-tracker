@@ -52,6 +52,22 @@ struct TodoRowView: View {
                 .accessibilityIdentifier(TestID.itemTitle(todo.title))
             }
 
+            if let tags = todo.tags, !tags.isEmpty {
+                HStack(spacing: 4) {
+                    ForEach(tags, id: \.self) { tag in
+                        Text("#\(tag)")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.foreground.opacity(0.8))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(Theme.foreground.opacity(0.05), in: Capsule())
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(tags.map { "#\($0)" }.joined(separator: " "))
+                .accessibilityIdentifier(TestID.itemTags(todo.title))
+            }
+
             if let dueDate = todo.dueDate {
                 Text(dueDate)
                     .font(.system(size: 12))

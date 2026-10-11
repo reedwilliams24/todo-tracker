@@ -2,12 +2,14 @@ import SwiftUI
 import TodoCore
 
 struct TodoFormView: View {
+    let existingTags: [String]
     let onAdd: (TodoDraft) -> Void
 
     @State private var form = TodoFormState.empty
 
     private var dateOk: Bool { isValidDueDate(form.dueDate) }
     private var canAdd: Bool { isValidTitle(form.title) && dateOk }
+    private var suggestions: [String] { tagSuggestions(form.tags, existing: existingTags) }
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
@@ -35,6 +37,35 @@ struct TodoFormView: View {
                     )
                     .accessibilityLabel("Due date")
                     .accessibilityIdentifier(TestID.formDueDate)
+            }
+            TextField("Tags, comma-separated", text: $form.tags, prompt: Text("Tags, comma-separated").foregroundStyle(Theme.muted))
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.foreground)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
+                .submitLabel(.done)
+                .onSubmit(submit)
+                .accessibilityLabel("Tags")
+                .accessibilityIdentifier(TestID.formTags)
+            if !suggestions.isEmpty {
+                HStack(spacing: 4) {
+                    ForEach(suggestions, id: \.self) { tag in
+                        Button { form.tags = completeTag(form.tags, tag) } label: {
+                            Text("#\(tag)")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Theme.foreground.opacity(0.7))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .overlay(Capsule().stroke(Theme.border, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Add tag \(tag)")
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             Button(action: submit) {
                 Text("Add")
@@ -82,6 +113,21 @@ struct TodoFormView: View {
         onAdd(toTodoDraft(form))
         form = .empty
     }
+}
+
+/// Existing tags that complete the piece after the last comma, skipping ones already entered.
+private func tagSuggestions(_ text: String, existing: [String]) -> [String] {
+    let comma = text.lastIndex(of: ",")
+    let head = comma.map { String(text[..<$0]) } ?? ""
+    let piece = comma.map { String(text[text.index(after: $0)...]) } ?? text
+    guard let current = parseTags(piece).first else { return [] }
+    let entered = parseTags(head)
+    return Array(existing.filter { $0.hasPrefix(current) && $0 != current && !entered.contains($0) }.prefix(5))
+}
+
+private func completeTag(_ text: String, _ tag: String) -> String {
+    let head = text.lastIndex(of: ",").map { String(text[...$0]) + " " } ?? ""
+    return head + tag + ", "
 }
 
 /// Keeps the label colors when disabled; the RN app dims the whole button with opacity instead.

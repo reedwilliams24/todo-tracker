@@ -1,0 +1,775 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "tags",
+  "spec": "features/tags.md",
+  "cases": [
+    {
+      "name": "parseTags: empty input",
+      "op": "parseTags",
+      "given": {
+        "input": ""
+      },
+      "then": []
+    },
+    {
+      "name": "parseTags: blank pieces are dropped",
+      "op": "parseTags",
+      "given": {
+        "input": " , ,, "
+      },
+      "then": []
+    },
+    {
+      "name": "parseTags: trims, lowercases and strips #",
+      "op": "parseTags",
+      "given": {
+        "input": " Work, #Home ,URGENT "
+      },
+      "then": [
+        "work",
+        "home",
+        "urgent"
+      ]
+    },
+    {
+      "name": "parseTags: dedupes keeping first position",
+      "op": "parseTags",
+      "given": {
+        "input": "work, home, #WORK, home"
+      },
+      "then": [
+        "work",
+        "home"
+      ]
+    },
+    {
+      "name": "parseTags: strips only one leading #",
+      "op": "parseTags",
+      "given": {
+        "input": "##meta"
+      },
+      "then": [
+        "#meta"
+      ]
+    },
+    {
+      "name": "parseTags: trims after stripping #",
+      "op": "parseTags",
+      "given": {
+        "input": "#  errands "
+      },
+      "then": [
+        "errands"
+      ]
+    },
+    {
+      "name": "parseTags: a lone # is dropped",
+      "op": "parseTags",
+      "given": {
+        "input": "#, a"
+      },
+      "then": [
+        "a"
+      ]
+    },
+    {
+      "name": "parseTags: inner spaces are kept",
+      "op": "parseTags",
+      "given": {
+        "input": "deep work"
+      },
+      "then": [
+        "deep work"
+      ]
+    },
+    {
+      "name": "toTodoDraft parses tag text",
+      "op": "toTodoDraft",
+      "given": {
+        "form": {
+          "title": "Email boss",
+          "priority": "medium",
+          "dueDate": "",
+          "tags": "Work, #urgent"
+        }
+      },
+      "then": {
+        "title": "Email boss",
+        "priority": "medium",
+        "tags": [
+          "work",
+          "urgent"
+        ]
+      }
+    },
+    {
+      "name": "toTodoDraft omits tags when none survive parsing",
+      "op": "toTodoDraft",
+      "given": {
+        "form": {
+          "title": "Email boss",
+          "priority": "medium",
+          "dueDate": "",
+          "tags": " # , "
+        }
+      },
+      "then": {
+        "title": "Email boss",
+        "priority": "medium"
+      }
+    },
+    {
+      "name": "createTodo normalizes draft tags",
+      "op": "createTodo",
+      "given": {
+        "draft": {
+          "title": "Email boss",
+          "tags": [
+            "Work",
+            "#work",
+            " urgent "
+          ]
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Email boss",
+        "completed": false,
+        "priority": "medium",
+        "tags": [
+          "work",
+          "urgent"
+        ],
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "createTodo omits an empty tag list",
+      "op": "createTodo",
+      "given": {
+        "draft": {
+          "title": "Read",
+          "tags": []
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Read",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "createTodo omits tags that normalize to nothing",
+      "op": "createTodo",
+      "given": {
+        "draft": {
+          "title": "Read",
+          "tags": [
+            "#",
+            " "
+          ]
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Read",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "allTags: none",
+      "op": "allTags",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": []
+    },
+    {
+      "name": "allTags: distinct and sorted",
+      "op": "allTags",
+      "given": {
+        "todos": [
+          {
+            "id": "t1",
+            "title": "Email boss",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work",
+              "urgent"
+            ]
+          },
+          {
+            "id": "t2",
+            "title": "Water plants",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "home"
+            ]
+          },
+          {
+            "id": "t3",
+            "title": "Read",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t4",
+            "title": "Plan sprint",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work"
+            ]
+          }
+        ]
+      },
+      "then": [
+        "home",
+        "urgent",
+        "work"
+      ]
+    },
+    {
+      "name": "filterByTag: matching todos in list order",
+      "op": "filterByTag",
+      "given": {
+        "todos": [
+          {
+            "id": "t1",
+            "title": "Email boss",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work",
+              "urgent"
+            ]
+          },
+          {
+            "id": "t2",
+            "title": "Water plants",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "home"
+            ]
+          },
+          {
+            "id": "t3",
+            "title": "Read",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t4",
+            "title": "Plan sprint",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work"
+            ]
+          }
+        ],
+        "tag": "work"
+      },
+      "then": [
+        {
+          "id": "t1",
+          "title": "Email boss",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work",
+            "urgent"
+          ]
+        },
+        {
+          "id": "t4",
+          "title": "Plan sprint",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "filterByTag: null returns everything",
+      "op": "filterByTag",
+      "given": {
+        "todos": [
+          {
+            "id": "t1",
+            "title": "Email boss",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work",
+              "urgent"
+            ]
+          },
+          {
+            "id": "t2",
+            "title": "Water plants",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "home"
+            ]
+          },
+          {
+            "id": "t3",
+            "title": "Read",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t4",
+            "title": "Plan sprint",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work"
+            ]
+          }
+        ],
+        "tag": null
+      },
+      "then": [
+        {
+          "id": "t1",
+          "title": "Email boss",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work",
+            "urgent"
+          ]
+        },
+        {
+          "id": "t2",
+          "title": "Water plants",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "home"
+          ]
+        },
+        {
+          "id": "t3",
+          "title": "Read",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "t4",
+          "title": "Plan sprint",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "filterByTag: empty tag returns everything",
+      "op": "filterByTag",
+      "given": {
+        "todos": [
+          {
+            "id": "t1",
+            "title": "Email boss",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work",
+              "urgent"
+            ]
+          },
+          {
+            "id": "t2",
+            "title": "Water plants",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "home"
+            ]
+          },
+          {
+            "id": "t3",
+            "title": "Read",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t4",
+            "title": "Plan sprint",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work"
+            ]
+          }
+        ],
+        "tag": ""
+      },
+      "then": [
+        {
+          "id": "t1",
+          "title": "Email boss",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work",
+            "urgent"
+          ]
+        },
+        {
+          "id": "t2",
+          "title": "Water plants",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "home"
+          ]
+        },
+        {
+          "id": "t3",
+          "title": "Read",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "t4",
+          "title": "Plan sprint",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "filterByTag: unknown tag returns nothing",
+      "op": "filterByTag",
+      "given": {
+        "todos": [
+          {
+            "id": "t1",
+            "title": "Email boss",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work",
+              "urgent"
+            ]
+          },
+          {
+            "id": "t2",
+            "title": "Water plants",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "home"
+            ]
+          },
+          {
+            "id": "t3",
+            "title": "Read",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t4",
+            "title": "Plan sprint",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work"
+            ]
+          }
+        ],
+        "tag": "nope"
+      },
+      "then": []
+    },
+    {
+      "name": "toggling keeps tags",
+      "op": "toggleTodo",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work"
+          ]
+        },
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "a",
+        "title": "Todo a",
+        "completed": true,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "tags": [
+          "work"
+        ]
+      }
+    },
+    {
+      "name": "renaming keeps tags",
+      "op": "updateTodoText",
+      "given": {
+        "todos": [
+          {
+            "id": "t1",
+            "title": "Email boss",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work",
+              "urgent"
+            ]
+          },
+          {
+            "id": "t2",
+            "title": "Water plants",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "home"
+            ]
+          },
+          {
+            "id": "t3",
+            "title": "Read",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t4",
+            "title": "Plan sprint",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "tags": [
+              "work"
+            ]
+          }
+        ],
+        "id": "t1",
+        "text": "Email the boss",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": [
+        {
+          "id": "t1",
+          "title": "Email the boss",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "tags": [
+            "work",
+            "urgent"
+          ]
+        },
+        {
+          "id": "t2",
+          "title": "Water plants",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "home"
+          ]
+        },
+        {
+          "id": "t3",
+          "title": "Read",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "t4",
+          "title": "Plan sprint",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "storage round-trips tags",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": "[{\"id\":\"t1\",\"title\":\"Email boss\",\"completed\":false,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\",\"tags\":[\"work\",\"urgent\"]},{\"id\":\"t2\",\"title\":\"Water plants\",\"completed\":false,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\",\"tags\":[\"home\"]},{\"id\":\"t3\",\"title\":\"Read\",\"completed\":false,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\"},{\"id\":\"t4\",\"title\":\"Plan sprint\",\"completed\":true,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\",\"tags\":[\"work\"]}]"
+      },
+      "then": [
+        {
+          "id": "new-1",
+          "title": "Email boss",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work",
+            "urgent"
+          ]
+        },
+        {
+          "id": "new-2",
+          "title": "Water plants",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "home"
+          ]
+        },
+        {
+          "id": "new-3",
+          "title": "Read",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "new-4",
+          "title": "Plan sprint",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    }
+  ]
+}

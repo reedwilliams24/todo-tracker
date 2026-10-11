@@ -8,6 +8,7 @@ import TodoCore
 final class TodoViewModel {
     private(set) var state = TodoState.initial
     var filter: TodoFilter = .all
+    var selectedTag: String?
 
     private let store: TodoStore
     private let now: () -> Date
@@ -19,14 +20,21 @@ final class TodoViewModel {
         state = reduceTodos(state, .load(store.load()), now: now())
     }
 
-    var visibleTodos: [Todo] { sortByPriority(filterTodos(state.todos, filter)) }
+    var tags: [String] { allTags(state.todos) }
+    /// The selected tag, or nil once no todo carries it any more.
+    var activeTag: String? { selectedTag.flatMap { tags.contains($0) ? $0 : nil } }
+    var visibleTodos: [Todo] { sortByPriority(filterByTag(filterTodos(state.todos, filter), tag: activeTag)) }
     var remaining: Int { countRemaining(state.todos) }
     var hasCompleted: Bool { state.todos.count > remaining }
     var remainingText: String { "\(remaining) \(remaining == 1 ? "task" : "tasks") remaining" }
     var undoLabel: String? { state.undoable?.label }
     var emptyText: String {
-        state.todos.isEmpty ? "No todos yet. Add your first one above." : "No \(filter.rawValue) todos."
+        if state.todos.isEmpty { return "No todos yet. Add your first one above." }
+        if let tag = activeTag { return "No \(filter == .all ? "" : "\(filter.rawValue) ")todos tagged #\(tag)." }
+        return "No \(filter.rawValue) todos."
     }
+
+    func toggleTag(_ tag: String) { selectedTag = activeTag == tag ? nil : tag }
 
     func add(_ draft: TodoDraft) {
         dispatch(.prepend(addTodos([], drafts: [draft], now: now()).created))

@@ -28,11 +28,11 @@ export function toTodoDraft(form: TodoFormState): TodoDraft {
   };
 }
 
-/** Normalises tag text: split on commas, trim, lowercase, strip a leading "#", dedupe. */
+/** Normalises tag text: split on commas, trim, strip one leading "#", trim again, lowercase, dedupe (first wins). */
 export function parseTags(input: string): string[] {
   const seen = new Set<string>();
   for (const raw of input.split(",")) {
-    const tag = raw.trim().replace(/^#/, "").toLowerCase();
+    const tag = raw.trim().replace(/^#/, "").trim().toLowerCase();
     if (tag) seen.add(tag);
   }
   return [...seen];
@@ -72,6 +72,7 @@ export function generateId(): string {
 }
 
 export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
+  const tags = parseTags((draft.tags ?? []).join(","));
   const timestamp = now.toISOString();
   return {
     id: generateId(),
@@ -80,7 +81,7 @@ export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
     completed: false,
     priority: draft.priority ?? DEFAULT_PRIORITY,
     dueDate: draft.dueDate,
-    tags: draft.tags?.length ? parseTags(draft.tags.join(",")) : undefined,
+    tags: tags.length ? tags : undefined,
     createdAt: timestamp,
     updatedAt: timestamp,
   };

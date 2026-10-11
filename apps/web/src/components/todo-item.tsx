@@ -81,14 +81,24 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
         </button>
       )}
 
-      {todo.tags?.map((tag) => (
+      {todo.tags?.length ? (
         <span
-          key={tag}
-          className="rounded-full bg-black/5 px-2 py-0.5 text-xs opacity-80 dark:bg-white/10"
+          role="group"
+          aria-label={todo.tags.map((tag) => `#${tag}`).join(" ")}
+          data-testid={TEST_IDS.itemTags(todo.title)}
+          className="flex gap-1"
         >
-          #{tag}
+          {todo.tags.map((tag) => (
+            <span
+              key={tag}
+              aria-hidden
+              className="rounded-full bg-black/5 px-2 py-0.5 text-xs opacity-80 dark:bg-white/10"
+            >
+              #{tag}
+            </span>
+          ))}
         </span>
-      ))}
+      ) : null}
 
       {todo.dueDate && (
         <span data-testid={TEST_IDS.itemDueDate(todo.title)} className="text-xs opacity-60">

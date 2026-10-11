@@ -19,7 +19,8 @@
         "emptyForm": {
           "title": "",
           "priority": "medium",
-          "dueDate": ""
+          "dueDate": "",
+          "tags": ""
         }
       }
     },
@@ -150,7 +151,8 @@
         "form": {
           "title": "  Buy milk ",
           "priority": "high",
-          "dueDate": ""
+          "dueDate": "",
+          "tags": ""
         }
       },
       "then": {
@@ -165,7 +167,8 @@
         "form": {
           "title": "Pay rent",
           "priority": "low",
-          "dueDate": "2026-02-01"
+          "dueDate": "2026-02-01",
+          "tags": ""
         }
       },
       "then": {

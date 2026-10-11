@@ -1,0 +1,62 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: filter-by-tag
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Email boss"
+- tapOn:
+    id: "todo-form-tags"
+- inputText: "Work, #urgent"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Email boss"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Water plants"
+- tapOn:
+    id: "todo-form-tags"
+- inputText: "home"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Water plants"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Read"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Read"
+- assertVisible:
+    id: "todo-tags-Email boss"
+    text: "#work #urgent"
+- tapOn:
+    id: "todo-tag-filter-work"
+- assertVisible:
+    id: "todo-item-Email boss"
+- tapOn:
+    id: "todo-filter-completed"
+- assertVisible:
+    id: "todo-empty"
+- tapOn:
+    id: "todo-filter-all"
+- tapOn:
+    id: "todo-tag-filter-work"
+- assertVisible:
+    id: "todo-item-Email boss"
+- assertVisible:
+    id: "todo-item-Water plants"
+- assertVisible:
+    id: "todo-item-Read"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "todo-tags-Water plants"
+    text: "#home"

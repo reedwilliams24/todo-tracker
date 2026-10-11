@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,9 +50,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -68,21 +72,27 @@ import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoFilter
 import com.reedwilliams24.todotracker.core.TodoPriority
+import com.reedwilliams24.todotracker.core.allTags
 import com.reedwilliams24.todotracker.core.countRemaining
+import com.reedwilliams24.todotracker.core.filterByTag
 import com.reedwilliams24.todotracker.core.filterTodos
 import com.reedwilliams24.todotracker.core.isValidDueDate
 import com.reedwilliams24.todotracker.core.isValidTitle
+import com.reedwilliams24.todotracker.core.parseTags
 import com.reedwilliams24.todotracker.core.remainingLabel
 import com.reedwilliams24.todotracker.core.sortTodos
 import com.reedwilliams24.todotracker.core.toTodoDraft
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun TodoApp(viewModel: TodoViewModel) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(TodoFilter.ALL) }
     val todos = ui.state.todos
-    val visible = remember(todos, filter) { sortTodos(filterTodos(todos, filter)) }
+    var tag by rememberSaveable { mutableStateOf<String?>(null) }
+    val tags = remember(todos) { allTags(todos) }
+    val activeTag = tag?.takeIf { it in tags }
+    val visible = remember(todos, filter, activeTag) { sortTodos(filterByTag(filterTodos(todos, filter), activeTag)) }
     val remaining = countRemaining(todos)
 
     Box(
@@ -105,7 +115,7 @@ fun TodoApp(viewModel: TodoViewModel) {
                 Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
             }
 
-            TodoForm(onAdd = viewModel::add)
+            TodoForm(onAdd = viewModel::add, existingTags = tags)
 
             Row(
                 Modifier.fillMaxWidth(),
@@ -143,11 +153,40 @@ fun TodoApp(viewModel: TodoViewModel) {
                 }
             }
 
+            if (tags.isNotEmpty()) {
+                FlowRow(
+                    Modifier.fillMaxWidth().semantics { contentDescription = "Filter by tag" },
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s1),
+                ) {
+                    tags.forEach { option ->
+                        val selected = activeTag == option
+                        Text(
+                            "#$option",
+                            fontSize = FontSize.xs,
+                            color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .border(1.dp, if (selected) Palette.foreground else Palette.border, CircleShape)
+                                .background(if (selected) Palette.foreground else Palette.background)
+                                .toggleable(value = selected, role = Role.Button) { tag = if (selected) null else option }
+                                .testTag(TestIds.tagFilter(option))
+                                .padding(horizontal = Spacing.s2, vertical = Spacing.s0_5),
+                        )
+                    }
+                }
+            }
+
             Box(Modifier.weight(1f)) {
                 when {
                     !ui.hydrated -> EmptyText("Loading…", Modifier)
                     visible.isEmpty() -> EmptyText(
-                        if (todos.isEmpty()) "No todos yet. Add your first one above." else "No ${filter.key} todos.",
+                        when {
+                            todos.isEmpty() -> "No todos yet. Add your first one above."
+                            activeTag != null ->
+                                "No ${if (filter == TodoFilter.ALL) "" else "${filter.key} "}todos tagged #$activeTag."
+                            else -> "No ${filter.key} todos."
+                        },
                         Modifier.testTag(TestIds.empty),
                     )
                     else -> LazyColumn(
@@ -242,17 +281,20 @@ private fun Field(
 }
 
 @Composable
-private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
+private fun TodoForm(onAdd: (TodoDraft) -> Unit, existingTags: List<String>) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
+    var tagText by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.tags) }
+    val suggestions = remember(tagText, existingTags) { tagSuggestions(tagText, existingTags) }
     val dateOk = isValidDueDate(dueDate)
     val canAdd = isValidTitle(title) && dateOk
 
     fun submit() {
         if (!canAdd) return
-        onAdd(toTodoDraft(EMPTY_TODO_FORM.copy(title = title, priority = priority, dueDate = dueDate)))
+        onAdd(toTodoDraft(EMPTY_TODO_FORM.copy(title = title, priority = priority, dueDate = dueDate, tags = tagText)))
         title = EMPTY_TODO_FORM.title
+        tagText = EMPTY_TODO_FORM.tags
         priority = EMPTY_TODO_FORM.priority
         dueDate = EMPTY_TODO_FORM.dueDate
     }
@@ -314,6 +356,37 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
                     .testTag(TestIds.formDueDate)
                     .padding(horizontal = Spacing.s2, vertical = Spacing.s1_5),
             )
+        }
+        Field(
+            value = tagText,
+            onValueChange = { tagText = it },
+            placeholder = "Tags, comma-separated",
+            style = inputStyle.copy(fontSize = FontSize.sm),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { submit() }),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
+                .semantics { contentDescription = "Tags" }
+                .testTag(TestIds.formTags)
+                .padding(horizontal = Spacing.s2, vertical = Spacing.s1_5),
+        )
+        if (suggestions.isNotEmpty()) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                suggestions.forEach { suggestion ->
+                    Text(
+                        "#$suggestion",
+                        fontSize = FontSize.xs,
+                        color = Palette.foreground.copy(alpha = 0.7f),
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .border(1.dp, Palette.border, CircleShape)
+                            .clickable(role = Role.Button) { tagText = completeTag(tagText, suggestion) }
+                            .semantics { contentDescription = "Add tag $suggestion" }
+                            .padding(horizontal = Spacing.s2, vertical = Spacing.s0_5),
+                    )
+                }
+            }
         }
         Text(
             "Add",
@@ -423,6 +496,29 @@ private fun TodoItem(
             )
         }
 
+        todo.tags?.takeIf { it.isNotEmpty() }?.let { tags ->
+            val label = tags.joinToString(" ") { "#$it" }
+            Row(
+                Modifier.clearAndSetSemantics {
+                    contentDescription = label
+                    testTag = TestIds.itemTags(todo.title)
+                },
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
+            ) {
+                tags.forEach {
+                    Text(
+                        "#$it",
+                        fontSize = FontSize.xs,
+                        color = Palette.foreground.copy(alpha = 0.8f),
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(Palette.foreground.copy(alpha = 0.05f))
+                            .padding(horizontal = Spacing.s2, vertical = Spacing.s0_5),
+                    )
+                }
+            }
+        }
+
         todo.dueDate?.let {
             Text(it, fontSize = FontSize.xs, color = Palette.muted, modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)))
         }
@@ -450,4 +546,16 @@ private fun TodoItem(
                 .padding(horizontal = Spacing.s1_5, vertical = Spacing.s0_5),
         )
     }
+}
+
+/** Existing tags that complete the piece after the last comma, skipping ones already entered. */
+private fun tagSuggestions(text: String, existing: List<String>): List<String> {
+    val current = parseTags(text.substringAfterLast(',')).firstOrNull() ?: return emptyList()
+    val entered = parseTags(text.substringBeforeLast(',', ""))
+    return existing.filter { it.startsWith(current) && it != current && it !in entered }.take(5)
+}
+
+private fun completeTag(text: String, tag: String): String {
+    val i = text.lastIndexOf(',')
+    return (if (i < 0) "" else text.substring(0, i + 1) + " ") + tag + ", "
 }

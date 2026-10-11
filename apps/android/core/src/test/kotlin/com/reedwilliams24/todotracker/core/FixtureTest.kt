@@ -135,6 +135,9 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "cleanTitle" -> JsonPrimitive(cleanTitle(g.str("text")))
     "coerceDrafts" -> encodeDrafts(coerceDrafts(g["value"]))
     "reconcileDrafts" -> encodeDrafts(reconcileDrafts(g.drafts("heuristic"), g.drafts("llm")))
+    "parseTags" -> JsonArray(parseTags(g.str("input")).map(::JsonPrimitive))
+    "allTags" -> JsonArray(allTags(g.todos()).map(::JsonPrimitive))
+    "filterByTag" -> encode(filterByTag(g.todos(), (g["tag"] as? JsonPrimitive)?.takeIf { it.isString }?.content))
     else -> error("Unknown op \"$op\"")
 }
 

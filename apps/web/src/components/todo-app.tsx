@@ -119,6 +119,7 @@ export function TodoApp() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => setTag(selected ? null : option)}
+                data-testid={TEST_IDS.tagFilter(option)}
                 className={`rounded-full border px-2 py-0.5 transition ${
                   selected
                     ? "border-transparent bg-foreground text-background"

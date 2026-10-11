@@ -34,6 +34,7 @@ async function run(page: Page, step: Step) {
       await page.getByTestId(id("formTitle")).fill(s.title!);
       if (s.priority) await page.getByTestId(id("formPriority")).selectOption(s.priority);
       if (s.dueDate) await page.getByTestId(id("formDueDate")).fill(s.dueDate);
+      if (s.tags) await page.getByTestId(id("formTags")).fill(s.tags);
       await page.getByTestId(id("formSubmit")).click();
       await expect(page.getByTestId(id("item", s.title))).toBeVisible();
       return;
@@ -47,6 +48,8 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("itemEditInput")).press("Enter");
     case "filter":
       return page.getByTestId(id("filter", s.filter)).click();
+    case "filterTag":
+      return page.getByTestId(id("tagFilter", s.tag)).click();
     case "search":
       return page.getByTestId(id("search")).fill(s.query!);
     case "clearCompleted":
@@ -64,6 +67,8 @@ async function run(page: Page, step: Step) {
       return expect.poll(() => visibleTitles(page)).toEqual(s.titles);
     case "remaining":
       return expect(page.getByTestId(id("remaining"))).toHaveText(s.text!);
+    case "tags":
+      return expect(page.getByTestId(id("itemTags", s.title))).toHaveAccessibleName(s.text!);
     case "completed":
       return expect(page.getByTestId(id("itemToggle", s.title))).toBeChecked({ checked: s.value });
     case "undo":

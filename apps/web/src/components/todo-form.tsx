@@ -72,6 +72,7 @@ export function TodoForm({ onAdd, existingTags = [] }: TodoFormProps) {
         list="todo-tag-suggestions"
         placeholder="Tags, comma-separated"
         aria-label="Tags"
+        data-testid={TEST_IDS.formTags}
         autoComplete="off"
         className="w-full rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm sm:w-36 dark:border-white/15"
       />

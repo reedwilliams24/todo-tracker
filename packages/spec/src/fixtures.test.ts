@@ -45,8 +45,8 @@ for (const file of files) {
 
 describe("storage schema", () => {
   it("accepts every todo the fixtures produce", () => {
-    const fixture = readJson<FixtureFile>(join(FIXTURES_DIR, "todo.json"));
-    for (const c of fixture.cases.filter((c) => c.op === "createTodo" || c.op === "toggleTodo")) {
+    const cases = ["todo.json", "tags.json"].flatMap((file) => readJson<FixtureFile>(join(FIXTURES_DIR, file)).cases);
+    for (const c of cases.filter((c) => c.op === "createTodo" || c.op === "toggleTodo")) {
       expect(validateTodo(c.then), `${c.name}: ${JSON.stringify(validateTodo.errors)}`).toBe(true);
     }
   });

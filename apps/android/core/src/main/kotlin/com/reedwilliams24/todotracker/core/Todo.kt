@@ -20,6 +20,8 @@ data class Todo(
     val completed: Boolean,
     val priority: TodoPriority,
     val dueDate: String? = null,
+    /** Normalized (see parseTags); null rather than empty. */
+    val tags: List<String>? = null,
     val createdAt: String,
     val updatedAt: String,
 )
@@ -40,12 +42,14 @@ data class TodoDraft(
     val notes: String? = null,
     val priority: TodoPriority? = null,
     val dueDate: String? = null,
+    val tags: List<String>? = null,
 )
 
-/** Controlled-input state for the add form; dueDate is "" when unset. */
+/** Controlled-input state for the add form; dueDate is "" when unset, tags is comma-separated text. */
 @Serializable
 data class TodoFormState(
     val title: String = "",
     val priority: TodoPriority = DEFAULT_PRIORITY,
     val dueDate: String = "",
+    val tags: String = "",
 )

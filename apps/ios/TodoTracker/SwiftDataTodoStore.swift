@@ -18,6 +18,7 @@ final class StoredTodo {
     var completed: Bool
     var priority: String
     var dueDate: String?
+    var tags: [String]?
     var createdAt: String
     var updatedAt: String
 
@@ -29,6 +30,7 @@ final class StoredTodo {
         completed = todo.completed
         priority = todo.priority.rawValue
         dueDate = todo.dueDate
+        tags = todo.tags
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
     }
@@ -40,6 +42,7 @@ final class StoredTodo {
         completed = todo.completed
         priority = todo.priority.rawValue
         dueDate = todo.dueDate
+        tags = todo.tags
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
     }
@@ -53,6 +56,7 @@ final class StoredTodo {
             completed: completed,
             priority: priority,
             dueDate: dueDate,
+            tags: tags,
             createdAt: createdAt,
             updatedAt: updatedAt
         )

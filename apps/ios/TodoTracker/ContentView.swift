@@ -15,8 +15,9 @@ struct ContentView: View {
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.muted)
                 }
-                TodoFormView(onAdd: model.add)
+                TodoFormView(existingTags: model.tags, onAdd: model.add)
                 toolbar
+                tagChips
                 list
                 Text(model.remainingText)
                     .font(.system(size: 12))
@@ -67,6 +68,35 @@ struct ContentView: View {
                     .foregroundStyle(Theme.foreground.opacity(0.7))
                     .accessibilityIdentifier(TestID.clearCompleted)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var tagChips: some View {
+        let tags = model.tags
+        if !tags.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    ForEach(tags, id: \.self) { tag in
+                        let selected = model.activeTag == tag
+                        Button { model.toggleTag(tag) } label: {
+                            Text("#\(tag)")
+                                .font(.system(size: 12))
+                                .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(selected ? Theme.foreground : .clear, in: Capsule())
+                                .overlay(Capsule().stroke(selected ? Theme.foreground : Theme.border, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(selected ? .isSelected : [])
+                        .accessibilityIdentifier(TestID.tagFilter(tag))
+                    }
+                }
+                .padding(1)
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Filter by tag")
         }
     }
 
