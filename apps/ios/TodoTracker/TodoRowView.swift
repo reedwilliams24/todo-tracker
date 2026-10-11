@@ -66,6 +66,9 @@ struct TodoRowView: View {
                         .accessibilityIdentifier(TestID.itemDueDate(todo.title))
                 }
                 .foregroundStyle(overdue ? Theme.danger : Theme.muted)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+                .layoutPriority(1)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(overdue ? "Overdue, was due \(dueDate)" : "Due \(dueDate)")
             }
@@ -77,6 +80,7 @@ struct TodoRowView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
                 .background(colors.bg, in: Capsule())
+                .fixedSize()
                 .accessibilityIdentifier(TestID.itemPriority(todo.title))
 
             Button(action: onRemove) {
