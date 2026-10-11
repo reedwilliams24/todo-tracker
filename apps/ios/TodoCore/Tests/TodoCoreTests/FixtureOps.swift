@@ -86,6 +86,16 @@ enum FixtureOps {
             return coerceDrafts(g.raw["value"] ?? .null)
         case "reconcileDrafts":
             return reconcileDrafts(heuristic: try g.decode("heuristic"), llm: try g.decode("llm"))
+        case "parseQuickAdd":
+            return parseQuickAdd(try g.decode("input"), now: try g.date("now"))
+        case "hasQuickAddMeta":
+            return hasQuickAddMeta(try g.decode("parse"))
+        case "quickAddToDraft":
+            return quickAddToDraft(
+                try g.decode("parse"),
+                fallbackPriority: try g.decode("fallbackPriority"),
+                fallbackDueDate: try g.decode("fallbackDueDate", as: String?.self)
+            )
         default:
             throw UnknownOp(op: op)
         }

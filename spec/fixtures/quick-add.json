@@ -1,0 +1,391 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "quick-add",
+  "spec": "features/quick-add.md",
+  "cases": [
+    {
+      "name": "parseQuickAdd: call mom tomorrow 5pm #family !p1",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "call mom tomorrow 5pm #family !p1",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "call mom 5pm",
+        "priority": "high",
+        "dueDate": "2026-01-06",
+        "tags": [
+          "family"
+        ]
+      }
+    },
+    {
+      "name": "parseQuickAdd: file taxes !low #Money #money",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "file taxes !low #Money #money",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "file taxes",
+        "priority": "low",
+        "tags": [
+          "money"
+        ]
+      }
+    },
+    {
+      "name": "parseQuickAdd: x !med",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "x !med",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "x",
+        "priority": "medium",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: x !Medium",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "x !Medium",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "x",
+        "priority": "medium",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: x !p2",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "x !p2",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "x",
+        "priority": "medium",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: x !P3",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "x !P3",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "x",
+        "priority": "low",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: x !p4",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "x !p4",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "x !p4",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: pay rent asap",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "pay rent asap",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "pay rent",
+        "priority": "high",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: email bob !urgent",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "email bob !urgent",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "email bob",
+        "priority": "high",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: gym friday",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "gym friday",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "gym",
+        "dueDate": "2026-01-09",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: gym monday",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "gym monday",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "gym",
+        "dueDate": "2026-01-12",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: review next week",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "review next week",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "review",
+        "dueDate": "2026-01-12",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: renew passport in 10 days",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "renew passport in 10 days",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "renew passport",
+        "dueDate": "2026-01-15",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: water plants in 1 day",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "water plants in 1 day",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "water plants",
+        "dueDate": "2026-01-06",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: dentist on 2026-12-01",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "dentist on 2026-12-01",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "dentist",
+        "dueDate": "2026-12-01",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: rent due 2026-02-01 !high",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "rent due 2026-02-01 !high",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "rent",
+        "priority": "high",
+        "dueDate": "2026-02-01",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: pay due 2026-02-30",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "pay due 2026-02-30",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "pay due 2026-02-30",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: read issue#31 and page#2",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "read issue#31 and page#2",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "read issue#31 and page#2",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: plan trip #café #2026 #road-trip",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "plan trip #café #2026 #road-trip",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "plan trip",
+        "tags": [
+          "café",
+          "2026",
+          "road-trip"
+        ]
+      }
+    },
+    {
+      "name": "parseQuickAdd: remind me to buy milk today",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "remind me to buy milk today",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "buy milk",
+        "dueDate": "2026-01-05",
+        "tags": []
+      }
+    },
+    {
+      "name": "parseQuickAdd: !p1 #tag",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "!p1 #tag",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "",
+        "priority": "high",
+        "tags": [
+          "tag"
+        ]
+      }
+    },
+    {
+      "name": "parseQuickAdd: plain text",
+      "op": "parseQuickAdd",
+      "given": {
+        "input": "plain text",
+        "now": "2026-01-05T09:00:00"
+      },
+      "then": {
+        "title": "plain text",
+        "tags": []
+      }
+    },
+    {
+      "name": "hasQuickAddMeta: plain",
+      "op": "hasQuickAddMeta",
+      "given": {
+        "parse": {
+          "title": "plain text",
+          "tags": []
+        }
+      },
+      "then": false
+    },
+    {
+      "name": "hasQuickAddMeta: tag only",
+      "op": "hasQuickAddMeta",
+      "given": {
+        "parse": {
+          "title": "plain",
+          "tags": [
+            "tag"
+          ]
+        }
+      },
+      "then": true
+    },
+    {
+      "name": "hasQuickAddMeta: priority only",
+      "op": "hasQuickAddMeta",
+      "given": {
+        "parse": {
+          "title": "x",
+          "priority": "low",
+          "tags": []
+        }
+      },
+      "then": true
+    },
+    {
+      "name": "quickAddToDraft prefers parsed values",
+      "op": "quickAddToDraft",
+      "given": {
+        "parse": {
+          "title": "call mom",
+          "priority": "high",
+          "dueDate": "2026-01-06",
+          "tags": [
+            "family"
+          ]
+        },
+        "fallbackPriority": "low",
+        "fallbackDueDate": "2026-02-01"
+      },
+      "then": {
+        "title": "call mom",
+        "priority": "high",
+        "dueDate": "2026-01-06"
+      }
+    },
+    {
+      "name": "quickAddToDraft falls back to the form controls",
+      "op": "quickAddToDraft",
+      "given": {
+        "parse": {
+          "title": "a",
+          "tags": []
+        },
+        "fallbackPriority": "high",
+        "fallbackDueDate": "2026-02-01"
+      },
+      "then": {
+        "title": "a",
+        "priority": "high",
+        "dueDate": "2026-02-01"
+      }
+    },
+    {
+      "name": "quickAddToDraft treats an empty fallback date as none",
+      "op": "quickAddToDraft",
+      "given": {
+        "parse": {
+          "title": "a",
+          "priority": "low",
+          "tags": []
+        },
+        "fallbackPriority": "medium",
+        "fallbackDueDate": ""
+      },
+      "then": {
+        "title": "a",
+        "priority": "low"
+      }
+    }
+  ]
+}

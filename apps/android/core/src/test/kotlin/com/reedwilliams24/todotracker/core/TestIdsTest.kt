@@ -21,6 +21,8 @@ class TestIdsTest {
             "formPriorityOption" to TestIds.formPriorityOption("{priority}"),
             "formDueDate" to TestIds.formDueDate,
             "formSubmit" to TestIds.formSubmit,
+            "quickAddPreview" to TestIds.quickAddPreview,
+            "quickAddPreviewTitle" to TestIds.quickAddPreviewTitle,
             "filter" to TestIds.filter("{filter}"),
             "sort" to TestIds.sort,
             "sortOption" to TestIds.sortOption("{sort}"),

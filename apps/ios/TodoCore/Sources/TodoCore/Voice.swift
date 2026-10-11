@@ -40,18 +40,18 @@ public struct DueDateExtraction: Codable, Equatable, Sendable {
     public var rest: String
 }
 
-private func localCalendar(_ timeZone: TimeZone) -> Calendar {
+func localCalendar(_ timeZone: TimeZone) -> Calendar {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = timeZone
     return calendar
 }
 
-private func toIsoDate(_ date: Date, _ calendar: Calendar) -> String {
+func toIsoDate(_ date: Date, _ calendar: Calendar) -> String {
     let parts = calendar.dateComponents([.year, .month, .day], from: date)
     return String(format: "%04d-%02d-%02d", parts.year!, parts.month!, parts.day!)
 }
 
-private func addDays(_ date: Date, _ days: Int, _ calendar: Calendar) -> Date {
+func addDays(_ date: Date, _ days: Int, _ calendar: Calendar) -> Date {
     calendar.date(byAdding: .day, value: days, to: date)!
 }
 

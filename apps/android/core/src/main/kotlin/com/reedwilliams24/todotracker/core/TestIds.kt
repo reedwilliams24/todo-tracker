@@ -7,6 +7,8 @@ object TestIds {
     fun formPriorityOption(priority: String) = "todo-form-priority-$priority"
     const val formDueDate = "todo-form-due-date"
     const val formSubmit = "todo-form-submit"
+    const val quickAddPreview = "todo-quick-add-preview"
+    const val quickAddPreviewTitle = "todo-quick-add-preview-title"
     fun filter(filter: String) = "todo-filter-$filter"
     const val sort = "todo-sort"
     fun sortOption(sort: String) = "todo-sort-$sort"

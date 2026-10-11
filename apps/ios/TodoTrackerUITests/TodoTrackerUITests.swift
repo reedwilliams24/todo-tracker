@@ -29,4 +29,23 @@ final class TodoTrackerUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 3))
         XCTAssertTrue(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 5))
     }
+
+    @MainActor
+    func testQuickAddShorthand() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTesting"]
+        app.launch()
+
+        let title = app.textFields["todo-form-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 10))
+        title.tap()
+        title.typeText("Call mom 2030-01-15 #family !p1")
+        XCTAssertEqual(app.staticTexts["todo-quick-add-preview-title"].label, "Call mom")
+
+        app.buttons["todo-form-submit"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["todo-item-Call mom"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["todo-priority-Call mom"].label, "High")
+        XCTAssertEqual(app.staticTexts["todo-due-Call mom"].label, "2030-01-15")
+        XCTAssertFalse(app.staticTexts["todo-quick-add-preview-title"].exists)
+    }
 }

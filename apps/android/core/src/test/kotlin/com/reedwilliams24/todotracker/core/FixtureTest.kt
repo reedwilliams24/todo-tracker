@@ -55,6 +55,7 @@ private fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 private fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
 private fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
 private fun JsonObject.drafts(key: String): List<TodoDraft> = TodoJson.decodeFromJsonElement(draftList, getValue(key))
+private fun JsonObject.quickAddParse(): QuickAddParse = TodoJson.decodeFromJsonElement(QuickAddParse.serializer(), getValue("parse"))
 private fun encode(todos: List<Todo>): JsonElement = TodoJson.encodeToJsonElement(todoList, todos)
 private fun encodeDrafts(drafts: List<TodoDraft>): JsonElement = TodoJson.encodeToJsonElement(draftList, drafts)
 
@@ -141,6 +142,16 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "cleanTitle" -> JsonPrimitive(cleanTitle(g.str("text")))
     "coerceDrafts" -> encodeDrafts(coerceDrafts(g["value"]))
     "reconcileDrafts" -> encodeDrafts(reconcileDrafts(g.drafts("heuristic"), g.drafts("llm")))
+    "parseQuickAdd" -> TodoJson.encodeToJsonElement(QuickAddParse.serializer(), parseQuickAdd(g.str("input"), g.local("now")))
+    "hasQuickAddMeta" -> JsonPrimitive(hasQuickAddMeta(g.quickAddParse()))
+    "quickAddToDraft" -> TodoJson.encodeToJsonElement(
+        TodoDraft.serializer(),
+        quickAddToDraft(
+            g.quickAddParse(),
+            TodoJson.decodeFromJsonElement(TodoPriority.serializer(), g.getValue("fallbackPriority")),
+            (g["fallbackDueDate"] as? JsonPrimitive)?.content,
+        ),
+    )
     else -> error("Unknown op \"$op\"")
 }
 

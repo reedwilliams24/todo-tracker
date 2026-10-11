@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { TEST_IDS } from "../src/domain/test-ids";
 
 const STORAGE_KEY = "todo-tracker:todos:v1";
 
@@ -190,6 +191,22 @@ test("undo restores deleted and completed todos in their original position", asy
   await expect(toast).toContainText("Deleted 2 todos");
   await toast.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByRole("listitem")).toHaveCount(3);
+});
+
+test("quick-add shorthand previews and applies due date, priority", async ({ page }) => {
+  const input = page.getByLabel("Todo title");
+  await input.fill("call mom tomorrow #family !p1");
+  const preview = page.getByTestId(TEST_IDS.quickAddPreview);
+  await expect(preview).toContainText("Will add: call mom");
+  await expect(preview).toContainText("Due 20");
+  await expect(preview).toContainText("high priority");
+  await expect(preview).toContainText("#family");
+  await page.getByRole("button", { name: "Add" }).click();
+  const item = page.getByRole("listitem").filter({ hasText: "call mom" });
+  await expect(item).toBeVisible();
+  await expect(item).toContainText("high");
+  await expect(item).toContainText(/\d{4}-\d{2}-\d{2}/);
+  await expect(preview).toBeHidden();
 });
 
 test("highlights overdue todos and sorts by due date", async ({ page }) => {

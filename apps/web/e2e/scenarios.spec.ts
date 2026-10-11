@@ -28,19 +28,28 @@ async function visibleTitles(page: Page): Promise<string[]> {
 }
 
 async function run(page: Page, step: Step) {
-  const s = step as Record<string, string> & { value?: boolean; titles?: string[]; label?: string | null };
+  const s = step as Record<string, string> & {
+    value?: boolean;
+    titles?: string[];
+    label?: string | null;
+    title?: string | null;
+  };
   switch (step.do) {
+    case "type":
+      return page.getByTestId(id("formTitle")).fill(s.text!);
+    case "submit":
+      return page.getByTestId(id("formSubmit")).click();
     case "add":
       await page.getByTestId(id("formTitle")).fill(s.title!);
       if (s.priority) await page.getByTestId(id("formPriority")).selectOption(s.priority);
       if (s.dueDate) await page.getByTestId(id("formDueDate")).fill(s.dueDate);
       await page.getByTestId(id("formSubmit")).click();
-      await expect(page.getByTestId(id("item", s.title))).toBeVisible();
+      await expect(page.getByTestId(id("item", s.title!))).toBeVisible();
       return;
     case "toggle":
-      return page.getByTestId(id("itemToggle", s.title)).click();
+      return page.getByTestId(id("itemToggle", s.title!)).click();
     case "delete":
-      return page.getByTestId(id("itemDelete", s.title)).click();
+      return page.getByTestId(id("itemDelete", s.title!)).click();
     case "rename":
       await page.getByTestId(id("itemTitle", s.from)).dblclick();
       await page.getByTestId(id("itemEditInput")).fill(s.to!);
@@ -67,10 +76,17 @@ async function run(page: Page, step: Step) {
     case "remaining":
       return expect(page.getByTestId(id("remaining"))).toHaveText(s.text!);
     case "completed":
-      return expect(page.getByTestId(id("itemToggle", s.title))).toBeChecked({ checked: s.value });
+      return expect(page.getByTestId(id("itemToggle", s.title!))).toBeChecked({ checked: s.value });
+    case "quickAddPreview":
+      if (s.title === null) return expect(page.getByTestId(id("quickAddPreview"))).toBeHidden();
+      return expect(page.getByTestId(id("quickAddPreviewTitle"))).toHaveText(s.title!);
+    case "priority":
+      return expect(page.getByTestId(id("itemPriority", s.title!))).toHaveText(new RegExp(`^${s.priority}$`, "i"));
+    case "dueDate":
+      return expect(page.getByTestId(id("itemDueDate", s.title!))).toHaveText(s.dueDate!);
     case "overdue":
-      if (s.value) return expect(page.getByTestId(id("itemOverdue", s.title))).toBeVisible();
-      return expect(page.getByTestId(id("itemOverdue", s.title))).toBeHidden();
+      if (s.value) return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeVisible();
+      return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeHidden();
     case "undo":
       if (s.label === null) return expect(page.getByTestId(id("undoToast"))).toBeHidden();
       return expect(page.getByTestId(id("undoLabel"))).toHaveText(s.label!);
