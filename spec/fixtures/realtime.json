@@ -93,6 +93,390 @@
         "attempt": 40
       },
       "then": 30000
+    },
+    {
+      "name": "connectionStatus: guest, session ok, online, no connection",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": false,
+        "online": true
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, session ok, online, offline",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": false,
+        "online": true,
+        "connection": "offline"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, session ok, online, connecting",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": false,
+        "online": true,
+        "connection": "connecting"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, session ok, online, connected",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": false,
+        "online": true,
+        "connection": "connected"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, session ok, no network, no connection",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": false,
+        "online": false
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, session ok, no network, offline",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": false,
+        "online": false,
+        "connection": "offline"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, session ok, no network, connecting",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": false,
+        "online": false,
+        "connection": "connecting"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, session ok, no network, connected",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": false,
+        "online": false,
+        "connection": "connected"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, expired, online, no connection",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": true,
+        "online": true
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, expired, online, offline",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": true,
+        "online": true,
+        "connection": "offline"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, expired, online, connecting",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": true,
+        "online": true,
+        "connection": "connecting"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, expired, online, connected",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": true,
+        "online": true,
+        "connection": "connected"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, expired, no network, no connection",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": true,
+        "online": false
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, expired, no network, offline",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": true,
+        "online": false,
+        "connection": "offline"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, expired, no network, connecting",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": true,
+        "online": false,
+        "connection": "connecting"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: guest, expired, no network, connected",
+      "op": "connectionStatus",
+      "given": {
+        "account": false,
+        "expired": true,
+        "online": false,
+        "connection": "connected"
+      },
+      "then": "guest"
+    },
+    {
+      "name": "connectionStatus: account, session ok, online, no connection",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": false,
+        "online": true
+      },
+      "then": "reconnecting"
+    },
+    {
+      "name": "connectionStatus: account, session ok, online, offline",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": false,
+        "online": true,
+        "connection": "offline"
+      },
+      "then": "reconnecting"
+    },
+    {
+      "name": "connectionStatus: account, session ok, online, connecting",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": false,
+        "online": true,
+        "connection": "connecting"
+      },
+      "then": "reconnecting"
+    },
+    {
+      "name": "connectionStatus: account, session ok, online, connected",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": false,
+        "online": true,
+        "connection": "connected"
+      },
+      "then": "connected"
+    },
+    {
+      "name": "connectionStatus: account, session ok, no network, no connection",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": false,
+        "online": false
+      },
+      "then": "offline"
+    },
+    {
+      "name": "connectionStatus: account, session ok, no network, offline",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": false,
+        "online": false,
+        "connection": "offline"
+      },
+      "then": "offline"
+    },
+    {
+      "name": "connectionStatus: account, session ok, no network, connecting",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": false,
+        "online": false,
+        "connection": "connecting"
+      },
+      "then": "offline"
+    },
+    {
+      "name": "connectionStatus: account, session ok, no network, connected",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": false,
+        "online": false,
+        "connection": "connected"
+      },
+      "then": "offline"
+    },
+    {
+      "name": "connectionStatus: account, expired, online, no connection",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": true,
+        "online": true
+      },
+      "then": "expired"
+    },
+    {
+      "name": "connectionStatus: account, expired, online, offline",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": true,
+        "online": true,
+        "connection": "offline"
+      },
+      "then": "expired"
+    },
+    {
+      "name": "connectionStatus: account, expired, online, connecting",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": true,
+        "online": true,
+        "connection": "connecting"
+      },
+      "then": "expired"
+    },
+    {
+      "name": "connectionStatus: account, expired, online, connected",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": true,
+        "online": true,
+        "connection": "connected"
+      },
+      "then": "expired"
+    },
+    {
+      "name": "connectionStatus: account, expired, no network, no connection",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": true,
+        "online": false
+      },
+      "then": "expired"
+    },
+    {
+      "name": "connectionStatus: account, expired, no network, offline",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": true,
+        "online": false,
+        "connection": "offline"
+      },
+      "then": "expired"
+    },
+    {
+      "name": "connectionStatus: account, expired, no network, connecting",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": true,
+        "online": false,
+        "connection": "connecting"
+      },
+      "then": "expired"
+    },
+    {
+      "name": "connectionStatus: account, expired, no network, connected",
+      "op": "connectionStatus",
+      "given": {
+        "account": true,
+        "expired": true,
+        "online": false,
+        "connection": "connected"
+      },
+      "then": "expired"
+    },
+    {
+      "name": "canEdit: guest",
+      "op": "canEdit",
+      "given": {
+        "status": "guest"
+      },
+      "then": true
+    },
+    {
+      "name": "canEdit: connected",
+      "op": "canEdit",
+      "given": {
+        "status": "connected"
+      },
+      "then": true
+    },
+    {
+      "name": "canEdit: reconnecting",
+      "op": "canEdit",
+      "given": {
+        "status": "reconnecting"
+      },
+      "then": false
+    },
+    {
+      "name": "canEdit: offline",
+      "op": "canEdit",
+      "given": {
+        "status": "offline"
+      },
+      "then": false
+    },
+    {
+      "name": "canEdit: expired",
+      "op": "canEdit",
+      "given": {
+        "status": "expired"
+      },
+      "then": false
     }
   ]
 }

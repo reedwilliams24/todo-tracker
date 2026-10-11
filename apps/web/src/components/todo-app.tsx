@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  canEdit,
+  connectionStatus,
   countCompleted,
   countRemaining,
   filterTodos,
@@ -22,10 +24,21 @@ import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { VoiceCapture } from "@/components/voice-capture";
 import { StatsPanel } from "@/components/stats-panel";
+import { CONNECTION_BANNER_ID, ConnectionBanner } from "@/components/connection-banner";
+import { useOnline } from "@/hooks/use-online";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
-export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncSetup | null }) {
+export function TodoApp({
+  storage,
+  sync,
+  expired = false,
+}: {
+  storage?: TodoStorage;
+  sync?: SyncSetup | null;
+  /** The account's session expired: the list stays visible but read-only until the user signs in again. */
+  expired?: boolean;
+}) {
   const {
     todos,
     hydrated,
@@ -44,8 +57,13 @@ export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncS
     toggleSubtask,
     removeSubtask,
     pushFailed,
+    connection,
   } = useTodos(storage, sync);
   const t = useT();
+  const online = useOnline();
+  const status = connectionStatus({ account: !!sync || expired, expired, online, connection });
+  const editable = canEdit(status);
+  const describedBy = editable || status === "expired" ? undefined : CONNECTION_BANNER_ID;
   const [sort, setSort] = useSort(localSortStorage);
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
@@ -55,6 +73,14 @@ export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncS
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editable) return;
+    setSelecting(false);
+    setSelectedIds([]);
+    setConfirmingDelete(false);
+    setDraggingId(null);
+  }, [editable]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -121,14 +147,21 @@ export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncS
 
   return (
     <section className="flex flex-col gap-4">
-      <TodoForm onAdd={addTodo} />
+      <ConnectionBanner status={status} />
+      <TodoForm onAdd={addTodo} disabled={!editable} describedBy={describedBy} />
       {permission === "default" && (
         <button type="button" onClick={request} className="self-start text-xs underline opacity-60 hover:opacity-100">
           Enable due-date notifications
         </button>
       )}
       {permission === "denied" && <p className="text-xs opacity-60">{t("reminder.blocked")}</p>}
-      <VoiceCapture todos={todos} onAddMany={addMany} onUndo={removeMany} />
+      <VoiceCapture
+        todos={todos}
+        onAddMany={addMany}
+        onUndo={removeMany}
+        disabled={!editable}
+        describedBy={describedBy}
+      />
 
       <div className="relative">
         <input
@@ -199,8 +232,10 @@ export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncS
               type="button"
               aria-pressed={selecting}
               onClick={() => (selecting ? exitSelectMode() : setSelecting(true))}
+              disabled={!editable}
+              aria-describedby={describedBy}
               data-testid={TEST_IDS.selectMode}
-              className="underline-offset-4 opacity-70 hover:underline hover:opacity-100"
+              className="underline-offset-4 opacity-70 hover:underline hover:opacity-100 disabled:opacity-30 disabled:hover:no-underline"
             >
               {t(selecting ? "select.done" : "select.enter")}
             </button>
@@ -209,8 +244,10 @@ export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncS
             <button
               type="button"
               onClick={clearCompleted}
+              disabled={!editable}
+              aria-describedby={describedBy}
               data-testid={TEST_IDS.clearCompleted}
-              className="underline-offset-4 opacity-70 hover:underline hover:opacity-100"
+              className="underline-offset-4 opacity-70 hover:underline hover:opacity-100 disabled:opacity-30 disabled:hover:no-underline"
             >
               {t("list.clearCompleted", { count: completedCount })}
             </button>
@@ -305,8 +342,10 @@ export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncS
               onRename={rename}
               onRemove={remove}
               selection={selecting ? { selected: selected.includes(todo.id), onSelect: toggleSelected } : undefined}
+              readOnly={!editable}
+              describedBy={describedBy}
               drag={
-                !searching && !selecting
+                !searching && !selecting && editable
                   ? {
                       dragging: draggingId === todo.id,
                       onDragStart: setDraggingId,
@@ -338,8 +377,10 @@ export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncS
           <button
             type="button"
             onClick={undo}
+            disabled={!editable}
+            aria-describedby={describedBy}
             data-testid={TEST_IDS.undoAction}
-            className="font-medium underline underline-offset-4"
+            className="font-medium underline underline-offset-4 disabled:opacity-50"
           >
             {t("undo.action")}
           </button>

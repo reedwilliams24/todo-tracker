@@ -16,17 +16,22 @@ type Props = {
   todos: readonly Todo[];
   onAddMany: (drafts: TodoDraft[]) => Todo[];
   onUndo: (ids: string[]) => void;
+  /** Read-only list (spec/features/realtime.md#connection-status). */
+  disabled?: boolean;
+  describedBy?: string;
 };
 
 type LastAdd = { ids: string[]; titles: string[]; source: ParseResult["source"] };
 
-export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
+export function VoiceCapture({ todos, onAddMany, onUndo, disabled = false, describedBy }: Props) {
   const t = useT();
   const [manualTranscript, setManualTranscript] = useState("");
   const [parsing, setParsing] = useState(false);
   const [lastAdd, setLastAdd] = useState<LastAdd | null>(null);
   const [empty, setEmpty] = useState(false);
   const resetSpeechRef = useRef(() => {});
+  const disabledRef = useRef(disabled);
+  disabledRef.current = disabled;
 
   const capture = useCallback(
     async (transcript: string) => {
@@ -35,6 +40,7 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
       setEmpty(false);
       try {
         const parsed = await parseTodosFromTranscript(transcript, todos);
+        if (disabledRef.current) return;
         if (parsed.todos.length === 0) {
           setLastAdd(null);
           setEmpty(true);
@@ -87,7 +93,8 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
         <button
           type="button"
           onClick={handleMic}
-          disabled={!speech.supported || parsing}
+          disabled={!speech.supported || parsing || (disabled && !speech.listening)}
+          aria-describedby={disabled ? describedBy : undefined}
           aria-pressed={speech.listening}
           className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
             speech.listening ? "bg-red-500 text-white" : "bg-foreground text-background disabled:opacity-40"
@@ -103,6 +110,8 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
           <button
             type="button"
             onClick={() => void capture(speech.transcript || manualTranscript)}
+            disabled={disabled}
+            aria-describedby={disabled ? describedBy : undefined}
             className="rounded-lg border border-black/15 px-3 py-2 text-sm dark:border-white/20"
           >
             {t("voice.addThese")}
@@ -138,6 +147,7 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
           <button
             type="button"
             onClick={undo}
+            disabled={disabled}
             className="rounded-lg px-2 py-1 underline underline-offset-4 opacity-70 hover:opacity-100"
           >
             {t("voice.undo")}

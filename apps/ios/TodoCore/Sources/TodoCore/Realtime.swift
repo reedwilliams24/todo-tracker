@@ -27,6 +27,28 @@ public func reconnectDelayMs(_ attempt: Int) -> Int64 {
 }
 
 /// A joined channel; `close` leaves it and closes the socket.
+/// What the signed-in list shows about its connection. `guest`: the local-only guest list, which never shows one.
+public enum ConnectionStatus: String, Sendable, Codable {
+    case guest, connected, reconnecting, offline, expired
+}
+
+/// The connection banner's state (spec/features/realtime.md#connection-status). `account`: the shown list is an
+/// account's (signed in, or the session expired); `online`: the device has a network; `connection`: nil when there is
+/// no live connection.
+public func connectionStatus(
+    account: Bool, expired: Bool, online: Bool, connection: ConnectionState?
+) -> ConnectionStatus {
+    if !account { return .guest }
+    if expired { return .expired }
+    if !online { return .offline }
+    return connection == .connected ? .connected : .reconnecting
+}
+
+/// Add, edit, complete, delete and voice add are allowed only on the guest list or a connected, caught-up account list.
+public func canEdit(_ status: ConnectionStatus) -> Bool {
+    status == .guest || status == .connected
+}
+
 public protocol RealtimeChannelHandle: Sendable {
     func close() async
 }
