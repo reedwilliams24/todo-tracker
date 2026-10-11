@@ -1,5 +1,12 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { cloudConfig, supabaseTodoTable, type Database, type TodoTable } from "@/domain";
+import {
+  cloudConfig,
+  realtimeTopic,
+  supabaseTodoTable,
+  todoChangeFilter,
+  type Database,
+  type TodoTable,
+} from "@/domain";
 
 const config = cloudConfig(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -16,5 +23,12 @@ export function todoTable(client: SupabaseClient<Database>): TodoTable {
     list: (userId) => client.from("todos").select("*").eq("user_id", userId),
     upsert: (rows) => client.from("todos").upsert(rows),
     remove: (userId, ids) => client.from("todos").delete().eq("user_id", userId).in("id", ids),
+    onChange: (userId, callback) => {
+      const channel = client
+        .channel(realtimeTopic(userId))
+        .on("postgres_changes", todoChangeFilter(userId), callback)
+        .subscribe();
+      return () => void client.removeChannel(channel);
+    },
   });
 }

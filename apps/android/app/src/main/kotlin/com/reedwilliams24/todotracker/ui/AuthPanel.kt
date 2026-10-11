@@ -59,7 +59,7 @@ fun AuthPanel(auth: AuthUiState, viewModel: TodoViewModel) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "Signed in as ${user.email ?: user.id}",
+                "Signed in as ${user.email ?: user.id} · syncing across devices",
                 fontSize = FontSize.sm,
                 color = Palette.foreground.copy(alpha = 0.8f),
                 maxLines = 1,

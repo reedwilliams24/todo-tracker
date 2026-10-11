@@ -39,6 +39,11 @@ export function useTodos(storage: TodoStorage) {
     if (hydrated) void storage.save(todos);
   }, [storage, hydrated, todos]);
 
+  useEffect(() => {
+    if (!hydrated || !storage.subscribe) return;
+    return storage.subscribe((remote) => dispatch({ type: "load", todos: remote }));
+  }, [storage, hydrated]);
+
   const addMany = useCallback((drafts: TodoDraft[]) => {
     const { created } = addTodos([], drafts);
     dispatch({ type: "prepend", todos: created });

@@ -20,7 +20,7 @@ struct AuthPanelView: View {
 
     private func signedIn(_ user: AuthUser) -> some View {
         HStack(spacing: 12) {
-            Text("Signed in as \(user.email ?? user.id)")
+            Text("Signed in as \(user.email ?? user.id) · syncing across devices")
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.foreground.opacity(0.8))
                 .lineLimit(1)

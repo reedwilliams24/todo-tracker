@@ -140,6 +140,12 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
         ?.let { TodoJson.encodeToJsonElement(CloudConfig.serializer(), it) } ?: JsonNull
     "toRow" -> toRow(TodoJson.decodeFromJsonElement(Todo.serializer(), g.getValue("todo")), g.str("userId")).toJson()
     "migrationKey" -> JsonPrimitive(migrationKey(g.str("userId")))
+    "realtimeTopic" -> JsonPrimitive(realtimeTopic(g.str("userId")))
+    "todoChangeFilter" -> TodoJson.encodeToJsonElement(TodoChangeFilter.serializer(), todoChangeFilter(g.str("userId")))
+    "mergeRemoteTodos" -> TodoJson.encodeToJsonElement(
+        RemoteMerge.serializer(),
+        mergeRemoteTodos(g.todos("local"), g.todos("remote"), TodoJson.decodeFromJsonElement(ListSerializer(CloudVersion.serializer()), g.getValue("known"))),
+    )
     "mergeLocalIntoAccount" -> encode(mergeLocalIntoAccount(g.todos("local"), g.todos("remote")))
     "planCloudSave" -> TodoJson.encodeToJsonElement(
         CloudSavePlan.serializer(),

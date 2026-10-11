@@ -16,7 +16,7 @@ export function AuthPanel({ enabled, ready, user, signInWithEmail, signInWithPro
       <div
         data-testid={TEST_IDS.authPanel}
         className="flex items-center justify-between gap-3 rounded-xl border border-black/10 bg-white/60 px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5">
-        <span data-testid={TEST_IDS.authUser} className="truncate opacity-80">Signed in as {user.email ?? user.id}</span>
+        <span data-testid={TEST_IDS.authUser} className="truncate opacity-80">Signed in as {user.email ?? user.id} · syncing across devices</span>
         <button type="button" data-testid={TEST_IDS.authSignOut} onClick={() => void signOut()} className="underline opacity-70 hover:opacity-100">
           Sign out
         </button>

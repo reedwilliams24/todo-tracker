@@ -26,6 +26,8 @@ const sample = [
   todo("c", { title: "Call mom", priority: "low", dueDate: "2026-01-06", createdAt: "2026-01-03T09:00:00.000Z" }),
 ];
 
+const versions = (todos: Todo[]) => todos.map(({ id, updatedAt }) => ({ id, updatedAt }));
+
 export const FEATURES: Feature[] = [
   {
     feature: "todo",
@@ -392,6 +394,41 @@ export const FEATURES: Feature[] = [
         name: "planCloudSave: clearing the list deletes every known id",
         op: "planCloudSave",
         given: { known: sample.map(({ id, updatedAt }) => ({ id, updatedAt })), todos: [] },
+      },
+      { name: "realtimeTopic is per account", op: "realtimeTopic", given: { userId: "u1" } },
+      { name: "todoChangeFilter watches only the account's rows", op: "todoChangeFilter", given: { userId: "u1" } },
+      {
+        name: "mergeRemoteTodos: echo of this device's own save changes nothing",
+        op: "mergeRemoteTodos",
+        given: { local: sample, remote: [sample[2], sample[0], sample[1]], known: versions(sample) },
+      },
+      {
+        name: "mergeRemoteTodos: todos added elsewhere go first, newest first",
+        op: "mergeRemoteTodos",
+        given: {
+          local: sample,
+          remote: [...sample, todo("d", { title: "Older add", createdAt: T1 }), todo("e", { title: "Newer add", createdAt: T2 })],
+          known: versions(sample),
+        },
+      },
+      {
+        name: "mergeRemoteTodos: edits and deletes made elsewhere apply in place",
+        op: "mergeRemoteTodos",
+        given: { local: sample, remote: [{ ...sample[0]!, title: "Buy oat milk", updatedAt: T1 }, sample[2]], known: versions(sample) },
+      },
+      {
+        name: "mergeRemoteTodos: unsaved local add, edit and delete win",
+        op: "mergeRemoteTodos",
+        given: {
+          local: [todo("n", { title: "Just added" }), { ...sample[0]!, completed: true, updatedAt: T2 }, sample[2]],
+          remote: [{ ...sample[0]!, title: "Edited elsewhere", updatedAt: T1 }, sample[1], sample[2]],
+          known: versions(sample),
+        },
+      },
+      {
+        name: "mergeRemoteTodos: nothing synced yet keeps the local list",
+        op: "mergeRemoteTodos",
+        given: { local: sample, remote: [], known: [] },
       },
     ],
   },

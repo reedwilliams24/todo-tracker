@@ -16,10 +16,12 @@ import com.reedwilliams24.todotracker.data.AuthUser
 import com.reedwilliams24.todotracker.data.CloudTodoStore
 import com.reedwilliams24.todotracker.data.FirstSignInMigration
 import com.reedwilliams24.todotracker.data.SupabaseClient
+import com.reedwilliams24.todotracker.data.TodoChangeFeed
 import com.reedwilliams24.todotracker.data.TodoDatabase
 import com.reedwilliams24.todotracker.data.TodoRepository
 import com.reedwilliams24.todotracker.data.TodoStore
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,6 +52,8 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     private val saveLock = Mutex()
     private var loadJob: Job? = null
     private var undoTimer: Job? = null
+    private var feed: TodoChangeFeed? = null
+    private var syncJob: Job? = null
 
     private val _ui = MutableStateFlow(TodoUiState())
     val ui: StateFlow<TodoUiState> = _ui.asStateFlow()
@@ -127,6 +131,9 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
             local
         }
         store = next
+        feed?.close()
+        feed = null
+        syncJob?.cancel()
         loadJob?.cancel()
         undoTimer?.cancel()
         _ui.value = TodoUiState()
@@ -137,8 +144,33 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
                 _auth.update { it.copy(status = "Couldn't load your todos: ${error.message}") }
                 emptyList()
             }
-            if (store === next) _ui.value = TodoUiState(reduceTodos(TodoState(), TodoAction.Load(stored)), hydrated = true)
+            if (store !== next) return@launch
+            _ui.value = TodoUiState(reduceTodos(TodoState(), TodoAction.Load(stored)), hydrated = true)
+            if (user != null && account != null) followChanges(next, account, user.id)
         }
+    }
+
+    /** Signed in: applies changes made on other devices (Supabase Realtime), one reload per burst of events. */
+    private fun followChanges(target: TodoStore, account: AccountSession, userId: String) {
+        val changes = Channel<Unit>(Channel.CONFLATED)
+        feed = TodoChangeFeed(account, userId, viewModelScope) { changes.trySend(Unit) }
+        syncJob = viewModelScope.launch {
+            for (change in changes) {
+                saveLock.withLock {
+                    if (store !== target) return@withLock
+                    try {
+                        val merge = target.reload { _ui.value.state.todos } ?: return@withLock
+                        if (merge.changed) _ui.update { it.copy(state = reduceTodos(it.state, TodoAction.Load(merge.todos))) }
+                    } catch (_: Exception) {
+                        // Offline or token trouble: the feed reconnects and triggers another reload.
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        feed?.close()
     }
 
     private fun dispatch(action: TodoAction) {

@@ -93,3 +93,49 @@ describe("withFirstSignInMigration", () => {
     expect((await storage.load()).map((todo) => todo.title)).toEqual(["remote"]);
   });
 });
+
+describe("cloud subscribe", () => {
+  function withChangeFeed(seed: TodoRow[]) {
+    const fake = fakeTable(seed);
+    let fire: () => void = () => {};
+    fake.table.onChange = (_userId, callback) => {
+      fire = callback;
+      return () => {};
+    };
+    return { ...fake, fire: () => fire() };
+  }
+
+  it("pushes the merged list when another device changes a row", async () => {
+    const remote = createTodo({ title: "remote" }, now);
+    const { table, rows, fire } = withChangeFeed([toRow(remote, "u1")]);
+    const storage = createCloudTodoStorage(table, "u1");
+    const loaded = await storage.load();
+
+    const added = createTodo({ title: "from phone" }, new Date(2026, 8, 25));
+    rows.set(added.id, toRow(added, "u1"));
+    const seen = new Promise<string[]>((resolve) =>
+      storage.subscribe!((todos) => resolve(todos.map((todo) => todo.title))),
+    );
+    fire();
+    expect(await seen).toEqual(["from phone", "remote"]);
+
+    // The reload refreshed `known`, so saving the merged list writes nothing.
+    const calls: string[] = [];
+    table.upsert = async () => void calls.push("upsert");
+    await storage.save([added, ...loaded]);
+    expect(calls).toEqual([]);
+  });
+
+  it("stays quiet for the echo of this device's own save", async () => {
+    const { table, fire } = withChangeFeed([]);
+    const storage = createCloudTodoStorage(table, "u1");
+    await storage.load();
+    const pushed: string[][] = [];
+    storage.subscribe!((todos) => pushed.push(todos.map((todo) => todo.title)));
+    await storage.save([createTodo({ title: "mine" }, now)]);
+    fire();
+    await storage.save([]);
+    await storage.save([createTodo({ title: "again" }, now)]);
+    expect(pushed).toEqual([]);
+  });
+});

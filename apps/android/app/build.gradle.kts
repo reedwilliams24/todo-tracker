@@ -63,5 +63,6 @@ dependencies {
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.okhttp)
     ksp(libs.room.compiler)
 }

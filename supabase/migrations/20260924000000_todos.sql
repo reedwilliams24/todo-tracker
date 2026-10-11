@@ -25,3 +25,6 @@ create policy "todos: owner can update" on public.todos
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "todos: owner can delete" on public.todos
   for delete using (auth.uid() = user_id);
+
+-- Realtime: clients subscribe to their own rows (RLS applies to the change feed).
+alter publication supabase_realtime add table public.todos;

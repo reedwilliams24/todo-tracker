@@ -28,6 +28,8 @@ final class TodoViewModel {
     private var expiry: Task<Void, Never>?
     private var loading: Task<Void, Never>?
     private var saving: Task<Void, Never>?
+    private var feed: TodoChangeFeed?
+    private var reloadQueued = false
 
     init(store: TodoStore, account: AccountSession? = nil, now: @escaping () -> Date = Date.init) {
         self.store = store
@@ -123,6 +125,8 @@ final class TodoViewModel {
     private func useStore(for user: AuthUser?) {
         loading?.cancel()
         expiry?.cancel()
+        feed?.close()
+        feed = nil
         guard let user, let account else {
             cloud = nil
             state = reduceTodos(.initial, .load(store.load()), now: now())
@@ -148,6 +152,24 @@ final class TodoViewModel {
             guard let self, self.cloud === cloud, !Task.isCancelled else { return }
             state = reduceTodos(.initial, .load(todos), now: now())
             hydrated = true
+            feed = TodoChangeFeed(account: account, userId: user.id) { [weak self] in self?.remoteChanged(cloud) }
+        }
+    }
+
+    /// A change on another device (Supabase Realtime): one reload per burst, queued behind pending saves.
+    private func remoteChanged(_ cloud: CloudTodoStore) {
+        guard self.cloud === cloud, !reloadQueued else { return }
+        reloadQueued = true
+        let previous = saving
+        saving = Task { [weak self] in
+            await previous?.value
+            guard let self, self.cloud === cloud else { return }
+            reloadQueued = false
+            // Offline or token trouble: the feed reconnects and triggers another reload.
+            guard let merge = try? await cloud.reload(local: { self.state.todos }),
+                  merge.changed, self.cloud === cloud
+            else { return }
+            state = reduceTodos(state, .load(merge.todos), now: now())
         }
     }
 

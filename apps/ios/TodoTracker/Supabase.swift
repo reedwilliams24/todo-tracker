@@ -254,4 +254,14 @@ final class CloudTodoStore {
         }
         known = cloudVersions(todos)
     }
+
+    /// Fetches the account's rows and folds them into `local()` (read after the fetch) after a change elsewhere.
+    func reload(local: () -> [Todo]) async throws -> RemoteMerge {
+        let client = account.client
+        let userId = userId
+        let remote = try await account.authorized { try await client.listTodos(token: $0, userId: userId) }.map(fromRow)
+        let merge = mergeRemoteTodos(local: local(), remote: remote, known: known)
+        known = cloudVersions(remote)
+        return merge
+    }
 }

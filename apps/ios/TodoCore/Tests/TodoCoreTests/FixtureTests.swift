@@ -32,6 +32,7 @@ final class FixtureTests: XCTestCase {
     func testUndo() throws { try runFixtures("undo") }
     func testStorage() throws { try runFixtures("storage") }
     func testVoice() throws { try runFixtures("voice") }
+    func testAccount() throws { try runFixtures("account") }
 
     /// A new fixture file must get a test above, or it would silently never run on iOS.
     func testEveryFixtureFileIsCovered() throws {

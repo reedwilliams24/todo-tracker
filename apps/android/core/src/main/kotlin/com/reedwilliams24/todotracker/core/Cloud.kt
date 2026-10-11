@@ -79,3 +79,40 @@ fun mergeLocalIntoAccount(local: List<Todo>, remote: List<Todo>): List<Todo> {
     }
     return byId.values.toList()
 }
+
+/** Realtime channel for the user's todo rows. */
+fun realtimeTopic(userId: String) = "todos:$userId"
+
+/** Realtime `postgres_changes` subscription for the user's todo rows (RLS also applies to the feed). */
+@Serializable
+data class TodoChangeFilter(val event: String, val schema: String, val table: String, val filter: String)
+
+fun todoChangeFilter(userId: String) = TodoChangeFilter(event = "*", schema = "public", table = "todos", filter = "user_id=eq.$userId")
+
+@Serializable
+data class RemoteMerge(val todos: List<Todo>, val changed: Boolean)
+
+/**
+ * Folds the account's rows ([remote]) into this device's list after a change elsewhere. [known] is the
+ * last-synced snapshot: unsaved local adds, edits and deletes win; everything else follows [remote].
+ * Local order is kept and todos added elsewhere go first, newest first.
+ */
+fun mergeRemoteTodos(local: List<Todo>, remote: List<Todo>, known: List<CloudVersion>): RemoteMerge {
+    val versions = known.associate { it.id to it.updatedAt }
+    val remoteById = remote.associateBy { it.id }
+    val localIds = local.mapTo(HashSet()) { it.id }
+    val added = remote.filter { it.id !in localIds && it.id !in versions }.sortedByDescending { it.createdAt }
+    val kept = local.mapNotNull { todo ->
+        val theirs = remoteById[todo.id]
+        val synced = versions[todo.id]
+        when {
+            theirs != null -> if (synced == todo.updatedAt) theirs else todo
+            synced == null -> todo
+            else -> null
+        }
+    }
+    val todos = added + kept
+    val changed = todos.size != local.size ||
+        todos.zip(local).any { (a, b) -> a.id != b.id || a.updatedAt != b.updatedAt }
+    return RemoteMerge(todos, changed)
+}

@@ -87,6 +87,12 @@ enum FixtureOps {
             return mergeLocalIntoAccount(local: try g.decode("local"), remote: try g.decode("remote"))
         case "planCloudSave":
             return planCloudSave(known: try g.decode("known"), todos: try g.decode("todos"))
+        case "realtimeTopic":
+            return realtimeTopic(userId: try g.decode("userId"))
+        case "todoChangeFilter":
+            return todoChangeFilter(userId: try g.decode("userId"))
+        case "mergeRemoteTodos":
+            return mergeRemoteTodos(local: try g.decode("local"), remote: try g.decode("remote"), known: try g.decode("known"))
         default:
             throw UnknownOp(op: op)
         }

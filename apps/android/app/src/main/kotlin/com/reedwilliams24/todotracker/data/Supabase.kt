@@ -3,6 +3,7 @@ package com.reedwilliams24.todotracker.data
 import android.content.Context
 import com.reedwilliams24.todotracker.core.CloudConfig
 import com.reedwilliams24.todotracker.core.CloudVersion
+import com.reedwilliams24.todotracker.core.RemoteMerge
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoJson
 import com.reedwilliams24.todotracker.core.TodoRow
@@ -10,6 +11,7 @@ import com.reedwilliams24.todotracker.core.cloudVersions
 import com.reedwilliams24.todotracker.core.fromRow
 import com.reedwilliams24.todotracker.core.migrationKey
 import com.reedwilliams24.todotracker.core.mergeLocalIntoAccount
+import com.reedwilliams24.todotracker.core.mergeRemoteTodos
 import com.reedwilliams24.todotracker.core.planCloudSave
 import com.reedwilliams24.todotracker.core.toJson
 import com.reedwilliams24.todotracker.core.toRow
@@ -38,7 +40,7 @@ class SupabaseException(val status: Int, message: String) : Exception(message)
 const val AUTH_REDIRECT = "todotracker://auth"
 
 /** Minimal Supabase Auth (GoTrue) + PostgREST client over HttpURLConnection; only the anon key ships. */
-class SupabaseClient(private val config: CloudConfig) {
+class SupabaseClient(val config: CloudConfig) {
     private val base = config.url.trimEnd('/')
 
     suspend fun sendCode(email: String) {
@@ -212,6 +214,9 @@ class AccountSession(val client: SupabaseClient, context: Context) {
 interface TodoStore {
     suspend fun load(): List<Todo>
     suspend fun save(todos: List<Todo>)
+
+    /** Cloud only: fetches the account's rows and folds them into [local] (read after the fetch) after a change elsewhere. */
+    suspend fun reload(local: () -> List<Todo>): RemoteMerge? = null
 }
 
 /** The account's `todos` rows; saves send only the diff from the last load/save (planCloudSave). */
@@ -229,6 +234,11 @@ class CloudTodoStore(private val account: AccountSession, private val userId: St
         if (plan.changed.isNotEmpty()) account.authorized { token -> account.client.upsertTodos(token, plan.changed.map { toRow(it, userId) }) }
         if (plan.removed.isNotEmpty()) account.authorized { account.client.removeTodos(it, userId, plan.removed) }
         known = cloudVersions(todos)
+    }
+
+    override suspend fun reload(local: () -> List<Todo>): RemoteMerge {
+        val remote = account.authorized { account.client.listTodos(it, userId) }.map(::fromRow)
+        return mergeRemoteTodos(local(), remote, known).also { known = cloudVersions(remote) }
     }
 }
 
@@ -249,4 +259,6 @@ class FirstSignInMigration(
     }
 
     override suspend fun save(todos: List<Todo>) = cloud.save(todos)
+
+    override suspend fun reload(local: () -> List<Todo>) = cloud.reload(local)
 }

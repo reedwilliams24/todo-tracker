@@ -107,3 +107,45 @@ public func mergeLocalIntoAccount(local: [Todo], remote: [Todo]) -> [Todo] {
     }
     return merged
 }
+
+/// Realtime channel for the user's todo rows.
+public func realtimeTopic(userId: String) -> String { "todos:\(userId)" }
+
+/// Realtime `postgres_changes` subscription for the user's todo rows (RLS also applies to the feed).
+public struct TodoChangeFilter: Codable, Equatable, Sendable {
+    public var event: String
+    public var schema: String
+    public var table: String
+    public var filter: String
+}
+
+public func todoChangeFilter(userId: String) -> TodoChangeFilter {
+    TodoChangeFilter(event: "*", schema: "public", table: "todos", filter: "user_id=eq.\(userId)")
+}
+
+public struct RemoteMerge: Codable, Equatable, Sendable {
+    public var todos: [Todo]
+    public var changed: Bool
+}
+
+/// Folds the account's rows (`remote`) into this device's list after a change elsewhere. `known` is the
+/// last-synced snapshot: unsaved local adds, edits and deletes win; everything else follows `remote`.
+/// Local order is kept and todos added elsewhere go first, newest first.
+public func mergeRemoteTodos(local: [Todo], remote: [Todo], known: [CloudVersion]) -> RemoteMerge {
+    let versions = Dictionary(known.map { ($0.id, $0.updatedAt) }, uniquingKeysWith: { _, last in last })
+    let remoteById = Dictionary(remote.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
+    let localIds = Set(local.map(\.id))
+    let added = remote.enumerated()
+        .filter { !localIds.contains($0.element.id) && versions[$0.element.id] == nil }
+        .sorted { $0.element.createdAt != $1.element.createdAt ? $0.element.createdAt > $1.element.createdAt : $0.offset < $1.offset }
+        .map(\.element)
+    let kept: [Todo] = local.compactMap { todo in
+        let synced = versions[todo.id]
+        if let theirs = remoteById[todo.id] { return synced == todo.updatedAt ? theirs : todo }
+        return synced == nil ? todo : nil
+    }
+    let todos = added + kept
+    let changed = todos.count != local.count
+        || zip(todos, local).contains { $0.id != $1.id || $0.updatedAt != $1.updatedAt }
+    return RemoteMerge(todos: todos, changed: changed)
+}
