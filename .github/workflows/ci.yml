@@ -193,6 +193,27 @@ jobs:
       - if: always()
         run: pnpm exec supabase stop --no-backup
 
+  # Signed-in web flows against a local Supabase stack, codes read from Mailpit: the `"requires": "supabase"`
+  # scenarios plus apps/web/e2e/two-device.spec.ts (two browser contexts on one account, synced over Realtime).
+  e2e-sync-web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || needs.changes.outputs.supabase == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup # installs the pinned supabase CLI
+      - run: pnpm exec supabase start -x studio,imgproxy,storage-api,edge-runtime,logflare,vector,supavisor
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+      - run: pnpm --filter web e2e:auth # builds the web app with the local keys (playwright.config.ts)
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-sync
+          path: apps/web/playwright-report/
+          retention-days: 14
+      - if: always()
+        run: pnpm exec supabase stop --no-backup
+
   # Compiles the SwiftUI app (no tests) when the app target changes on a PR, so UI-code breakage
   # is caught before main. The XCUITest and Maestro flows run in e2e-tests-ios on main.
   # ---------------------------------------------------------------- builds (every PR, per touched platform)
@@ -256,6 +277,7 @@ jobs:
       - build-android
       - build-ios
       - db-tests-supabase
+      - e2e-sync-web
     if: always()
     runs-on: ubuntu-latest
     steps:
