@@ -1,4 +1,4 @@
-import { bulkToggle, clearCompletedInList, removeFromList, renameInList, toggleInList } from "./list";
+import { bulkToggle, clearCompletedInList, moveVisibleTodo, removeFromList, renameInList, toggleInList } from "./list";
 import type { Todo } from "./types";
 import { createUndoEntry, describeUndo, isUndoExpired, type UndoEntry } from "./undo";
 
@@ -12,6 +12,7 @@ export type TodoAction =
   | { type: "toggleMany"; ids: string[] }
   | { type: "rename"; id: string; title: string }
   | { type: "remove"; ids: string[] }
+  | { type: "reorder"; visibleIds: string[]; id: string; targetId: string }
   | { type: "clearCompleted" }
   | { type: "undo" }
   | { type: "expireUndo" };
@@ -45,6 +46,10 @@ export function reduceTodos(state: TodoState, action: TodoAction, now: Date = ne
       const next = removeFromList(todos, action.ids);
       if (next.length === todos.length) return state;
       return { todos: next, undoable: snapshot(describeUndo("delete", action.ids.length)) };
+    }
+    case "reorder": {
+      const next = moveVisibleTodo(todos, action.visibleIds, action.id, action.targetId);
+      return next.every((todo, index) => todo === todos[index]) ? state : { ...state, todos: next };
     }
     case "clearCompleted": {
       const next = clearCompletedInList(todos);

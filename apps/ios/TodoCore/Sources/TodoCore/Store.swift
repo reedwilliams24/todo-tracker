@@ -20,6 +20,7 @@ public enum TodoAction: Equatable, Sendable {
     case toggleMany(ids: [String])
     case rename(id: String, title: String)
     case remove(ids: [String])
+    case reorder(visibleIds: [String], id: String, targetId: String)
     case clearCompleted
     case undo
     case expireUndo
@@ -54,6 +55,10 @@ public func reduceTodos(_ state: TodoState, _ action: TodoAction, now: Date = Da
         let next = removeFromList(todos, ids: ids)
         if next.count == todos.count { return state }
         return TodoState(todos: next, undoable: snapshot(describeUndo(.delete, count: ids.count)))
+    case .reorder(let visibleIds, let id, let targetId):
+        let next = moveVisibleTodo(todos, visibleIds: visibleIds, id: id, targetId: targetId)
+        if next == todos { return state }
+        return TodoState(todos: next, undoable: state.undoable)
     case .clearCompleted:
         let next = clearCompletedInList(todos)
         let removed = todos.count - next.count

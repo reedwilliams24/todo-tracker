@@ -16,9 +16,11 @@ type TodoItemProps = {
   onRemove: (id: string) => void;
   /** When provided the row is in multi-select mode: the checkbox selects instead of completing. */
   selection?: { selected: boolean; onSelect: (id: string) => void };
+  /** Present when the list is manually sortable: drag this row onto another to move it there. */
+  drag?: { dragging: boolean; onDragStart: (id: string) => void; onDrop: (targetId: string) => void; onDragEnd: () => void };
 };
 
-export function TodoItem({ todo, onToggle, onRename, onRemove, selection }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onRename, onRemove, selection, drag }: TodoItemProps) {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(todo.title);
   const cancelled = useRef(false);
@@ -81,10 +83,29 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection }: Todo
   return (
     <li
       data-testid={TEST_IDS.item(todo.title)}
+      draggable={!!drag}
+      onDragStart={drag ? () => drag.onDragStart(todo.id) : undefined}
+      onDragOver={drag ? (event) => event.preventDefault() : undefined}
+      onDrop={
+        drag
+          ? (event) => {
+              event.preventDefault();
+              drag.onDrop(todo.id);
+            }
+          : undefined
+      }
+      onDragEnd={drag?.onDragEnd}
       className={`flex items-center gap-3 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
         overdue ? "border-red-500/40" : "border-black/10 dark:border-white/15"
+      } ${
+        drag?.dragging ? "opacity-40" : ""
       }`}
     >
+      {drag && (
+        <span aria-label="Drag to reorder" title="Drag to reorder" className="cursor-grab select-none opacity-40">
+          ⋮⋮
+        </span>
+      )}
       <input
         type="checkbox"
         checked={todo.completed}

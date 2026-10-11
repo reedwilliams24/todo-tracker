@@ -3,6 +3,7 @@ package com.reedwilliams24.todotracker.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
@@ -33,8 +35,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,11 +46,14 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -67,6 +74,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reedwilliams24.todotracker.TodoViewModel
 import com.reedwilliams24.todotracker.core.EMPTY_TODO_FORM
@@ -98,9 +106,9 @@ fun TodoApp(viewModel: TodoViewModel) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val theme by viewModel.theme.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(TodoFilter.ALL) }
-    var sort by rememberSaveable { mutableStateOf(TodoSort.PRIORITY) }
     val todos = ui.state.todos
-    val visible = remember(todos, filter, sort) { sortTodos(filterTodos(todos, filter), sort) }
+    val visible = remember(todos, filter, ui.sort) { sortTodos(filterTodos(todos, filter), ui.sort) }
+    val visibleIds by rememberUpdatedState(visible.map { it.id })
     val remaining = countRemaining(todos)
     val completedCount = countCompleted(todos)
     var selecting by rememberSaveable { mutableStateOf(false) }
@@ -113,6 +121,27 @@ fun TodoApp(viewModel: TodoViewModel) {
         selecting = false
         selectedIds = emptySet()
         confirmingDelete = false
+    }
+    val listState = rememberLazyListState()
+    var draggingId by remember { mutableStateOf<String?>(null) }
+    var dragOffset by remember { mutableFloatStateOf(0f) }
+
+    /** The row under the dragged row's center, clamped to the first/last row when dragged past the ends. */
+    fun dropTarget(id: String): String? {
+        val items = listState.layoutInfo.visibleItemsInfo
+        val dragged = items.firstOrNull { it.key == id } ?: return null
+        val center = dragged.offset + dragged.size / 2 + dragOffset
+        val target = items.firstOrNull { center >= it.offset && center < it.offset + it.size }
+            ?: if (center < items.first().offset) items.first() else items.last()
+        return target.key as String
+    }
+
+    fun endDrag() {
+        val id = draggingId
+        val target = id?.let(::dropTarget)
+        if (id != null && target != null && target != id) viewModel.reorder(visibleIds, id, target)
+        draggingId = null
+        dragOffset = 0f
     }
 
     Box(
@@ -187,24 +216,25 @@ fun TodoApp(viewModel: TodoViewModel) {
             }
 
             Row(
-                Modifier
-                    .selectableGroup()
-                    .semantics { contentDescription = "Sort todos" }
-                    .testTag(TestIds.sort),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
+                Modifier.selectableGroup().semantics { contentDescription = "Sort todos" }.testTag(TestIds.sort),
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
             ) {
                 Text("Sort", fontSize = FontSize.sm, color = Palette.muted, modifier = Modifier.padding(end = Spacing.s1))
                 TodoSort.entries.forEach { option ->
-                    val selected = sort == option
+                    val selected = ui.sort == option
                     Text(
-                        if (option == TodoSort.DUE) "Due date" else "Priority",
+                        when (option) {
+                            TodoSort.DUE -> "Due date"
+                            TodoSort.MANUAL -> "Manual"
+                            TodoSort.PRIORITY -> "Priority"
+                        },
                         fontSize = FontSize.sm,
                         color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
                         modifier = Modifier
                             .clip(CircleShape)
                             .background(if (selected) Palette.foreground else Palette.background)
-                            .selectable(selected = selected, role = Role.Tab) { sort = option }
+                            .selectable(selected = selected, role = Role.Tab) { viewModel.setSort(option) }
                             .testTag(TestIds.sortOption(option.key))
                             .padding(horizontal = Spacing.s3, vertical = Spacing.s1),
                     )
@@ -239,9 +269,11 @@ fun TodoApp(viewModel: TodoViewModel) {
                     )
                     else -> LazyColumn(
                         Modifier.fillMaxSize().testTag(TestIds.list),
+                        state = listState,
                         verticalArrangement = Arrangement.spacedBy(Spacing.s2),
                     ) {
                         items(visible, key = { it.id }) { todo ->
+                            val dragging = draggingId == todo.id
                             TodoItem(
                                 todo,
                                 onToggle = viewModel::toggle,
@@ -254,6 +286,29 @@ fun TodoApp(viewModel: TodoViewModel) {
                                 } else {
                                     null
                                 },
+                                modifier = Modifier
+                                    .then(if (dragging) Modifier else Modifier.animateItem())
+                                    .zIndex(if (dragging) 1f else 0f)
+                                    .graphicsLayer { translationY = if (dragging) dragOffset else 0f }
+                                    .then(if (dragging) Modifier.shadow(6.dp, RoundedCornerShape(Radius.lg)) else Modifier)
+                                    .semantics { contentDescription = "Long-press and drag to reorder" }
+                                    .pointerInput(todo.id) {
+                                        detectDragGesturesAfterLongPress(
+                                            onDragStart = {
+                                                draggingId = todo.id
+                                                dragOffset = 0f
+                                            },
+                                            onDrag = { change, amount ->
+                                                change.consume()
+                                                dragOffset += amount.y
+                                            },
+                                            onDragEnd = ::endDrag,
+                                            onDragCancel = {
+                                                draggingId = null
+                                                dragOffset = 0f
+                                            },
+                                        )
+                                    },
                             )
                         }
                     }
@@ -725,6 +780,7 @@ private fun TodoItem(
     onRename: (String, String) -> Unit,
     onRemove: (String) -> Unit,
     selection: Selection? = null,
+    modifier: Modifier = Modifier,
 ) {
     if (selection != null) {
         SelectableItem(todo, selection)
@@ -746,7 +802,7 @@ private fun TodoItem(
     }
 
     Row(
-        Modifier
+        modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(Radius.lg))
             .border(1.dp, if (overdue) Palette.danger else Palette.border, RoundedCornerShape(Radius.lg))

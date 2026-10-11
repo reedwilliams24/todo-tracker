@@ -38,3 +38,25 @@ fun bulkToggle(todos: List<Todo>, ids: Collection<String>, now: Instant = Instan
     val complete = selected.any { !it.completed }
     return todos.map { if (it.id in chosen && it.completed != complete) toggleTodo(it, now) else it }
 }
+
+/** Moves the todo at `fromIndex` to `toIndex`; out-of-range or equal indexes change nothing. */
+fun reorderTodos(todos: List<Todo>, fromIndex: Int, toIndex: Int): List<Todo> {
+    val next = todos.toMutableList()
+    if (fromIndex == toIndex || fromIndex !in next.indices || toIndex !in next.indices) return next
+    next.add(toIndex, next.removeAt(fromIndex))
+    return next
+}
+
+/**
+ * Moves `id` into `targetId`'s slot within the displayed rows (`visibleIds`, in display order) and
+ * writes that order back into the slots the visible todos occupy; hidden todos stay put.
+ */
+fun moveVisibleTodo(todos: List<Todo>, visibleIds: List<String>, id: String, targetId: String): List<Todo> {
+    val from = visibleIds.indexOf(id)
+    val to = visibleIds.indexOf(targetId)
+    if (from == -1 || to == -1 || from == to) return todos.toList()
+    val byId = todos.associateBy { it.id }
+    val ordered = reorderTodos(visibleIds.mapNotNull { byId[it] }, from, to).iterator()
+    val visible = visibleIds.toSet()
+    return todos.map { if (it.id in visible) ordered.next() else it }
+}
