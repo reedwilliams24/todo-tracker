@@ -1,5 +1,5 @@
 import { generateId } from "../todos";
-import type { Recurrence, Todo, TodoPriority } from "../types";
+import type { Recurrence, Subtask, Todo, TodoPriority } from "../types";
 
 /** One row of the backend `todos` table (spec/features/sync.md). Timestamps use the Todo format. */
 export type TodoRow = {
@@ -12,6 +12,8 @@ export type TodoRow = {
   due_date: string | null;
   recurrence: Recurrence | null;
   completed_at: string | null;
+  /** The checklist (REED-10), in order; null when the todo has none. */
+  subtasks: Subtask[] | null;
   created_at: string;
   updated_at: string;
   /** Tombstone: set when the todo was deleted. */
@@ -30,6 +32,7 @@ export const SYNC_COLUMNS = [
   "due_date",
   "recurrence",
   "completed_at",
+  "subtasks",
   "created_at",
   "updated_at",
   "deleted_at",
@@ -48,6 +51,7 @@ export function toRow(todo: Todo, userId: string, deletedAt?: Date): TodoRow {
     due_date: todo.dueDate ?? null,
     recurrence: todo.recurrence ?? null,
     completed_at: todo.completedAt ?? null,
+    subtasks: todo.subtasks?.length ? todo.subtasks : null,
     created_at: todo.createdAt,
     updated_at: todo.updatedAt,
     deleted_at: deletedAt ? deletedAt.toISOString() : null,
@@ -68,6 +72,7 @@ export function fromRow(row: TodoRow): Todo {
   if (row.due_date !== null) todo.dueDate = row.due_date;
   if (row.recurrence !== null) todo.recurrence = row.recurrence;
   if (row.completed_at !== null) todo.completedAt = row.completed_at;
+  if (row.subtasks?.length) todo.subtasks = row.subtasks;
   return todo;
 }
 
@@ -97,7 +102,6 @@ export function applyRemote(
     if (current && current.updatedAt > row.updated_at) continue;
     const incoming = fromRow(row);
     if (current?.reminder && incoming.dueDate) incoming.reminder = current.reminder;
-    if (current?.subtasks) incoming.subtasks = current.subtasks;
     if (index >= 0) todos[index] = incoming;
     else todos.unshift(incoming);
   }
@@ -149,7 +153,7 @@ export function guestToRows(guest: readonly Todo[], userId: string, now: Date): 
 export type PushPlan = { todos: Todo[]; rows: TodoRow[] };
 
 function sameRow(a: TodoRow, b: TodoRow): boolean {
-  return SYNC_COLUMNS.every((column) => a[column] === b[column]);
+  return SYNC_COLUMNS.every((column) => JSON.stringify(a[column]) === JSON.stringify(b[column]));
 }
 
 /**

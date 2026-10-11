@@ -27,6 +27,7 @@ function row(id: string, overrides: Partial<TodoRow> = {}): TodoRow {
     due_date: null,
     recurrence: null,
     completed_at: null,
+    subtasks: null,
     created_at: T0,
     updated_at: T0,
     deleted_at: null,
@@ -44,9 +45,16 @@ const full = todo("a", {
   reminder: "1d",
   recurrence: "monthly",
   completedAt: T1,
+  subtasks: [
+    { id: "s1", title: "Transfer money", completed: true },
+    { id: "s2", title: "Email receipt", completed: true },
+  ],
   createdAt: T0,
   updatedAt: T1,
 });
+
+const open = (id: string, title: string) => ({ id, title, completed: false });
+const done = (id: string, title: string) => ({ id, title, completed: true });
 
 const list = [todo("a", { updatedAt: T1 }), todo("b", { updatedAt: T1 }), todo("c", { updatedAt: T1 })];
 
@@ -87,12 +95,19 @@ export const feature: Feature = {
           due_date: "2026-02-01",
           recurrence: "monthly",
           completed_at: T1,
+          subtasks: [done("s1", "Transfer money"), open("s2", "Email receipt")],
           updated_at: T1,
           server_seq: 42,
         }),
       },
     },
     { name: "fromRow: null columns are left out", op: "fromRow", given: { row: row("a") } },
+    {
+      name: "toRow: an empty checklist becomes null",
+      op: "toRow",
+      given: { todo: todo("a", { subtasks: [] }), userId: USER },
+    },
+    { name: "fromRow: an empty checklist is left out", op: "fromRow", given: { row: row("a", { subtasks: [] }) } },
     apply("a new todo is added at the top", { local: list, rows: [row("d", { updated_at: T2 })] }),
     apply("a newer row replaces the local copy in place", {
       local: list,
@@ -163,9 +178,22 @@ export const feature: Feature = {
       local: [todo("a", { dueDate: "2026-02-01", reminder: "1h" })],
       rows: [row("a", { updated_at: T1 })],
     }),
-    apply("keeps the device's subtasks (they aren't synced)", {
-      local: [todo("a", { subtasks: [{ id: "s1", title: "Step", completed: false }] })],
-      rows: [row("a", { title: "Renamed", updated_at: T1 })],
+    apply("subtasks: a newer row replaces the checklist", {
+      local: [todo("a", { subtasks: [open("s1", "Milk")], updatedAt: T1 })],
+      rows: [row("a", { subtasks: [done("s1", "Milk"), open("s2", "Eggs")], updated_at: T2 })],
+    }),
+    apply("subtasks: an older row keeps the local checklist", {
+      local: [todo("a", { subtasks: [done("s1", "Milk"), open("s2", "Eggs")], updatedAt: T2 })],
+      rows: [row("a", { subtasks: [open("s1", "Milk")], updated_at: T1 })],
+    }),
+    apply("subtasks: a newer row without subtasks clears the checklist", {
+      local: [todo("a", { subtasks: [open("s1", "Milk")], updatedAt: T1 })],
+      rows: [row("a", { updated_at: T2 })],
+    }),
+    apply("subtasks: a newer in-flight toggle is kept", {
+      local: [todo("a", { subtasks: [done("s1", "Milk")], completed: true, completedAt: T2, updatedAt: T2 })],
+      inFlight: [todo("a", { subtasks: [done("s1", "Milk")], completed: true, completedAt: T2, updatedAt: T2 })],
+      rows: [row("a", { subtasks: [open("s1", "Milk")], updated_at: T1 })],
     }),
     apply("first pull from cursor 0 fills an empty list", {
       local: [],
@@ -239,11 +267,17 @@ export const feature: Feature = {
     }),
     plan("a deleted todo becomes a tombstone stamped now", { before: list, after: [list[0], list[2]] }),
     plan("reordering pushes nothing", { before: list, after: [list[2], list[0], list[1]] }),
-    plan("a reminder or subtask change alone pushes nothing", {
+    plan("a reminder change alone pushes nothing", {
       before: [todo("a", { dueDate: "2026-02-01" })],
-      after: [
-        todo("a", { dueDate: "2026-02-01", reminder: "1h", subtasks: [{ id: "s1", title: "Step", completed: false }] }),
-      ],
+      after: [todo("a", { dueDate: "2026-02-01", reminder: "1h" })],
+    }),
+    plan("subtasks: a checklist change is stamped now and pushed", {
+      before: [todo("a", { subtasks: [open("s1", "Milk")] })],
+      after: [todo("a", { subtasks: [done("s1", "Milk")] })],
+    }),
+    plan("subtasks: an equal checklist pushes nothing", {
+      before: [todo("a", { subtasks: [open("s1", "Milk")] })],
+      after: [todo("a", { subtasks: [open("s1", "Milk")] })],
     }),
     plan("an undone edit is stamped now so it wins", {
       before: [todo("a", { title: "Renamed", updatedAt: T2 })],
