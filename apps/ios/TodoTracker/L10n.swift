@@ -18,8 +18,15 @@ struct MessageArgs: Sendable {
 func t(_ key: String, _ params: MessageParams = [:]) -> String {
     let format = Bundle.main.localizedString(forKey: key, value: nil, table: nil)
     guard let message = messageArgs[key] else { return format }
-    let args: [any CVarArg] = message.args.map { name in
-        name == message.plural ? count(params[name]) : params[name].map { "\($0)" } ?? ""
+    var args: [any CVarArg] = []
+    for name in message.args {
+        if name == message.plural {
+            args.append(count(params[name]))
+        } else if let value = params[name] {
+            args.append(String(describing: value))
+        } else {
+            args.append("")
+        }
     }
     return String(format: format, locale: .current, arguments: args)
 }
