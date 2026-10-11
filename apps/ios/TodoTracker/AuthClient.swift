@@ -185,9 +185,15 @@ private struct SupabaseRealtimeTransport: RealtimeTransport {
             }
         }
         let drops = Task {
-            for await status in statuses where status != .subscribed {
-                await onClosed()
-                return
+            // `statusChange` replays the status from before the join first, so only a later change is a drop.
+            var joined = false
+            for await status in statuses {
+                if status == .subscribed {
+                    joined = true
+                } else if joined {
+                    await onClosed()
+                    return
+                }
             }
         }
         handle.tasks = [rows, drops]
@@ -208,8 +214,10 @@ private final class SupabaseRealtimeChannel: RealtimeChannelHandle, @unchecked S
 
     func close() async {
         for task in tasks { task.cancel() }
-        await client.removeChannel(channel)
+        // Drop the socket first so removal skips the `phx_leave` round trip: a backgrounding app can be
+        // suspended mid-wait, leaving the socket open and the stale channel cached for the next open.
         client.realtimeV2.disconnect()
+        await client.removeChannel(channel)
     }
 }
 
