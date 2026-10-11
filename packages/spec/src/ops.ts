@@ -26,6 +26,9 @@ import {
   sortByPriority,
   STORAGE_KEY,
   toggleTodo,
+  todayMoreLabel,
+  todaySubtitle,
+  todaySummary,
   toTodoDraft,
   UNDO_TIMEOUT_MS,
   updateTodoText,
@@ -97,6 +100,9 @@ export const OPS: Record<string, (given: Given) => unknown> = {
   cleanTitle: (g) => cleanTitle(g.text),
   coerceDrafts: (g) => coerceDrafts(g.value),
   reconcileDrafts: (g) => reconcileDrafts(g.heuristic, g.llm),
+  todaySummary: (g) => todaySummary(g.todos, new Date(g.now), g.limit),
+  todaySubtitle: (g) => todaySubtitle(g.summary),
+  todayMoreLabel: (g) => todayMoreLabel(g.summary),
 };
 
 const NEW_ID = /^new-\d+$/;

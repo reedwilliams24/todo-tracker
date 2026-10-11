@@ -1,0 +1,438 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "today",
+  "spec": "features/today.md",
+  "cases": [
+    {
+      "name": "todaySummary: overdue and due today first, then undated; skips done and future",
+      "op": "todaySummary",
+      "given": {
+        "now": "2026-01-05T09:00:00",
+        "todos": [
+          {
+            "id": "future",
+            "title": "Todo future",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-09"
+          },
+          {
+            "id": "undated-low",
+            "title": "Todo undated-low",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "today",
+            "title": "Todo today",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "done-today",
+            "title": "Todo done-today",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "overdue",
+            "title": "Todo overdue",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-02"
+          },
+          {
+            "id": "undated-high",
+            "title": "Todo undated-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "today-high",
+            "title": "Todo today-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "today-high",
+            "title": "Todo today-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "overdue",
+            "title": "Todo overdue",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-02"
+          },
+          {
+            "id": "today",
+            "title": "Todo today",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "undated-high",
+            "title": "Todo undated-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "undated-low",
+            "title": "Todo undated-low",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "dueToday": 2,
+        "overdue": 1,
+        "remaining": 6
+      }
+    },
+    {
+      "name": "todaySummary: caps at limit but counts everything",
+      "op": "todaySummary",
+      "given": {
+        "now": "2026-01-05T09:00:00",
+        "limit": 2,
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          }
+        ],
+        "dueToday": 3,
+        "overdue": 0,
+        "remaining": 3
+      }
+    },
+    {
+      "name": "todaySummary: default limit is 5",
+      "op": "todaySummary",
+      "given": {
+        "now": "2026-01-05T09:00:00",
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "d",
+            "title": "Todo d",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "e",
+            "title": "Todo e",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "f",
+            "title": "Todo f",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "d",
+            "title": "Todo d",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "e",
+            "title": "Todo e",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "dueToday": 0,
+        "overdue": 0,
+        "remaining": 6
+      }
+    },
+    {
+      "name": "todaySummary: late evening is still today",
+      "op": "todaySummary",
+      "given": {
+        "now": "2026-01-05T23:59:00",
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-05"
+          }
+        ],
+        "dueToday": 1,
+        "overdue": 0,
+        "remaining": 2
+      }
+    },
+    {
+      "name": "todaySummary: empty",
+      "op": "todaySummary",
+      "given": {
+        "now": "2026-01-05T09:00:00",
+        "todos": []
+      },
+      "then": {
+        "todos": [],
+        "dueToday": 0,
+        "overdue": 0,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "todaySubtitle: all done",
+      "op": "todaySubtitle",
+      "given": {
+        "summary": {
+          "dueToday": 0,
+          "overdue": 0,
+          "remaining": 0
+        }
+      },
+      "then": "All done"
+    },
+    {
+      "name": "todaySubtitle: due today only",
+      "op": "todaySubtitle",
+      "given": {
+        "summary": {
+          "dueToday": 2,
+          "overdue": 0,
+          "remaining": 3
+        }
+      },
+      "then": "2 due today"
+    },
+    {
+      "name": "todaySubtitle: overdue and due today",
+      "op": "todaySubtitle",
+      "given": {
+        "summary": {
+          "dueToday": 1,
+          "overdue": 2,
+          "remaining": 4
+        }
+      },
+      "then": "2 overdue · 1 due today"
+    },
+    {
+      "name": "todaySubtitle: only undated",
+      "op": "todaySubtitle",
+      "given": {
+        "summary": {
+          "dueToday": 0,
+          "overdue": 0,
+          "remaining": 1
+        }
+      },
+      "then": "0 due today"
+    },
+    {
+      "name": "todayMoreLabel: hidden todos",
+      "op": "todayMoreLabel",
+      "given": {
+        "summary": {
+          "todos": [
+            {
+              "id": "a",
+              "title": "Todo a",
+              "completed": false,
+              "priority": "medium",
+              "createdAt": "2026-01-05T09:00:00.000Z",
+              "updatedAt": "2026-01-05T09:00:00.000Z"
+            }
+          ],
+          "remaining": 4
+        }
+      },
+      "then": "+3 more"
+    },
+    {
+      "name": "todayMoreLabel: nothing hidden",
+      "op": "todayMoreLabel",
+      "given": {
+        "summary": {
+          "todos": [
+            {
+              "id": "a",
+              "title": "Todo a",
+              "completed": false,
+              "priority": "medium",
+              "createdAt": "2026-01-05T09:00:00.000Z",
+              "updatedAt": "2026-01-05T09:00:00.000Z"
+            }
+          ],
+          "remaining": 1
+        }
+      },
+      "then": null
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import com.reedwilliams24.todotracker.core.addTodos
 import com.reedwilliams24.todotracker.core.reduceTodos
 import com.reedwilliams24.todotracker.data.TodoDatabase
 import com.reedwilliams24.todotracker.data.TodoRepository
+import com.reedwilliams24.todotracker.widget.TodayWidgetProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,7 +60,9 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             saveLock.withLock {
                 // Save the latest list, not the one captured at launch, so writes never go backwards.
-                repository.save(_ui.value.state.todos)
+                val todos = _ui.value.state.todos
+                repository.save(todos)
+                TodayWidgetProvider.refresh(getApplication(), todos)
             }
         }
     }

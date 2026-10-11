@@ -19,6 +19,14 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// The page sends the assets it already loaded, so the first visit's bundles work offline too.
+self.addEventListener("message", (event) => {
+  if (event.data?.type !== "cache-urls" || !Array.isArray(event.data.urls)) return;
+  event.waitUntil(
+    caches.open(CACHE).then((cache) => Promise.all(event.data.urls.map((url) => cache.add(url).catch(() => {})))),
+  );
+});
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;

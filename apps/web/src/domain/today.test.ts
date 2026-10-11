@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createTodo } from "./todos";
-import { todaySummary } from "./today";
+import { todayMoreLabel, todaySubtitle, todaySummary } from "./today";
 
 const now = new Date(2026, 8, 24, 9);
 const make = (title: string, dueDate?: string, completed = false) => ({
@@ -22,11 +22,17 @@ describe("todaySummary", () => {
     expect(summary.dueToday).toBe(1);
     expect(summary.overdue).toBe(1);
     expect(summary.remaining).toBe(4);
+    expect(todaySubtitle(summary)).toBe("1 overdue · 1 due today");
+    expect(todayMoreLabel(summary)).toBe("+1 more");
   });
 
   it("caps the list", () => {
     const todos = Array.from({ length: 8 }, (_, i) => make(`t${i}`, "2026-09-24"));
     expect(todaySummary(todos, now, 3).todos).toHaveLength(3);
     expect(todaySummary(todos, now, 3).dueToday).toBe(8);
+  });
+
+  it("says all done when nothing is open", () => {
+    expect(todaySubtitle(todaySummary([make("done", undefined, true)], now))).toBe("All done");
   });
 });

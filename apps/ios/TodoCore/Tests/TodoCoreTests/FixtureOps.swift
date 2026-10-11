@@ -77,6 +77,14 @@ enum FixtureOps {
             return coerceDrafts(g.raw["value"] ?? .null)
         case "reconcileDrafts":
             return reconcileDrafts(heuristic: try g.decode("heuristic"), llm: try g.decode("llm"))
+        case "todaySummary":
+            return todaySummary(try g.decode("todos"), now: try g.date("now"), limit: try g.decode("limit", as: Int?.self) ?? todayLimit)
+        case "todaySubtitle":
+            let summary = try g.decode("summary", as: SummaryCounts.self)
+            return todaySubtitle(dueToday: summary.dueToday ?? 0, overdue: summary.overdue ?? 0, remaining: summary.remaining)
+        case "todayMoreLabel":
+            let summary = try g.decode("summary", as: SummaryCounts.self)
+            return todayMoreLabel(shown: summary.todos?.count ?? 0, remaining: summary.remaining)
         default:
             throw UnknownOp(op: op)
         }
@@ -88,6 +96,13 @@ enum FixtureOps {
         let defaultPriority = TodoCore.defaultPriority
         let priorityOrder = Dictionary(uniqueKeysWithValues: TodoPriority.allCases.map { ($0.rawValue, $0.order) })
         let emptyForm = TodoFormState.empty
+    }
+
+    private struct SummaryCounts: Decodable {
+        let todos: [Todo]?
+        let dueToday: Int?
+        let overdue: Int?
+        let remaining: Int
     }
 
     /// `undoLabel` is always present, so a missing label encodes as `null` rather than being omitted.

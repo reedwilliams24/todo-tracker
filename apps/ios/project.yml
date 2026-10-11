@@ -19,9 +19,11 @@ targets:
     sources: [TodoTracker]
     dependencies:
       - package: TodoCore
+      - target: TodayWidget
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.reedwilliams24.todotracker
+        CODE_SIGN_ENTITLEMENTS: Config/TodoTracker.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Todo Tracker
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
@@ -29,6 +31,26 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         TARGETED_DEVICE_FAMILY: "1,2"
+  TodayWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - TodayWidget
+      - TodoTracker/StoredTodo.swift
+      - TodoTracker/Theme.swift
+    dependencies:
+      - package: TodoCore
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.reedwilliams24.todotracker.TodayWidget
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Config/TodayWidget-Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: Today
+        CODE_SIGN_ENTITLEMENTS: Config/TodayWidget.entitlements
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SKIP_INSTALL: YES
   TodoTrackerUITests:
     type: bundle.ui-testing
     platform: iOS

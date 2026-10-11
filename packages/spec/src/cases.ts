@@ -282,6 +282,65 @@ export const FEATURES: Feature[] = [
     ],
   },
   {
+    feature: "today",
+    spec: "features/today.md",
+    cases: [
+      // Monday 2026-01-05, local time.
+      {
+        name: "todaySummary: overdue and due today first, then undated; skips done and future",
+        op: "todaySummary",
+        given: {
+          now: "2026-01-05T09:00:00",
+          todos: [
+            todo("future", { dueDate: "2026-01-09" }),
+            todo("undated-low", { priority: "low" }),
+            todo("today", { dueDate: "2026-01-05" }),
+            todo("done-today", { dueDate: "2026-01-05", completed: true }),
+            todo("overdue", { dueDate: "2026-01-02" }),
+            todo("undated-high", { priority: "high" }),
+            todo("today-high", { priority: "high", dueDate: "2026-01-05" }),
+          ],
+        },
+      },
+      {
+        name: "todaySummary: caps at limit but counts everything",
+        op: "todaySummary",
+        given: {
+          now: "2026-01-05T09:00:00",
+          limit: 2,
+          todos: ["a", "b", "c"].map((id) => todo(id, { dueDate: "2026-01-05" })),
+        },
+      },
+      {
+        name: "todaySummary: default limit is 5",
+        op: "todaySummary",
+        given: { now: "2026-01-05T09:00:00", todos: ["a", "b", "c", "d", "e", "f"].map((id) => todo(id)) },
+      },
+      {
+        name: "todaySummary: late evening is still today",
+        op: "todaySummary",
+        given: { now: "2026-01-05T23:59:00", todos: [todo("a", { dueDate: "2026-01-05" }), todo("b", { dueDate: "2026-01-06" })] },
+      },
+      { name: "todaySummary: empty", op: "todaySummary", given: { now: "2026-01-05T09:00:00", todos: [] } },
+      ...[
+        ["all done", { dueToday: 0, overdue: 0, remaining: 0 }],
+        ["due today only", { dueToday: 2, overdue: 0, remaining: 3 }],
+        ["overdue and due today", { dueToday: 1, overdue: 2, remaining: 4 }],
+        ["only undated", { dueToday: 0, overdue: 0, remaining: 1 }],
+      ].map(([label, summary]) => ({ name: `todaySubtitle: ${label}`, op: "todaySubtitle", given: { summary } })),
+      {
+        name: "todayMoreLabel: hidden todos",
+        op: "todayMoreLabel",
+        given: { summary: { todos: [todo("a")], remaining: 4 } },
+      },
+      {
+        name: "todayMoreLabel: nothing hidden",
+        op: "todayMoreLabel",
+        given: { summary: { todos: [todo("a")], remaining: 1 } },
+      },
+    ],
+  },
+  {
     feature: "voice",
     spec: "features/voice.md",
     cases: [

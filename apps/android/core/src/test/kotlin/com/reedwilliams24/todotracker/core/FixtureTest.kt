@@ -51,6 +51,7 @@ private val todoList = ListSerializer(Todo.serializer())
 private val draftList = ListSerializer(TodoDraft.serializer())
 
 private fun JsonObject.str(key: String): String = getValue(key).jsonPrimitive.content
+private fun JsonObject.int(key: String): Int = getValue(key).jsonPrimitive.int
 private fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 private fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
 private fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
@@ -135,6 +136,16 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "cleanTitle" -> JsonPrimitive(cleanTitle(g.str("text")))
     "coerceDrafts" -> encodeDrafts(coerceDrafts(g["value"]))
     "reconcileDrafts" -> encodeDrafts(reconcileDrafts(g.drafts("heuristic"), g.drafts("llm")))
+    "todaySummary" -> TodoJson.encodeToJsonElement(
+        TodaySummary.serializer(),
+        todaySummary(g.todos(), g.local("now"), g["limit"]?.jsonPrimitive?.int ?: TODAY_LIMIT),
+    )
+    "todaySubtitle" -> g.getValue("summary").jsonObject.let {
+        JsonPrimitive(todaySubtitle(it.int("dueToday"), it.int("overdue"), it.int("remaining")))
+    }
+    "todayMoreLabel" -> g.getValue("summary").jsonObject.let {
+        todayMoreLabel(it.getValue("todos").jsonArray.size, it.int("remaining"))?.let(::JsonPrimitive) ?: JsonNull
+    }
     else -> error("Unknown op \"$op\"")
 }
 

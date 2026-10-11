@@ -6,7 +6,8 @@
     "list": { "web": "pass", "ios": "pass", "android": "pass" },
     "undo": { "web": "pass", "ios": "pass", "android": "pass" },
     "storage": { "web": "pass", "ios": "pass", "android": "pass" },
-    "voice": { "web": "pass", "ios": "pass", "android": "pass" }
+    "voice": { "web": "pass", "ios": "pass", "android": "pass" },
+    "today": { "web": "pass", "ios": "pass", "android": "pass" }
   },
   "scenarios": {
     "add-todo": { "web": "pass", "ios": "pass", "android": "pass" },
