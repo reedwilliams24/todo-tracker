@@ -56,6 +56,9 @@ struct TodoRowView: View {
                 Text(dueDate)
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.muted)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .layoutPriority(1)
                     .accessibilityIdentifier(TestID.itemDueDate(todo.title))
             }
 
@@ -63,6 +66,9 @@ struct TodoRowView: View {
                 Text(reminder.label)
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.muted)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .layoutPriority(1)
                     .accessibilityLabel("Reminder \(reminder.label.lowercased())")
                     .accessibilityIdentifier(TestID.itemReminder(todo.title))
             }
@@ -74,6 +80,9 @@ struct TodoRowView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
                 .background(colors.bg, in: Capsule())
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+                .layoutPriority(1)
                 .accessibilityIdentifier(TestID.itemPriority(todo.title))
 
             Button(action: onRemove) {
