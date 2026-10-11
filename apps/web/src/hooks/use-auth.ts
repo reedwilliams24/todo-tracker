@@ -13,6 +13,7 @@ export function useAuth(client: AuthClient | null, mover: GuestTodoMover) {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<AuthSession | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [moveFailed, setMoveFailed] = useState(false);
 
   const dispatch = useCallback((event: AuthEvent) => {
     stateRef.current = reduceAuth(stateRef.current, event);
@@ -94,7 +95,15 @@ export function useAuth(client: AuthClient | null, mover: GuestTodoMover) {
 
   const resolveGuestTodos = useCallback(
     async (move: boolean) => {
-      if (move && session) await mover.move(await Promise.resolve(localTodoStorage.load()), session);
+      setMoveFailed(false);
+      if (move && session) {
+        try {
+          await mover.move(await Promise.resolve(localTodoStorage.load()), session);
+        } catch {
+          setMoveFailed(true);
+          return;
+        }
+      }
       wipeGuest();
       dispatch({ type: "guestResolved" });
     },
@@ -117,6 +126,7 @@ export function useAuth(client: AuthClient | null, mover: GuestTodoMover) {
     state,
     ready,
     session,
+    moveFailed,
     resendSeconds: resendSecondsLeft(state, now),
     open: () => dispatch({ type: "open" }),
     cancel: () => dispatch({ type: "cancel" }),

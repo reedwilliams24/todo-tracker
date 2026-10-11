@@ -1,25 +1,42 @@
-import { ACCOUNT_STORAGE_KEY, STORAGE_KEY, type Todo } from "@/domain";
+import { ACCOUNT_STORAGE_KEY, guestToRows, STORAGE_KEY, type Todo } from "@/domain";
 import type { AuthSession } from "@/lib/auth-client";
-import { accountTodoStorage } from "@/lib/storage";
+import type { CursorStore, SyncServer } from "@/lib/sync-engine";
 
 /** Who the account cache belongs to; kept after an expired session so signing back in loses nothing. */
 export const ACCOUNT_OWNER_KEY = `${ACCOUNT_STORAGE_KEY}:owner`;
-/** The pull cursor REED-68 stores; sign out wipes it with the cache. */
+/** The pull cursor; sign out wipes it with the cache. */
 export const SYNC_CURSOR_KEY = "todo-tracker:sync-cursor:v1";
 
 export type AccountOwner = { userId: string; email: string };
 
-/** Move on the first-sign-in prompt. REED-68 implements it with `guestToRows` + `push_todos`. */
+/** Move on the first-sign-in prompt. Throws if the todos couldn't be moved. */
 export interface GuestTodoMover {
   move(guest: readonly Todo[], session: AuthSession): Promise<void>;
 }
 
-/** Until sync lands: the guest todos become the account's local list on this device. */
-export const localGuestTodoMover: GuestTodoMover = {
-  async move(guest) {
-    const existing = await Promise.resolve(accountTodoStorage.load());
-    const ids = new Set(existing.map((todo) => todo.id));
-    await accountTodoStorage.save([...guest.filter((todo) => !ids.has(todo.id)), ...existing]);
+/** Pushes the guest todos as new account rows (`guestToRows` + `push_todos`); the account list pulls them in. */
+export function serverGuestTodoMover(server: SyncServer): GuestTodoMover {
+  return {
+    async move(guest, session) {
+      const rows = guestToRows(guest, session.userId, new Date());
+      if (rows.length > 0) await server.push(rows);
+    },
+  };
+}
+
+export const syncCursorStorage: CursorStore = {
+  load() {
+    try {
+      const value = Number(window.localStorage.getItem(SYNC_CURSOR_KEY));
+      return Number.isSafeInteger(value) && value > 0 ? value : 0;
+    } catch {
+      return 0;
+    }
+  },
+  save(cursor) {
+    try {
+      window.localStorage.setItem(SYNC_CURSOR_KEY, String(cursor));
+    } catch {}
   },
 };
 

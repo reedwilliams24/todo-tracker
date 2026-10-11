@@ -21,6 +21,8 @@ struct AuthFailure: Error {
 
 /// Email-code sign-in and the persisted session (supabase-swift keeps it in the Keychain).
 protocol AuthClient: Sendable {
+    /// The todos backend, as the signed-in user.
+    var sync: any SyncServer { get }
     /// Emits the restored session first, then every sign-in, sign-out and expiry.
     func changes() -> AsyncStream<AuthChange>
     func sendCode(email: String) async throws
@@ -43,9 +45,11 @@ enum SupabaseConfig {
 private final class SupabaseAuthClient: AuthClient {
     private let client: SupabaseClient
     private let signingOut = SignOutFlag()
+    let sync: any SyncServer
 
     init(client: SupabaseClient) {
         self.client = client
+        sync = SupabaseSyncServer(client: client)
     }
 
     func changes() -> AsyncStream<AuthChange> {
@@ -112,6 +116,29 @@ private final class SupabaseAuthClient: AuthClient {
         } catch {
             throw AuthFailure(kind: .unknown)
         }
+    }
+}
+
+/// `push_todos` + the incremental pull from spec/server.md, as the signed-in user (RLS).
+private struct SupabaseSyncServer: SyncServer {
+    let client: SupabaseClient
+
+    private struct PushParams: Encodable, Sendable {
+        let rows: [TodoRow]
+    }
+
+    func push(_ rows: [TodoRow]) async throws -> [TodoRow] {
+        let data = try await client.rpc("push_todos", params: PushParams(rows: rows)).execute().data
+        return try JSONDecoder().decode([TodoRow].self, from: data)
+    }
+
+    func pull(after cursor: Int64, limit: Int) async throws -> [TodoRow] {
+        let data = try await client.from("todos").select()
+            .gt("server_seq", value: String(cursor))
+            .order("server_seq")
+            .limit(limit)
+            .execute().data
+        return try JSONDecoder().decode([TodoRow].self, from: data)
     }
 }
 

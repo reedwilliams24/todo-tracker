@@ -20,6 +20,11 @@ final class TodoViewModel {
     private let defaults: UserDefaults
     private let now: () -> Date
     private var expiry: Task<Void, Never>?
+    /// The last signed-in edit couldn't be pushed and was rolled back.
+    private(set) var pushFailed = false
+    private var sync: SyncEngine?
+    private var syncUserId: String?
+    private var pushFailedTimer: Task<Void, Never>?
 
     init(
         store: TodoStore, reminders: ReminderScheduling? = nil, defaults: UserDefaults = .standard,
@@ -40,6 +45,49 @@ final class TodoViewModel {
         exitSelectMode()
         state = reduceTodos(TodoState.initial, .load(store.load()), now: now())
         reminders?.sync(state.todos)
+    }
+
+    /// Signed in: syncs the shown (account) list with `server` as `userId`; nil stops syncing (spec/features/sync.md).
+    func useSync(_ server: (any SyncServer)?, userId: String?) {
+        let key = server == nil ? nil : userId
+        guard key != syncUserId else { return }
+        sync?.close()
+        syncUserId = key
+        guard let server, let userId = key else {
+            sync = nil
+            return
+        }
+        let defaults = defaults
+        sync = SyncEngine(
+            server: server, userId: userId,
+            loadCursor: { Int64(defaults.integer(forKey: AuthViewModel.syncCursorKey)) },
+            saveCursor: { defaults.set(Int($0), forKey: AuthViewModel.syncCursorKey) },
+            current: { [weak self] in self?.state.todos ?? [] },
+            replace: { [weak self] in self?.replaceTodos($0) },
+            onPushFailed: { [weak self] in self?.showPushFailed() }, now: now)
+        pull()
+    }
+
+    /// Pulls the account list's changes since the cursor; no-op while signed out.
+    func pull() {
+        guard let sync else { return }
+        Task { try? await sync.pull() }
+    }
+
+    private func replaceTodos(_ todos: [Todo]) {
+        state = reduceTodos(state, .load(todos), now: now())
+        store.save(state.todos)
+        reminders?.sync(state.todos)
+    }
+
+    private func showPushFailed() {
+        pushFailed = true
+        pushFailedTimer?.cancel()
+        pushFailedTimer = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            self?.pushFailed = false
+        }
     }
 
     /// Asks for notification permission the first time the user picks a reminder.
@@ -115,6 +163,11 @@ final class TodoViewModel {
         if state.todos != previous.todos {
             store.save(state.todos)
             reminders?.sync(state.todos)
+            if let sync {
+                let before = previous.todos
+                let after = state.todos
+                Task { await sync.edit(before: before, after: after) }
+            }
         }
         if state.undoable != previous.undoable { scheduleExpiry() }
     }

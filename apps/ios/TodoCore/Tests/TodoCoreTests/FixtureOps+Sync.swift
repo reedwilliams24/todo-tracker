@@ -31,7 +31,19 @@ extension FixtureOps {
                 return try guestToRows(try g.decode("guest"), userId: try g.decode("userId"), now: try g.date("now"))
                     .map(rowJson)
             },
+            "planPush": { g in
+                let plan = planPush(
+                    try g.decode("before"), after: try g.decode("after"),
+                    tombstoned: Set(try g.decode("tombstoned", as: [String].self)), userId: try g.decode("userId"),
+                    now: try g.date("now"))
+                return PlanJSON(todos: plan.todos, rows: try plan.rows.map(rowJson))
+            },
         ]
+    }
+
+    private struct PlanJSON: Encodable {
+        let todos: [Todo]
+        let rows: [JSONValue]
     }
 
     /// Fixtures can't hold null values (spec/README.md#normalization), so rows list their null columns separately.

@@ -61,7 +61,7 @@ class AuthActions(
 
 /** Guest / expired banner, plus the sign-in sheet and Move/Discard prompt when they're open. */
 @Composable
-fun AuthBanner(state: AuthState, resendSeconds: Int, actions: AuthActions) {
+fun AuthBanner(state: AuthState, resendSeconds: Int, actions: AuthActions, moveFailed: Boolean = false) {
     val t = rememberTranslator()
     when (state.status) {
         AuthStatus.SIGNED_OUT -> Banner(t("auth.guest.banner"), TestIds.authGuestBanner, t("auth.signIn"), actions.open)
@@ -70,7 +70,7 @@ fun AuthBanner(state: AuthState, resendSeconds: Int, actions: AuthActions) {
         AuthStatus.SIGNED_IN -> Unit
     }
     if (state.step != null) SignInSheet(state, resendSeconds, actions, t)
-    state.movePrompt?.let { count -> MovePrompt(count, actions, t) }
+    state.movePrompt?.let { count -> MovePrompt(count, moveFailed, actions, t) }
 }
 
 @Composable
@@ -199,10 +199,18 @@ private fun InputBox(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun MovePrompt(count: Int, actions: AuthActions, t: Translator) {
+private fun MovePrompt(count: Int, failed: Boolean, actions: AuthActions, t: Translator) {
     // Dismissing isn't a choice: the guest list must be moved or discarded before the account list shows.
     Sheet(TestIds.authMovePrompt, onDismiss = {}) {
         Text(t("auth.move.prompt", "count" to count), fontSize = FontSize.base, color = Palette.foreground)
+        if (failed) {
+            Text(
+                t("auth.move.failed"),
+                fontSize = FontSize.sm,
+                color = Palette.danger,
+                modifier = Modifier.testTag(TestIds.authMoveError),
+            )
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             ActionButton(t("auth.move.move"), TestIds.authMoveConfirm) { actions.resolveGuestTodos(true) }
             ActionButton(t("auth.move.discard"), TestIds.authMoveDiscard, danger = true) {

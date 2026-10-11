@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.security.crypto)
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.auth)
+    implementation(libs.supabase.postgrest)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)

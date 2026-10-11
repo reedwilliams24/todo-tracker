@@ -42,6 +42,21 @@ internal val syncOps: Map<String, Op> =
             { g: JsonObject ->
                 JsonArray(guestToRows(g.todos("guest"), g.str("userId"), g.instant("now")).map(::rowJson))
             },
+        "planPush" to
+            { g: JsonObject ->
+                val plan =
+                    planPush(
+                        g.todos("before"),
+                        g.todos("after"),
+                        g.strings("tombstoned"),
+                        g.str("userId"),
+                        g.instant("now"),
+                    )
+                buildJsonObject {
+                    put("todos", encode(plan.todos))
+                    put("rows", JsonArray(plan.rows.map(::rowJson)))
+                }
+            },
     )
 
 private val rowList = ListSerializer(TodoRow.serializer())

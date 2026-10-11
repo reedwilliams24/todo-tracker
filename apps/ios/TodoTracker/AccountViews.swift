@@ -53,6 +53,11 @@ private struct AuthPresentation: ViewModifier {
                     .accessibilityIdentifier(TestID.authMoveConfirm)
                 Button(t("auth.move.discard")) { auth.resolveGuestTodos(move: false) }
                     .accessibilityIdentifier(TestID.authMoveDiscard)
+            } message: {
+                if auth.moveFailed {
+                    Text(t("auth.move.failed"))
+                        .accessibilityIdentifier(TestID.authMoveError)
+                }
             }
     }
 }

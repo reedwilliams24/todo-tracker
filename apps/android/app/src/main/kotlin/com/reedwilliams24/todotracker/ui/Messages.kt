@@ -141,9 +141,11 @@ internal val MESSAGES: Map<String, Message> = mapOf(
     "auth.move.prompt" to Message(R.plurals.auth_move_prompt, listOf("count"), plural = "count"),
     "auth.move.move" to Message(R.string.auth_move_move),
     "auth.move.discard" to Message(R.string.auth_move_discard),
+    "auth.move.failed" to Message(R.string.auth_move_failed),
     "auth.account.label" to Message(R.string.auth_account_label),
     "auth.account.signedInAs" to Message(R.string.auth_account_signedInAs, listOf("email")),
     "auth.signOut" to Message(R.string.auth_signOut),
     "auth.expired.banner" to Message(R.string.auth_expired_banner),
     "auth.expired.signIn" to Message(R.string.auth_expired_signIn),
+    "sync.pushFailed" to Message(R.string.sync_pushFailed),
 )

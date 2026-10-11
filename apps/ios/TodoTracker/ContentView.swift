@@ -312,8 +312,25 @@ struct ContentView: View {
         }
     }
 
-    @ViewBuilder
     private var toast: some View {
+        VStack(spacing: 8) {
+            if model.pushFailed {
+                Text(t("sync.pushFailed"))
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.card)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Theme.danger, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
+                    .padding(.horizontal, 16)
+                    .accessibilityIdentifier(TestID.syncError)
+                    .onAppear { UIAccessibility.post(notification: .announcement, argument: t("sync.pushFailed")) }
+            }
+            undoToast
+        }
+    }
+
+    @ViewBuilder
+    private var undoToast: some View {
         if let label = model.undoLabel {
             HStack(spacing: 16) {
                 Text(label)

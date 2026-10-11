@@ -13,6 +13,7 @@ enum TestID {
     static let authGuestBanner = "auth-guest-banner"
     static let authMoveConfirm = "auth-move-confirm"
     static let authMoveDiscard = "auth-move-discard"
+    static let authMoveError = "auth-move-error"
     static let authMovePrompt = "auth-move-prompt"
     static let authResend = "auth-resend"
     static let authSendCode = "auth-send-code"
@@ -71,6 +72,7 @@ enum TestID {
     static func subtaskInput(_ title: String) -> String { "todo-subtask-input-\(title)" }
     static func subtaskToggle(_ title: String) -> String { "todo-subtask-toggle-\(title)" }
     static func themeOption(_ theme: ThemePreference) -> String { "theme-option-\(theme.rawValue)" }
+    static let syncError = "sync-error-toast"
     static let themeToggle = "theme-toggle"
     static let undoAction = "undo-toast-action"
     static let undoLabel = "undo-toast-label"

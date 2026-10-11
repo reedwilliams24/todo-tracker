@@ -102,6 +102,7 @@ fun applyRemote(local: List<Todo>, inFlight: List<Todo>, rows: List<TodoRow>, cu
         if (current != null && current.updatedAt > row.updatedAt) continue
         var incoming = fromRow(row)
         if (current?.reminder != null && incoming.dueDate != null) incoming = incoming.copy(reminder = current.reminder)
+        if (current?.subtasks != null) incoming = incoming.copy(subtasks = current.subtasks)
         if (index >= 0) todos[index] = incoming else todos.add(0, incoming)
     }
     return todos
@@ -144,4 +145,41 @@ fun rollbackPush(local: List<Todo>, before: List<Todo>, failedIds: List<String>)
 fun guestToRows(guest: List<Todo>, userId: String, now: Instant): List<TodoRow> {
     val stamp = timestamp(now)
     return guest.map { toRow(it, userId).copy(id = generateId(), updatedAt = stamp) }
+}
+
+/** A local edit ready to push: the list to show and the rows to send (spec/features/sync.md#push). */
+data class PushPlan(val todos: List<Todo>, val rows: List<TodoRow>)
+
+/**
+ * Turns a local edit ([before] -> [after]) into rows to push. Added or changed todos become rows, removed ones
+ * tombstones. A change that doesn't move `updated_at` forward (an undo) is stamped [now] so it wins LWW, and a todo
+ * brought back after its tombstone was pushed ([tombstoned]) gets a fresh id, since tombstones always win.
+ */
+fun planPush(
+    before: List<Todo>,
+    after: List<Todo>,
+    tombstoned: Collection<String>,
+    userId: String,
+    now: Instant,
+): PushPlan {
+    val stamp = timestamp(now)
+    val prior = before.associateBy { it.id }
+    val kept = after.map { it.id }.toSet()
+    val rows = mutableListOf<TodoRow>()
+    val todos =
+        after.map { todo ->
+            val prev = prior[todo.id]
+            val next =
+                when {
+                    prev == null && todo.id in tombstoned -> todo.copy(id = generateId(), updatedAt = stamp)
+                    prev == null -> todo
+                    toRow(prev, userId) == toRow(todo, userId) -> return@map todo
+                    todo.updatedAt <= prev.updatedAt -> todo.copy(updatedAt = stamp)
+                    else -> todo
+                }
+            rows.add(toRow(next, userId))
+            next
+        }
+    before.filter { it.id !in kept }.forEach { rows.add(toRow(it.copy(updatedAt = stamp), userId, now)) }
+    return PushPlan(todos, rows)
 }

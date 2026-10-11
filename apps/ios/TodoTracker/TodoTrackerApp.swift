@@ -10,6 +10,7 @@ struct TodoTrackerApp: App {
     private let accountStore: TodoStore
     @State private var model: TodoViewModel
     @State private var auth: AuthViewModel?
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         let inMemory = ProcessInfo.processInfo.arguments.contains("-uiTesting")
@@ -48,7 +49,19 @@ struct TodoTrackerApp: App {
             ContentView(model: model, auth: auth)
                 .onChange(of: auth?.scope) { _, scope in
                     model.useStore(scope == .account ? accountStore : guestStore)
+                    updateSync()
                 }
+                .onChange(of: auth?.session?.userId) { updateSync() }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { model.pull() }
+                }
+                .task { updateSync() }
         }
+    }
+
+    /// The account list syncs while signed in; the guest list never does.
+    private func updateSync() {
+        let server = auth?.scope == .account ? auth?.syncServer : nil
+        model.useSync(server, userId: auth?.session?.userId)
     }
 }

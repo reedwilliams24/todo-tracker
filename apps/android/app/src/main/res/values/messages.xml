@@ -149,9 +149,11 @@
     </plurals>
     <string name="auth_move_move">Move</string>
     <string name="auth_move_discard">Discard</string>
+    <string name="auth_move_failed">Couldn\'t move your todos. Check your connection and try again.</string>
     <string name="auth_account_label">Account</string>
     <string name="auth_account_signedInAs">Signed in as %1$s</string>
     <string name="auth_signOut">Sign out</string>
     <string name="auth_expired_banner">Your session expired. Sign in again to keep syncing.</string>
     <string name="auth_expired_signIn">Sign in again</string>
+    <string name="sync_pushFailed">Couldn\'t save your change. Check your connection and try again.</string>
 </resources>

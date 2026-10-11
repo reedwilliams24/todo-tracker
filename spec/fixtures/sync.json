@@ -1340,6 +1340,65 @@
       ]
     },
     {
+      "name": "applyRemote: keeps the device's subtasks (they aren't synced)",
+      "op": "applyRemote",
+      "given": {
+        "inFlight": [],
+        "cursor": 5,
+        "local": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Step",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "id": "a",
+            "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+            "title": "Renamed",
+            "notes": null,
+            "completed": false,
+            "priority": "medium",
+            "due_date": null,
+            "recurrence": null,
+            "completed_at": null,
+            "created_at": "2026-01-05T09:00:00.000Z",
+            "updated_at": "2026-01-05T10:00:00.000Z",
+            "deleted_at": null,
+            "server_seq": 6
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Renamed",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Step",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "applyRemote: first pull from cursor 0 fills an empty list",
       "op": "applyRemote",
       "given": {
@@ -1989,6 +2048,797 @@
         "now": "2026-01-06T12:00:00.000Z"
       },
       "then": []
+    },
+    {
+      "name": "planPush: an added todo becomes a row",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "after": [
+          {
+            "id": "d",
+            "title": "Todo d",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "d",
+            "title": "Todo d",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "rows": [
+          {
+            "row": {
+              "id": "d",
+              "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+              "title": "Todo d",
+              "completed": false,
+              "priority": "medium",
+              "created_at": "2026-01-05T09:00:00.000Z",
+              "updated_at": "2026-01-05T11:00:00.000Z"
+            },
+            "nulls": [
+              "completed_at",
+              "deleted_at",
+              "due_date",
+              "notes",
+              "recurrence",
+              "server_seq"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "planPush: an edited todo becomes a row",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Renamed",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Renamed",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "rows": [
+          {
+            "row": {
+              "id": "b",
+              "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+              "title": "Renamed",
+              "completed": false,
+              "priority": "medium",
+              "created_at": "2026-01-05T09:00:00.000Z",
+              "updated_at": "2026-01-05T11:00:00.000Z"
+            },
+            "nulls": [
+              "completed_at",
+              "deleted_at",
+              "due_date",
+              "notes",
+              "recurrence",
+              "server_seq"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "planPush: a deleted todo becomes a tombstone stamped now",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "rows": [
+          {
+            "row": {
+              "id": "b",
+              "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+              "title": "Todo b",
+              "completed": false,
+              "priority": "medium",
+              "created_at": "2026-01-05T09:00:00.000Z",
+              "updated_at": "2026-01-06T12:00:00.000Z",
+              "deleted_at": "2026-01-06T12:00:00.000Z"
+            },
+            "nulls": [
+              "completed_at",
+              "due_date",
+              "notes",
+              "recurrence",
+              "server_seq"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "planPush: reordering pushes nothing",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "after": [
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "rows": []
+      }
+    },
+    {
+      "name": "planPush: a reminder or subtask change alone pushes nothing",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-02-01"
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-02-01",
+            "reminder": "1h",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Step",
+                "completed": false
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-02-01",
+            "reminder": "1h",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Step",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "rows": []
+      }
+    },
+    {
+      "name": "planPush: an undone edit is stamped now so it wins",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Renamed",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z"
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-06T12:00:00.000Z"
+          }
+        ],
+        "rows": [
+          {
+            "row": {
+              "id": "a",
+              "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+              "title": "Todo a",
+              "completed": false,
+              "priority": "medium",
+              "created_at": "2026-01-05T09:00:00.000Z",
+              "updated_at": "2026-01-06T12:00:00.000Z"
+            },
+            "nulls": [
+              "completed_at",
+              "deleted_at",
+              "due_date",
+              "notes",
+              "recurrence",
+              "server_seq"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "planPush: a todo restored after its tombstone was pushed gets a new id",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [
+          "b"
+        ],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "new-1",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-06T12:00:00.000Z"
+          }
+        ],
+        "rows": [
+          {
+            "row": {
+              "id": "new-1",
+              "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+              "title": "Todo b",
+              "completed": false,
+              "priority": "medium",
+              "created_at": "2026-01-05T09:00:00.000Z",
+              "updated_at": "2026-01-06T12:00:00.000Z"
+            },
+            "nulls": [
+              "completed_at",
+              "deleted_at",
+              "due_date",
+              "notes",
+              "recurrence",
+              "server_seq"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "planPush: a todo that reappears without a pushed tombstone keeps its id",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "rows": [
+          {
+            "row": {
+              "id": "b",
+              "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+              "title": "Todo b",
+              "completed": false,
+              "priority": "medium",
+              "created_at": "2026-01-05T09:00:00.000Z",
+              "updated_at": "2026-01-05T10:00:00.000Z"
+            },
+            "nulls": [
+              "completed_at",
+              "deleted_at",
+              "due_date",
+              "notes",
+              "recurrence",
+              "server_seq"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "planPush: no change pushes nothing",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "rows": []
+      }
     }
   ]
 }
