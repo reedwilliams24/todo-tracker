@@ -2,6 +2,7 @@ package com.reedwilliams24.todotracker.core
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.time.format.ResolverStyle
@@ -20,6 +21,7 @@ val PRIORITY_ORDER: Map<TodoPriority, Int> = mapOf(
 
 private val ISO_DATE = Regex("""^\d{4}-\d{2}-\d{2}$""")
 private val STRICT_DATE = DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT)
+private val DATE_KEY = DateTimeFormatter.ofPattern("uuuu-MM-dd")
 private val TIMESTAMP = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(java.time.ZoneOffset.UTC)
 
 fun toTodoDraft(form: TodoFormState): TodoDraft =
@@ -79,25 +81,50 @@ fun searchTodos(todos: List<Todo>, query: String): List<Todo> {
     return todos.filter { it.title.lowercase().contains(needle) || (it.notes?.lowercase()?.contains(needle) ?: false) }
 }
 
-/**
- * Priority high→low, then due date (undated last), then creation; completed sink.
- * Mirrors the TS comparator exactly, including never returning 0 for ties.
- */
-private fun compareForDisplay(a: Todo, b: Todo): Int {
-    if (a.completed != b.completed) return if (a.completed) 1 else -1
-    val byPriority = PRIORITY_ORDER.getValue(a.priority) - PRIORITY_ORDER.getValue(b.priority)
-    if (byPriority != 0) return byPriority
-    if (a.dueDate != b.dueDate) {
-        if (a.dueDate.isNullOrEmpty()) return 1
-        if (b.dueDate.isNullOrEmpty()) return -1
-        return if (a.dueDate < b.dueDate) -1 else 1
-    }
-    return if (a.createdAt < b.createdAt) -1 else 1
+/** Local calendar date of `now` in YYYY-MM-DD form, matching how dueDate is stored. */
+fun toDateKey(now: LocalDateTime): String = DATE_KEY.format(now)
+
+/** True for an incomplete todo whose due date is before today (local time). */
+fun isOverdue(todo: Todo, now: LocalDateTime = LocalDateTime.now()): Boolean =
+    !todo.completed && !todo.dueDate.isNullOrEmpty() && todo.dueDate < toDateKey(now)
+
+private fun compareDue(a: Todo, b: Todo): Int {
+    if (a.dueDate == b.dueDate) return 0
+    if (a.dueDate.isNullOrEmpty()) return 1
+    if (b.dueDate.isNullOrEmpty()) return -1
+    return if (a.dueDate < b.dueDate) -1 else 1
 }
 
-fun sortByPriority(todos: List<Todo>): List<Todo> = todos.sortedWith(::compareForDisplay)
+private fun comparePriority(a: Todo, b: Todo): Int =
+    PRIORITY_ORDER.getValue(a.priority) - PRIORITY_ORDER.getValue(b.priority)
 
-fun sortTodos(todos: List<Todo>): List<Todo> = sortByPriority(todos)
+/** Mirrors the TS comparators exactly, including never returning 0 for ties. */
+private fun compareCreated(a: Todo, b: Todo): Int = if (a.createdAt < b.createdAt) -1 else 1
+
+/** Priority high→low, then due date (undated last), then creation; completed sink. */
+private fun compareByPriority(a: Todo, b: Todo): Int {
+    if (a.completed != b.completed) return if (a.completed) 1 else -1
+    comparePriority(a, b).let { if (it != 0) return it }
+    compareDue(a, b).let { if (it != 0) return it }
+    return compareCreated(a, b)
+}
+
+/** Due date ascending (undated last), then priority, then creation; completed sink. */
+private fun compareByDue(a: Todo, b: Todo): Int {
+    if (a.completed != b.completed) return if (a.completed) 1 else -1
+    compareDue(a, b).let { if (it != 0) return it }
+    comparePriority(a, b).let { if (it != 0) return it }
+    return compareCreated(a, b)
+}
+
+fun sortByPriority(todos: List<Todo>): List<Todo> = todos.sortedWith(::compareByPriority)
+
+fun sortByDue(todos: List<Todo>): List<Todo> = todos.sortedWith(::compareByDue)
+
+fun sortTodos(todos: List<Todo>, sort: TodoSort = TodoSort.PRIORITY): List<Todo> = when (sort) {
+    TodoSort.DUE -> sortByDue(todos)
+    TodoSort.PRIORITY -> sortByPriority(todos)
+}
 
 fun countRemaining(todos: List<Todo>): Int = todos.count { !it.completed }
 

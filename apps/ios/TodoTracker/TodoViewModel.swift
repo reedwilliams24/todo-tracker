@@ -8,6 +8,7 @@ import TodoCore
 final class TodoViewModel {
     private(set) var state = TodoState.initial
     var filter: TodoFilter = .all
+    var sort: TodoSort = .priority
 
     private let store: TodoStore
     private let now: () -> Date
@@ -19,7 +20,7 @@ final class TodoViewModel {
         state = reduceTodos(state, .load(store.load()), now: now())
     }
 
-    var visibleTodos: [Todo] { sortByPriority(filterTodos(state.todos, filter)) }
+    var visibleTodos: [Todo] { sortTodos(filterTodos(state.todos, filter), sort) }
     var remaining: Int { countRemaining(state.todos) }
     var hasCompleted: Bool { state.todos.count > remaining }
     var remainingText: String { t("list.remaining", ["count": remaining]) }

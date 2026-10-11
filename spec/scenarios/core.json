@@ -86,6 +86,21 @@
       ]
     },
     {
+      "name": "sort-by-due-date-and-overdue",
+      "steps": [
+        { "do": "add", "title": "Yesterday low", "priority": "low", "dueDate": "2000-01-02" },
+        { "do": "add", "title": "Far future high", "priority": "high", "dueDate": "2999-12-31" },
+        { "do": "add", "title": "Undated medium" },
+        { "expect": "titles", "titles": ["Far future high", "Undated medium", "Yesterday low"] },
+        { "expect": "overdue", "title": "Yesterday low", "value": true },
+        { "expect": "overdue", "title": "Far future high", "value": false },
+        { "do": "sort", "sort": "due" },
+        { "expect": "titles", "titles": ["Yesterday low", "Far future high", "Undated medium"] },
+        { "do": "toggle", "title": "Yesterday low" },
+        { "expect": "overdue", "title": "Yesterday low", "value": false }
+      ]
+    },
+    {
       "name": "search",
       "platforms": ["web"],
       "steps": [

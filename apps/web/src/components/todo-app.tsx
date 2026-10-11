@@ -5,9 +5,11 @@ import {
   countRemaining,
   filterTodos,
   searchTodos,
+  SORTS,
   sortTodos,
   TEST_IDS,
   type TodoFilter,
+  type TodoSort,
 } from "@/domain";
 import { useT } from "@/hooks/use-t";
 import { useTodos } from "@/hooks/use-todos";
@@ -34,10 +36,11 @@ export function TodoApp() {
   const t = useT();
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<TodoSort>("priority");
 
   const visible = useMemo(
-    () => sortTodos(searchTodos(filterTodos(todos, filter), query)),
-    [todos, filter, query],
+    () => sortTodos(searchTodos(filterTodos(todos, filter), query), sort),
+    [todos, filter, query, sort],
   );
   const searching = query.trim().length > 0;
   const remaining = countRemaining(todos);
@@ -94,16 +97,34 @@ export function TodoApp() {
             </button>
           ))}
         </div>
-        {hasCompleted && (
-          <button
-            type="button"
-            onClick={clearCompleted}
-            data-testid={TEST_IDS.clearCompleted}
-            className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
-          >
-            {t("list.clearCompleted")}
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-1 opacity-70">
+            {t("sort.label")}
+            <select
+              value={sort}
+              onChange={(event) => setSort(event.target.value as TodoSort)}
+              aria-label={t("sort.ariaLabel")}
+              data-testid={TEST_IDS.sort}
+              className="rounded-lg border border-black/10 bg-transparent px-2 py-1 dark:border-white/15"
+            >
+              {SORTS.map((option) => (
+                <option key={option} value={option} data-testid={TEST_IDS.sortOption(option)} className="text-foreground">
+                  {t(option === "due" ? "sort.due" : "sort.priority")}
+                </option>
+              ))}
+            </select>
+          </label>
+          {hasCompleted && (
+            <button
+              type="button"
+              onClick={clearCompleted}
+              data-testid={TEST_IDS.clearCompleted}
+              className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
+            >
+              {t("list.clearCompleted")}
+            </button>
+          )}
+        </div>
       </div>
 
       {!hydrated ? (

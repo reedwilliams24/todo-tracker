@@ -635,6 +635,528 @@
       ]
     },
     {
+      "name": "sortByDue: completed last, then due date (undated last), priority, creation",
+      "op": "sortByDue",
+      "given": {
+        "todos": [
+          {
+            "id": "undated-high",
+            "title": "Todo undated-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "done-soonest",
+            "title": "Todo done-soonest",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-01"
+          },
+          {
+            "id": "late-high",
+            "title": "Todo late-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-01"
+          },
+          {
+            "id": "soon-low",
+            "title": "Todo soon-low",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-10"
+          },
+          {
+            "id": "soon-high",
+            "title": "Todo soon-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-10"
+          },
+          {
+            "id": "undated-low-older",
+            "title": "Todo undated-low-older",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "undated-low-newer",
+            "title": "Todo undated-low-newer",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-02T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "soon-high",
+          "title": "Todo soon-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-10"
+        },
+        {
+          "id": "soon-low",
+          "title": "Todo soon-low",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-10"
+        },
+        {
+          "id": "late-high",
+          "title": "Todo late-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-03-01"
+        },
+        {
+          "id": "undated-high",
+          "title": "Todo undated-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "undated-low-older",
+          "title": "Todo undated-low-older",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "undated-low-newer",
+          "title": "Todo undated-low-newer",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-02T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "done-soonest",
+          "title": "Todo done-soonest",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-01"
+        }
+      ]
+    },
+    {
+      "name": "sortTodos: priority",
+      "op": "sortTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "undated-high",
+            "title": "Todo undated-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "done-soonest",
+            "title": "Todo done-soonest",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-01"
+          },
+          {
+            "id": "late-high",
+            "title": "Todo late-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-01"
+          },
+          {
+            "id": "soon-low",
+            "title": "Todo soon-low",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-10"
+          },
+          {
+            "id": "soon-high",
+            "title": "Todo soon-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-10"
+          },
+          {
+            "id": "undated-low-older",
+            "title": "Todo undated-low-older",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "undated-low-newer",
+            "title": "Todo undated-low-newer",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-02T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "sort": "priority"
+      },
+      "then": [
+        {
+          "id": "soon-high",
+          "title": "Todo soon-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-10"
+        },
+        {
+          "id": "late-high",
+          "title": "Todo late-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-03-01"
+        },
+        {
+          "id": "undated-high",
+          "title": "Todo undated-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "soon-low",
+          "title": "Todo soon-low",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-10"
+        },
+        {
+          "id": "undated-low-older",
+          "title": "Todo undated-low-older",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "undated-low-newer",
+          "title": "Todo undated-low-newer",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-02T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "done-soonest",
+          "title": "Todo done-soonest",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-01"
+        }
+      ]
+    },
+    {
+      "name": "sortTodos: due",
+      "op": "sortTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "undated-high",
+            "title": "Todo undated-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "done-soonest",
+            "title": "Todo done-soonest",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-01"
+          },
+          {
+            "id": "late-high",
+            "title": "Todo late-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-01"
+          },
+          {
+            "id": "soon-low",
+            "title": "Todo soon-low",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-10"
+          },
+          {
+            "id": "soon-high",
+            "title": "Todo soon-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-10"
+          },
+          {
+            "id": "undated-low-older",
+            "title": "Todo undated-low-older",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "undated-low-newer",
+            "title": "Todo undated-low-newer",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-02T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "sort": "due"
+      },
+      "then": [
+        {
+          "id": "soon-high",
+          "title": "Todo soon-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-10"
+        },
+        {
+          "id": "soon-low",
+          "title": "Todo soon-low",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-10"
+        },
+        {
+          "id": "late-high",
+          "title": "Todo late-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-03-01"
+        },
+        {
+          "id": "undated-high",
+          "title": "Todo undated-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "undated-low-older",
+          "title": "Todo undated-low-older",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "undated-low-newer",
+          "title": "Todo undated-low-newer",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-02T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "done-soonest",
+          "title": "Todo done-soonest",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-01"
+        }
+      ]
+    },
+    {
+      "name": "sortTodos: defaults to priority",
+      "op": "sortTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "undated-high",
+            "title": "Todo undated-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "done-soonest",
+            "title": "Todo done-soonest",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-01"
+          },
+          {
+            "id": "late-high",
+            "title": "Todo late-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-01"
+          },
+          {
+            "id": "soon-low",
+            "title": "Todo soon-low",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-10"
+          },
+          {
+            "id": "soon-high",
+            "title": "Todo soon-high",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-10"
+          },
+          {
+            "id": "undated-low-older",
+            "title": "Todo undated-low-older",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "undated-low-newer",
+            "title": "Todo undated-low-newer",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-02T00:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "soon-high",
+          "title": "Todo soon-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-10"
+        },
+        {
+          "id": "late-high",
+          "title": "Todo late-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-03-01"
+        },
+        {
+          "id": "undated-high",
+          "title": "Todo undated-high",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "soon-low",
+          "title": "Todo soon-low",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-10"
+        },
+        {
+          "id": "undated-low-older",
+          "title": "Todo undated-low-older",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "undated-low-newer",
+          "title": "Todo undated-low-newer",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-02T00:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "done-soonest",
+          "title": "Todo done-soonest",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-01"
+        }
+      ]
+    },
+    {
       "name": "addTodos prepends in draft order",
       "op": "addTodos",
       "given": {

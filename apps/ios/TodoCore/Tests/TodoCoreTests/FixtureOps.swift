@@ -41,6 +41,15 @@ enum FixtureOps {
             return searchTodos(try g.decode("todos"), query: try g.decode("query"))
         case "sortByPriority":
             return sortByPriority(try g.decode("todos"))
+        case "sortByDue":
+            return sortByDue(try g.decode("todos"))
+        case "sortTodos":
+            let sort = try g.decode("sort", as: String?.self).flatMap(TodoSort.init(rawValue:)) ?? .priority
+            return sortTodos(try g.decode("todos"), sort)
+        case "isOverdue":
+            return isOverdue(try g.decode("todo"), now: try g.date("now"))
+        case "toDateKey":
+            return toDateKey(try g.date("now"))
         case "countRemaining":
             return countRemaining(try g.decode("todos"))
         case "addTodos":
