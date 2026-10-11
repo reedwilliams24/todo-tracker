@@ -60,6 +60,7 @@ private fun JsonObject.params(): Map<String, Any> = (get("params") as? JsonObjec
     val p = value.jsonPrimitive
     if (p.isString) p.content else p.content.toLongOrNull() ?: p.content.toDouble()
 }
+private fun JsonObject.quickAddParse(): QuickAddParse = TodoJson.decodeFromJsonElement(QuickAddParse.serializer(), getValue("parse"))
 private fun encode(todos: List<Todo>): JsonElement = TodoJson.encodeToJsonElement(todoList, todos)
 private fun encodeDrafts(drafts: List<TodoDraft>): JsonElement = TodoJson.encodeToJsonElement(draftList, drafts)
 
@@ -152,6 +153,16 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     )
     "formatMessage" -> JsonPrimitive(formatMessage(g.str("locale"), g.str("message"), g.params()))
     "translate" -> JsonPrimitive(Translator(g.str("locale"))(g.str("key"), g.params()))
+    "parseQuickAdd" -> TodoJson.encodeToJsonElement(QuickAddParse.serializer(), parseQuickAdd(g.str("input"), g.local("now")))
+    "hasQuickAddMeta" -> JsonPrimitive(hasQuickAddMeta(g.quickAddParse()))
+    "quickAddToDraft" -> TodoJson.encodeToJsonElement(
+        TodoDraft.serializer(),
+        quickAddToDraft(
+            g.quickAddParse(),
+            TodoJson.decodeFromJsonElement(TodoPriority.serializer(), g.getValue("fallbackPriority")),
+            (g["fallbackDueDate"] as? JsonPrimitive)?.content,
+        ),
+    )
     else -> error("Unknown op \"$op\"")
 }
 

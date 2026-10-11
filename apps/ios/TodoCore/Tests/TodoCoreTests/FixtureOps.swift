@@ -95,6 +95,16 @@ enum FixtureOps {
             return formatMessage(try g.decode("locale"), try g.decode("message"), try g.params())
         case "translate":
             return Translator(locale: try g.decode("locale"))(try g.decode("key"), try g.params())
+        case "parseQuickAdd":
+            return parseQuickAdd(try g.decode("input"), now: try g.date("now"))
+        case "hasQuickAddMeta":
+            return hasQuickAddMeta(try g.decode("parse"))
+        case "quickAddToDraft":
+            return quickAddToDraft(
+                try g.decode("parse"),
+                fallbackPriority: try g.decode("fallbackPriority"),
+                fallbackDueDate: try g.decode("fallbackDueDate", as: String?.self)
+            )
         default:
             throw UnknownOp(op: op)
         }

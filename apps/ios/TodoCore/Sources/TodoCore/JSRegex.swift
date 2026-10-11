@@ -36,6 +36,32 @@ struct JSRegex: @unchecked Sendable {
         )
     }
 
+    /// Capture groups of the first match (index 0 is the whole match); `nil` for groups that did not participate.
+    func firstMatch(in text: String) -> [String?]? {
+        guard let match = regex.firstMatch(in: text, range: fullRange(text)) else { return nil }
+        return groups(of: match, in: text as NSString)
+    }
+
+    /// JavaScript `text.replace(regex, fn)` with the `g` flag; `transform` receives the capture groups.
+    func replacingAll(in text: String, using transform: ([String?]) -> String) -> String {
+        let ns = text as NSString
+        var out = ""
+        var start = 0
+        for match in regex.matches(in: text, range: fullRange(text)) {
+            out += ns.substring(with: NSRange(location: start, length: match.range.location - start))
+            out += transform(groups(of: match, in: ns))
+            start = match.range.location + match.range.length
+        }
+        return out + ns.substring(from: start)
+    }
+
+    private func groups(of match: NSTextCheckingResult, in ns: NSString) -> [String?] {
+        (0..<match.numberOfRanges).map { index in
+            let range = match.range(at: index)
+            return range.location == NSNotFound ? nil : ns.substring(with: range)
+        }
+    }
+
     /// JavaScript `text.split(regex)` for patterns that never match the empty string.
     func split(_ text: String) -> [String] {
         let ns = text as NSString

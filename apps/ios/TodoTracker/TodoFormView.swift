@@ -6,8 +6,9 @@ struct TodoFormView: View {
 
     @State private var form = TodoFormState.empty
 
+    private var parsed: QuickAddParse { parseQuickAdd(form.title) }
     private var dateOk: Bool { isValidDueDate(form.dueDate) }
-    private var canAdd: Bool { isValidTitle(form.title) && dateOk }
+    private var canAdd: Bool { isValidTitle(parsed.title) && dateOk }
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
@@ -35,6 +36,10 @@ struct TodoFormView: View {
                     )
                     .accessibilityLabel(t("form.dueDate.label"))
                     .accessibilityIdentifier(TestID.formDueDate)
+            }
+            let preview = parsed
+            if hasQuickAddMeta(preview) {
+                QuickAddPreview(parse: preview)
             }
             Button(action: submit) {
                 Text(t("form.add"))
@@ -79,8 +84,41 @@ struct TodoFormView: View {
 
     private func submit() {
         guard canAdd else { return }
-        onAdd(toTodoDraft(form))
+        onAdd(quickAddToDraft(parsed, fallbackPriority: form.priority, fallbackDueDate: form.dueDate))
         form = .empty
+    }
+}
+
+private struct QuickAddPreview: View {
+    let parse: QuickAddParse
+
+    private var meta: String {
+        var parts: [String] = []
+        if let dueDate = parse.dueDate { parts.append(t("quickAdd.due", ["date": dueDate])) }
+        if let priority = parse.priority { parts.append(t("quickAdd.priority", ["priority": t("priority.\(priority.rawValue)")])) }
+        parts += parse.tags.map { "#\($0)" }
+        return parts.joined(separator: "  ·  ")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Text(t("quickAdd.willAdd"))
+                    .foregroundStyle(Theme.muted)
+                Text(parse.title.isEmpty ? "…" : parse.title)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Theme.foreground)
+                    .accessibilityIdentifier(TestID.quickAddPreviewTitle)
+            }
+            if !meta.isEmpty {
+                Text(meta).foregroundStyle(Theme.muted)
+            }
+        }
+        .font(.system(size: 12))
+        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(TestID.quickAddPreview)
     }
 }
 

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { TEST_IDS } from "../src/domain/test-ids";
 
 const STORAGE_KEY = "todo-tracker:todos:v1";
 
@@ -200,6 +201,22 @@ test("copy comes from the shared catalog with pluralised remaining count", async
   await page.getByLabel("Todo title").fill("Two");
   await page.getByRole("button", { name: "Add" }).click();
   await expect(page.getByText("2 tasks remaining")).toBeVisible();
+});
+
+test("quick-add shorthand previews and applies due date, priority", async ({ page }) => {
+  const input = page.getByLabel("Todo title");
+  await input.fill("call mom tomorrow #family !p1");
+  const preview = page.getByTestId(TEST_IDS.quickAddPreview);
+  await expect(preview).toContainText("Will add: call mom");
+  await expect(preview).toContainText("Due 20");
+  await expect(preview).toContainText("High priority");
+  await expect(preview).toContainText("#family");
+  await page.getByRole("button", { name: "Add" }).click();
+  const item = page.getByRole("listitem").filter({ hasText: "call mom" });
+  await expect(item).toBeVisible();
+  await expect(item).toContainText("High");
+  await expect(item).toContainText(/\d{4}-\d{2}-\d{2}/);
+  await expect(preview).toBeHidden();
 });
 
 test("highlights overdue todos and sorts by due date", async ({ page }) => {

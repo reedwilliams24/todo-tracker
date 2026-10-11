@@ -7,3 +7,4 @@ export * from "./undo";
 export * from "./store";
 export * from "./test-ids";
 export * from "./i18n";
+export * from "./quick-add";

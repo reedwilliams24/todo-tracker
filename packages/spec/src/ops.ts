@@ -14,14 +14,17 @@ import {
   extractPriority,
   filterTodos,
   formatMessage,
+  hasQuickAddMeta,
   INITIAL_TODO_STATE,
   isOverdue,
   isUndoExpired,
   isValidDueDate,
   isValidTitle,
+  parseQuickAdd,
   parseStoredTodos,
   parseTranscript,
   PRIORITY_ORDER,
+  quickAddToDraft,
   reconcileDrafts,
   reduceTodos,
   removeFromList,
@@ -38,11 +41,13 @@ import {
   UNDO_TIMEOUT_MS,
   updateTodoText,
   type MessageKey,
+  type QuickAddParse,
   type Todo,
   type TodoAction,
   type TodoDraft,
   type TodoFilter,
   type TodoFormState,
+  type TodoPriority,
   type TodoSort,
   type TodoState,
 } from "web/domain";
@@ -115,6 +120,10 @@ export const OPS: Record<string, (given: Given) => unknown> = {
   resolveLocale: (g) => resolveLocale(g.preferred, g.supported),
   formatMessage: (g) => formatMessage(g.locale, g.message, g.params),
   translate: (g) => createTranslator(g.locale)(g.key as MessageKey, g.params),
+  parseQuickAdd: (g) => parseQuickAdd(g.input, new Date(g.now)),
+  hasQuickAddMeta: (g) => hasQuickAddMeta(g.parse as QuickAddParse),
+  quickAddToDraft: (g) =>
+    quickAddToDraft(g.parse as QuickAddParse, g.fallbackPriority as TodoPriority, g.fallbackDueDate),
 };
 
 const NEW_ID = /^new-\d+$/;
