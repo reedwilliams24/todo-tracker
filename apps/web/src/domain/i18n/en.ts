@@ -149,6 +149,9 @@ export const en = {
   "auth.expired.banner": "Your session expired. Sign in again to keep syncing.",
   "auth.expired.signIn": "Sign in again",
   "sync.pushFailed": "Couldn't save your change. Check your connection and try again.",
+  "connection.reconnecting": "Reconnecting…",
+  "connection.readOnly": "Editing is paused until your list is up to date.",
+  "connection.offline": "You're offline. Editing is paused.",
 } as const;
 
 export type MessageKey = keyof typeof en;

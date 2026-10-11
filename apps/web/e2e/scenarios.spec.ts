@@ -69,6 +69,14 @@ async function enterCode(page: Page, ctx: Ctx, code: string) {
   await page.getByTestId(id("authVerify")).click();
 }
 
+/** Fakes the tab being hidden or shown again (`visibilitychange`), which closes / reopens the Realtime socket. */
+async function setVisibility(page: Page, state: "hidden" | "visible") {
+  await page.evaluate((value) => {
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => value });
+    document.dispatchEvent(new Event("visibilitychange"));
+  }, state);
+}
+
 async function visibleTitles(page: Page): Promise<string[]> {
   const testIds = await page
     .locator(`[data-testid^="${ITEM_PREFIX}"]`)
@@ -85,6 +93,8 @@ async function run(page: Page, step: Step, ctx: Ctx) {
     title?: string | null;
   };
   switch (step.do) {
+    case "background":
+      return setVisibility(page, "hidden");
     case "add":
       await page.getByTestId(id("formTitle")).fill(s.title!);
       if (s.priority) await page.getByTestId(id("formPriority")).selectOption(s.priority);
@@ -123,6 +133,8 @@ async function run(page: Page, step: Step, ctx: Ctx) {
       return page.getByTestId(id("itemSubtasksToggle", s.title!)).click();
     case "filter":
       return page.getByTestId(id("filter", s.filter)).click();
+    case "foreground":
+      return setVisibility(page, "visible");
     case "forgetLocalTodos":
       // Drop this device's account cache and cursor (not the session), so the list has to come from the server.
       return page.evaluate(() => {
@@ -132,6 +144,10 @@ async function run(page: Page, step: Step, ctx: Ctx) {
           }
         }
       });
+    case "goOffline":
+      return page.context().setOffline(true);
+    case "goOnline":
+      return page.context().setOffline(false);
     case "move":
       return page.getByTestId(id("item", s.title!)).dragTo(page.getByTestId(id("item", s.onto!)));
     case "openDeleteAccount":
@@ -187,12 +203,24 @@ async function run(page: Page, step: Step, ctx: Ctx) {
       return expect(page.getByTestId(id("clearCompleted"))).toHaveText(s.text!);
     case "completed":
       return expect(page.getByTestId(id("itemToggle", s.title!))).toBeChecked({ checked: s.value });
+    case "connectionBanner":
+      if (s.text === null) return expect(page.getByTestId(id("connectionBanner"))).toBeHidden();
+      return expect(page.getByTestId(id("connectionBanner"))).toContainText(s.text!);
     case "deleteDialog":
       return expect(page.getByTestId(id("authDeleteDialog"))).toContainText(uniqueEmail(ctx, s.email!));
     case "dueDate":
       return expect(
         page.getByTestId(id("itemDueDate", s.title!)).filter({ hasText: s.dueDate! }).first(),
       ).toBeVisible();
+    case "editable": {
+      // Add, complete and delete are enabled only while the list can be edited (spec/features/realtime.md).
+      const controls = [page.getByTestId(id("formTitle")), page.getByTestId(id("formSubmit"))];
+      if (s.title)
+        controls.push(page.getByTestId(id("itemToggle", s.title)), page.getByTestId(id("itemDelete", s.title)));
+      if (s.value) return expect(controls[0]).toBeEnabled();
+      for (const control of controls) await expect(control).toBeDisabled();
+      return;
+    }
     case "empty":
       return expect(page.getByTestId(id("empty"))).toBeVisible();
     case "guestBanner":

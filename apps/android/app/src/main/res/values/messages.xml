@@ -161,4 +161,7 @@
     <string name="auth_expired_banner">Your session expired. Sign in again to keep syncing.</string>
     <string name="auth_expired_signIn">Sign in again</string>
     <string name="sync_pushFailed">Couldn\'t save your change. Check your connection and try again.</string>
+    <string name="connection_reconnecting">Reconnecting…</string>
+    <string name="connection_readOnly">Editing is paused until your list is up to date.</string>
+    <string name="connection_offline">You\'re offline. Editing is paused.</string>
 </resources>

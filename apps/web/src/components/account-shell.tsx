@@ -44,7 +44,12 @@ function SignedInShell() {
       {auth.ready && (
         <>
           <AuthBanner auth={auth} />
-          <TodoApp key={scope} storage={scope === "guest" ? localTodoStorage : accountTodoStorage} sync={sync} />
+          <TodoApp
+            key={scope}
+            storage={scope === "guest" ? localTodoStorage : accountTodoStorage}
+            sync={sync}
+            expired={status === "expired"}
+          />
           <MoveGuestTodosPrompt auth={auth} />
         </>
       )}

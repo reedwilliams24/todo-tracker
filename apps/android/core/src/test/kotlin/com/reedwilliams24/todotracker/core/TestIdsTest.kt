@@ -49,6 +49,7 @@ class TestIdsTest {
                 "bulkDeleteConfirm" to TestIds.bulkDeleteConfirm,
                 "bulkToggle" to TestIds.bulkToggle,
                 "clearCompleted" to TestIds.clearCompleted,
+                "connectionBanner" to TestIds.connectionBanner,
                 "empty" to TestIds.empty,
                 "filter" to TestIds.filter("{filter}"),
                 "formDueDate" to TestIds.formDueDate,

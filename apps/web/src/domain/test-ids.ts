@@ -31,6 +31,7 @@ export const TEST_IDS = {
   bulkDeleteConfirm: "todo-bulk-delete-confirm",
   bulkToggle: "todo-bulk-toggle",
   clearCompleted: "todo-clear-completed",
+  connectionBanner: "connection-banner",
   empty: "todo-empty",
   filter: (filter: string) => `todo-filter-${filter}`,
   formDueDate: "todo-form-due-date",

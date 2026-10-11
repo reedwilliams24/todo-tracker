@@ -153,4 +153,7 @@ internal val MESSAGES: Map<String, Message> = mapOf(
     "auth.expired.banner" to Message(R.string.auth_expired_banner),
     "auth.expired.signIn" to Message(R.string.auth_expired_signIn),
     "sync.pushFailed" to Message(R.string.sync_pushFailed),
+    "connection.reconnecting" to Message(R.string.connection_reconnecting),
+    "connection.readOnly" to Message(R.string.connection_readOnly),
+    "connection.offline" to Message(R.string.connection_offline),
 )

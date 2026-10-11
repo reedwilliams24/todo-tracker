@@ -30,6 +30,7 @@
   "bulkDeleteConfirm": "todo-bulk-delete-confirm",
   "bulkToggle": "todo-bulk-toggle",
   "clearCompleted": "todo-clear-completed",
+  "connectionBanner": "connection-banner",
   "empty": "todo-empty",
   "filter": "todo-filter-{filter}",
   "formDueDate": "todo-form-due-date",
