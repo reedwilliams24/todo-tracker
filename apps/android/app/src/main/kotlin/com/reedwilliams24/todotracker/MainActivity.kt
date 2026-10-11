@@ -18,6 +18,7 @@ import com.reedwilliams24.todotracker.auth.TodoScope
 import com.reedwilliams24.todotracker.core.AuthStatus
 import com.reedwilliams24.todotracker.core.ResolvedTheme
 import com.reedwilliams24.todotracker.core.resolveTheme
+import com.reedwilliams24.todotracker.data.TodoDatabase
 import com.reedwilliams24.todotracker.ui.AccountMenu
 import com.reedwilliams24.todotracker.ui.AuthActions
 import com.reedwilliams24.todotracker.ui.AuthBanner
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (BuildConfig.DEBUG && launchedWith(FORGET_LOCAL_TODOS)) forgetLocalTodos()
         setContent {
             val preference by viewModel.theme.collectAsStateWithLifecycle()
             val dark = resolveTheme(preference, isSystemInDarkTheme()) == ResolvedTheme.DARK
@@ -86,5 +88,18 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun launchedWith(argument: String): Boolean =
+        intent.getBooleanExtra(argument, false) || intent.getStringExtra(argument) == "true"
+
+    /** E2E hook (`forgetLocalTodos` scenario step): drops the account cache and cursor, keeping the session. */
+    private fun forgetLocalTodos() {
+        deleteDatabase(TodoDatabase.ACCOUNT)
+        getSharedPreferences("todo-tracker", MODE_PRIVATE).edit().remove(AuthViewModel.SYNC_CURSOR_KEY).commit()
+    }
+
+    private companion object {
+        const val FORGET_LOCAL_TODOS = "forgetLocalTodos"
     }
 }

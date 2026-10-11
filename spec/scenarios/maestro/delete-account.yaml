@@ -1,0 +1,76 @@
+# Generated from spec/scenarios/core/delete-account.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: delete-account
+tags:
+  - supabase
+---
+- runFlow: launch.yaml
+- evalScript: ${output.run = String(Date.now())}
+- tapOn:
+    id: "auth-sign-in"
+- tapOn:
+    id: "auth-email"
+- inputText: "reed.${output.run}@example.com"
+- hideKeyboard
+- tapOn:
+    id: "auth-send-code"
+- assertVisible:
+    id: "auth-code"
+- runScript:
+    file: mailpit-code.js
+    env:
+      EMAIL: "reed.${output.run}@example.com"
+- tapOn:
+    id: "auth-code"
+- eraseText: 10
+- inputText: "${output.code}"
+- hideKeyboard
+- tapOn:
+    id: "auth-verify"
+- assertVisible:
+    id: "auth-account"
+    text: "reed\\.${output.run}@example\\.com"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Call mom"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Call mom"
+- tapOn:
+    id: "auth-account"
+- tapOn:
+    id: "auth-delete-account"
+- assertVisible:
+    id: "auth-delete-confirm"
+- assertVisible:
+    text: ".*reed\\.${output.run}@example\\.com.*"
+- tapOn:
+    id: "auth-delete-cancel"
+- assertNotVisible:
+    id: "auth-delete-confirm"
+- assertVisible:
+    id: "auth-account"
+    text: "reed\\.${output.run}@example\\.com"
+- assertVisible:
+    id: "todo-item-Call mom"
+- tapOn:
+    id: "auth-account"
+- tapOn:
+    id: "auth-delete-account"
+- assertVisible:
+    id: "auth-delete-confirm"
+- tapOn:
+    id: "auth-delete-confirm"
+- assertNotVisible:
+    id: "auth-account"
+- assertVisible:
+    id: "auth-guest-banner"
+- assertVisible:
+    id: "todo-empty"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "auth-guest-banner"
+- assertVisible:
+    id: "todo-empty"

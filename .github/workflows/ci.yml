@@ -306,14 +306,26 @@ jobs:
           path: apps/web/playwright-report/
           retention-days: 14
 
+  # Guest flows (`spec` tag) on an unconfigured build, then the signed-in flows (`supabase` tag) on a build pointed at
+  # a local Supabase stack; mailpit-code.js reads the emailed codes from Mailpit on the runner.
   e2e-tests-android:
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e)
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io # public.ecr.aws throttles runners (see db-tests-supabase)
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup # installs the pinned supabase CLI
       - uses: ./.github/actions/android
-      - run: ./gradlew :app:assembleDebug --console=plain
+      - run: pnpm exec supabase start -x studio,imgproxy,storage-api,edge-runtime,logflare,vector,supavisor
+      - name: Build the guest and the Supabase-configured APKs
         working-directory: apps/android
+        run: |
+          ./gradlew :app:assembleDebug --console=plain
+          mv app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/guest.apk"
+          key=$(pnpm exec supabase status -o env | sed -n -E 's/^(PUBLISHABLE_KEY|ANON_KEY)="?([^"]*)"?$/\2/p' | head -1)
+          ./gradlew :app:assembleDebug --console=plain -PsupabaseUrl=http://10.0.2.2:54321 -PsupabaseAnonKey="$key"
+          mv app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/supabase.apk"
       - name: Install Maestro
         run: |
           curl -fsSL https://get.maestro.mobile.dev | bash
@@ -333,14 +345,16 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
-            adb install -r apps/android/app/build/outputs/apk/debug/app-debug.apk
+            adb install -r "$RUNNER_TEMP/guest.apk"
             maestro test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker --format junit --output maestro-android.xml spec/scenarios/maestro
+            adb install -r "$RUNNER_TEMP/supabase.apk"
+            maestro test --include-tags supabase -e APP_ID=com.reedwilliams24.todotracker --format junit --output maestro-android-supabase.xml spec/scenarios/maestro
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: maestro-android
           path: |
-            maestro-android.xml
+            maestro-android*.xml
             ~/.maestro/tests/
           retention-days: 14
 

@@ -113,3 +113,9 @@ Running on the Android emulator or iOS Simulator, with the native app installed:
 ```bash
 maestro test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker spec/scenarios/maestro
 ```
+
+Scenarios with `"requires": "supabase"` generate flows tagged `supabase` instead of `spec`. They need a build configured for a local `pnpm exec supabase start` (Android: `-PsupabaseUrl=http://10.0.2.2:54321 -PsupabaseAnonKey=<PUBLISHABLE_KEY>`; iOS: `apps/ios/Config/Supabase.override.xcconfig`). Each run signs in as a fresh `reed.<timestamp>@example.com`, and `mailpit-code.js` reads the emailed code from Mailpit (`-e MAILPIT_URL=…` if it isn't on `http://127.0.0.1:54324`). The `forgetLocalTodos` step relaunches with a `forgetLocalTodos` launch argument that debug builds honor. On iOS, `clearState` keeps the Keychain session, so run `xcrun simctl keychain <udid> reset` before each flow:
+
+```bash
+maestro test --include-tags supabase -e APP_ID=com.reedwilliams24.todotracker spec/scenarios/maestro
+```
