@@ -10,7 +10,7 @@ private let utcCalendar: Calendar = {
 public func nextOccurrence(_ dueDate: String, _ recurrence: Recurrence) -> String {
     let parts = dueDate.split(separator: "-").compactMap { Int($0) }
     guard parts.count == 3,
-          let date = utcCalendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
+        let date = utcCalendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
     else { return dueDate }
     let next: Date?
     switch recurrence {

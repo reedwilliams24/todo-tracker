@@ -75,7 +75,8 @@ struct JSRegex: @unchecked Sendable {
         return parts
     }
 
-    private static let space = #"\t\n\x{0B}\f\r \x{A0}\x{1680}\x{2000}-\x{200A}\x{2028}\x{2029}\x{202F}\x{205F}\x{3000}\x{FEFF}"#
+    private static let space =
+        #"\t\n\x{0B}\f\r \x{A0}\x{1680}\x{2000}-\x{200A}\x{2028}\x{2029}\x{202F}\x{205F}\x{3000}\x{FEFF}"#
     private static let word = "(?-i:[A-Za-z0-9_])"
     private static let boundary = "(?:(?<=\(word))(?!\(word))|(?<!\(word))(?=\(word)))"
 
@@ -93,7 +94,9 @@ struct JSRegex: @unchecked Sendable {
                 case "s": out += inClass ? space : "[\(space)]"
                 case "d": out += inClass ? "0-9" : "[0-9]"
                 case "b" where !inClass: out += boundary
-                default: out.append(char); out.append(next)
+                default:
+                    out.append(char)
+                    out.append(next)
                 }
                 index += 2
                 continue

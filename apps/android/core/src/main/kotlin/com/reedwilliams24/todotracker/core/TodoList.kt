@@ -48,8 +48,8 @@ fun reorderTodos(todos: List<Todo>, fromIndex: Int, toIndex: Int): List<Todo> {
 }
 
 /**
- * Moves `id` into `targetId`'s slot within the displayed rows (`visibleIds`, in display order) and
- * writes that order back into the slots the visible todos occupy; hidden todos stay put.
+ * Moves `id` into `targetId`'s slot within the displayed rows (`visibleIds`, in display order) and writes that order
+ * back into the slots the visible todos occupy; hidden todos stay put.
  */
 fun moveVisibleTodo(todos: List<Todo>, visibleIds: List<String>, id: String, targetId: String): List<Todo> {
     val from = visibleIds.indexOf(id)

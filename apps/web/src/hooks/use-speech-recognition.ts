@@ -16,11 +16,7 @@ type SpeechState = {
   error: string | null;
 };
 
-export function useSpeechRecognition({
-  lang = "en-US",
-  silenceMs = 5000,
-  onSilence,
-}: Options = {}) {
+export function useSpeechRecognition({ lang = "en-US", silenceMs = 5000, onSilence }: Options = {}) {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const finalTranscriptRef = useRef("");
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

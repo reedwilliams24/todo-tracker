@@ -84,38 +84,38 @@ export const feature: Feature = {
     },
     { name: "bulkToggle ignores unknown ids", op: "bulkToggle", given: { todos: sample, ids: ["zzz"], now: T1 } },
     { name: "bulkToggle with empty selection", op: "bulkToggle", given: { todos: sample, ids: [], now: T1 } },
-      { name: "sortTodos: manual keeps storage order", op: "sortTodos", given: { todos: sample, sort: "manual" } },
-      ...[
-        ["moves down", 0, 2],
-        ["moves up", 2, 0],
-        ["same index is a no-op", 1, 1],
-        ["out of range is a no-op", 5, 0],
-        ["negative index is a no-op", -1, 0],
-      ].map(([label, fromIndex, toIndex]) => ({
-        name: `reorderTodos: ${label}`,
-        op: "reorderTodos",
-        given: { todos: sample, fromIndex, toIndex },
-      })),
-      {
-        name: "moveVisibleTodo: drop onto the first row",
-        op: "moveVisibleTodo",
-        given: { todos: sample, visibleIds: ["a", "b", "c"], id: "c", targetId: "a" },
-      },
-      {
-        name: "moveVisibleTodo: applies the displayed (sorted) order and leaves hidden todos in place",
-        op: "moveVisibleTodo",
-        given: { todos: [...sample, todo("d")], visibleIds: ["d", "c", "a"], id: "a", targetId: "d" },
-      },
-      {
-        name: "moveVisibleTodo: unknown id is a no-op",
-        op: "moveVisibleTodo",
-        given: { todos: sample, visibleIds: ["a", "b", "c"], id: "zzz", targetId: "a" },
-      },
-      {
-        name: "moveVisibleTodo: dropping on itself is a no-op",
-        op: "moveVisibleTodo",
-        given: { todos: sample, visibleIds: ["a", "b", "c"], id: "b", targetId: "b" },
-      },
+    { name: "sortTodos: manual keeps storage order", op: "sortTodos", given: { todos: sample, sort: "manual" } },
+    ...[
+      ["moves down", 0, 2],
+      ["moves up", 2, 0],
+      ["same index is a no-op", 1, 1],
+      ["out of range is a no-op", 5, 0],
+      ["negative index is a no-op", -1, 0],
+    ].map(([label, fromIndex, toIndex]) => ({
+      name: `reorderTodos: ${label}`,
+      op: "reorderTodos",
+      given: { todos: sample, fromIndex, toIndex },
+    })),
+    {
+      name: "moveVisibleTodo: drop onto the first row",
+      op: "moveVisibleTodo",
+      given: { todos: sample, visibleIds: ["a", "b", "c"], id: "c", targetId: "a" },
+    },
+    {
+      name: "moveVisibleTodo: applies the displayed (sorted) order and leaves hidden todos in place",
+      op: "moveVisibleTodo",
+      given: { todos: [...sample, todo("d")], visibleIds: ["d", "c", "a"], id: "a", targetId: "d" },
+    },
+    {
+      name: "moveVisibleTodo: unknown id is a no-op",
+      op: "moveVisibleTodo",
+      given: { todos: sample, visibleIds: ["a", "b", "c"], id: "zzz", targetId: "a" },
+    },
+    {
+      name: "moveVisibleTodo: dropping on itself is a no-op",
+      op: "moveVisibleTodo",
+      given: { todos: sample, visibleIds: ["a", "b", "c"], id: "b", targetId: "b" },
+    },
   ],
 };
 

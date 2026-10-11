@@ -124,7 +124,7 @@ export function TodoApp() {
           placeholder="Search todos…  ( / )"
           aria-label="Search todos"
           data-testid={TEST_IDS.search}
-          className="w-full rounded-xl border [&::-webkit-search-cancel-button]:appearance-none border-black/10 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-white/5 dark:focus:border-white/40"
+          className="w-full rounded-xl border border-black/10 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-white/5 dark:focus:border-white/40 [&::-webkit-search-cancel-button]:appearance-none"
         />
         {searching && (
           <button
@@ -150,9 +150,7 @@ export function TodoApp() {
               onClick={() => setFilter(option)}
               data-testid={TEST_IDS.filter(option)}
               className={`rounded-full px-3 py-1 capitalize transition ${
-                filter === option
-                  ? "bg-foreground text-background"
-                  : "opacity-70 hover:opacity-100"
+                filter === option ? "bg-foreground text-background" : "opacity-70 hover:opacity-100"
               }`}
             >
               {option}
@@ -170,7 +168,12 @@ export function TodoApp() {
               className="rounded-lg border border-black/10 bg-transparent px-2 py-1 capitalize dark:border-white/15"
             >
               {SORTS.map((option) => (
-                <option key={option} value={option} data-testid={TEST_IDS.sortOption(option)} className="text-foreground">
+                <option
+                  key={option}
+                  value={option}
+                  data-testid={TEST_IDS.sortOption(option)}
+                  className="text-foreground"
+                >
                   {option === "due" ? "due date" : option}
                 </option>
               ))}
@@ -182,7 +185,7 @@ export function TodoApp() {
               aria-pressed={selecting}
               onClick={() => (selecting ? exitSelectMode() : setSelecting(true))}
               data-testid={TEST_IDS.selectMode}
-              className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
+              className="underline-offset-4 opacity-70 hover:underline hover:opacity-100"
             >
               {selecting ? "Done" : "Select"}
             </button>
@@ -192,7 +195,7 @@ export function TodoApp() {
               type="button"
               onClick={clearCompleted}
               data-testid={TEST_IDS.clearCompleted}
-              className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
+              className="underline-offset-4 opacity-70 hover:underline hover:opacity-100"
             >
               Clear completed ({completedCount})
             </button>
@@ -286,9 +289,7 @@ export function TodoApp() {
               onToggle={toggle}
               onRename={rename}
               onRemove={remove}
-              selection={
-                selecting ? { selected: selected.includes(todo.id), onSelect: toggleSelected } : undefined
-              }
+              selection={selecting ? { selected: selected.includes(todo.id), onSelect: toggleSelected } : undefined}
               drag={
                 !searching && !selecting
                   ? {

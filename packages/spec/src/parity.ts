@@ -12,12 +12,15 @@ const PLATFORMS = ["web", "ios", "android"] as const;
 
 const problems: string[] = [];
 const fixtures: Matrix = {};
-for (const file of readdirSync(FIXTURES_DIR).filter((f) => f.endsWith(".json")).sort()) {
+for (const file of readdirSync(FIXTURES_DIR)
+  .filter((f) => f.endsWith(".json"))
+  .sort()) {
   fixtures[file.replace(/\.json$/, "")] = readJson<{ status?: Matrix[string] }>(join(FIXTURES_DIR, file)).status ?? {};
 }
 const scenarios: Matrix = {};
 for (const scenario of loadScenarios()) {
-  if (`${scenario.name}.json` !== scenario.file) problems.push(`scenarios/core/${scenario.file} must be named ${scenario.name}.json`);
+  if (`${scenario.name}.json` !== scenario.file)
+    problems.push(`scenarios/core/${scenario.file} must be named ${scenario.name}.json`);
   scenarios[scenario.name] = (scenario.status ?? {}) as Matrix[string];
 }
 

@@ -1,10 +1,4 @@
-import {
-  SORT_STORAGE_KEY,
-  STORAGE_KEY,
-  parseStoredTodos,
-  serializeTodos,
-  type TodoStorage,
-} from "@/domain";
+import { SORT_STORAGE_KEY, STORAGE_KEY, parseStoredTodos, serializeTodos, type TodoStorage } from "@/domain";
 import type { PreferenceStorage } from "@/domain/react";
 
 export const localTodoStorage: TodoStorage = {

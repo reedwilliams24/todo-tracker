@@ -164,12 +164,7 @@ describe("sortByDue", () => {
     const soon = createTodo({ title: "soon", dueDate: "2024-01-05", priority: "low" }, now);
     const none = createTodo({ title: "none", priority: "high" }, now);
     const done = toggleTodo(createTodo({ title: "done", dueDate: "2024-01-01" }, now));
-    expect(sortByDue([none, done, late, soon]).map((t) => t.title)).toEqual([
-      "soon",
-      "late",
-      "none",
-      "done",
-    ]);
+    expect(sortByDue([none, done, late, soon]).map((t) => t.title)).toEqual(["soon", "late", "none", "done"]);
     expect(sortTodos([none, late, soon], "due").map((t) => t.title)).toEqual(["soon", "late", "none"]);
     expect(sortTodos([none, late, soon]).map((t) => t.title)).toEqual(["late", "none", "soon"]);
   });

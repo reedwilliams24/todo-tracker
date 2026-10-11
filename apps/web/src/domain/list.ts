@@ -21,12 +21,7 @@ export function toggleInList(todos: readonly Todo[], id: string, now: Date = new
   });
 }
 
-export function renameInList(
-  todos: readonly Todo[],
-  id: string,
-  title: string,
-  now: Date = new Date(),
-): Todo[] {
+export function renameInList(todos: readonly Todo[], id: string, title: string, now: Date = new Date()): Todo[] {
   return updateTodoText(todos, id, title, now);
 }
 
@@ -57,13 +52,7 @@ export function bulkToggle(todos: readonly Todo[], ids: readonly string[], now: 
 
 export function reorderTodos(todos: readonly Todo[], fromIndex: number, toIndex: number): Todo[] {
   const next = [...todos];
-  if (
-    fromIndex === toIndex ||
-    fromIndex < 0 ||
-    toIndex < 0 ||
-    fromIndex >= next.length ||
-    toIndex >= next.length
-  ) {
+  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= next.length || toIndex >= next.length) {
     return next;
   }
   const [moved] = next.splice(fromIndex, 1);

@@ -1,7 +1,4 @@
-import {
-  computeStats,
-  STATS_DAYS,
-} from "web/domain";
+import { computeStats, STATS_DAYS } from "web/domain";
 import { todo, done } from "../helpers";
 import type { Feature, Ops } from "../types";
 
@@ -11,7 +8,11 @@ export const feature: Feature = {
   status: { web: "pass", ios: "pass", android: "pass" },
   cases: [
     { name: "constants", op: "statsConstants", given: {} },
-    { name: "computeStats: no todos", op: "computeStats", given: { todos: [], now: "2026-03-10T15:00:00.000Z", days: 7, timeZone: "UTC" } },
+    {
+      name: "computeStats: no todos",
+      op: "computeStats",
+      given: { todos: [], now: "2026-03-10T15:00:00.000Z", days: 7, timeZone: "UTC" },
+    },
     {
       name: "computeStats: defaults to a 30-day window",
       op: "computeStats",
@@ -65,7 +66,11 @@ export const feature: Feature = {
       name: "computeStats: completing today extends the streak",
       op: "computeStats",
       given: {
-        todos: [done("a", "2026-03-10T08:00:00.000Z"), done("b", "2026-03-09T12:00:00.000Z"), done("c", "2026-03-08T12:00:00.000Z")],
+        todos: [
+          done("a", "2026-03-10T08:00:00.000Z"),
+          done("b", "2026-03-09T12:00:00.000Z"),
+          done("c", "2026-03-08T12:00:00.000Z"),
+        ],
         now: "2026-03-10T15:00:00.000Z",
         days: 3,
         timeZone: "UTC",
@@ -74,7 +79,12 @@ export const feature: Feature = {
     {
       name: "computeStats: a gap before yesterday resets the current streak",
       op: "computeStats",
-      given: { todos: [done("a", "2026-03-07T12:00:00.000Z")], now: "2026-03-10T15:00:00.000Z", days: 3, timeZone: "UTC" },
+      given: {
+        todos: [done("a", "2026-03-07T12:00:00.000Z")],
+        now: "2026-03-10T15:00:00.000Z",
+        days: 3,
+        timeZone: "UTC",
+      },
     },
     {
       name: "computeStats: DST start day chains with its neighbours",
@@ -93,7 +103,12 @@ export const feature: Feature = {
     {
       name: "computeStats: window crosses a month and leap day",
       op: "computeStats",
-      given: { todos: [done("a", "2028-02-29T12:00:00.000Z")], now: "2028-03-01T12:00:00.000Z", days: 3, timeZone: "UTC" },
+      given: {
+        todos: [done("a", "2028-02-29T12:00:00.000Z")],
+        now: "2028-03-01T12:00:00.000Z",
+        days: 3,
+        timeZone: "UTC",
+      },
     },
   ],
 };

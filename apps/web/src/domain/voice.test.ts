@@ -1,12 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  cleanTitle,
-  coerceDrafts,
-  extractDueDate,
-  extractPriority,
-  parseTranscript,
-  reconcileDrafts,
-} from "./voice";
+import { cleanTitle, coerceDrafts, extractDueDate, extractPriority, parseTranscript, reconcileDrafts } from "./voice";
 
 const monday = new Date("2024-05-06T12:00:00.000Z");
 

@@ -19,9 +19,9 @@ final class FixtureTests: XCTestCase {
     }
 
     static let fixturesDir = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent() // TodoCoreTests
-        .deletingLastPathComponent() // Tests
-        .deletingLastPathComponent() // TodoCore
+        .deletingLastPathComponent()  // TodoCoreTests
+        .deletingLastPathComponent()  // Tests
+        .deletingLastPathComponent()  // TodoCore
         .appendingPathComponent("../../../spec/fixtures")
         .standardizedFileURL
 
@@ -56,7 +56,9 @@ final class FixtureTests: XCTestCase {
             XCTContext.runActivity(named: fixture.name) { _ in
                 do {
                     let actual = try FixtureOps.run(op: fixture.op, given: fixture.given)
-                    XCTAssertEqual(actual, fixture.then, "\(feature): \(fixture.name)\n  actual:   \(actual)\n  expected: \(fixture.then)")
+                    XCTAssertEqual(
+                        actual, fixture.then,
+                        "\(feature): \(fixture.name)\n  actual:   \(actual)\n  expected: \(fixture.then)")
                     if actual == fixture.then { passed += 1 }
                 } catch {
                     XCTFail("\(feature): \(fixture.name): \(error)")
