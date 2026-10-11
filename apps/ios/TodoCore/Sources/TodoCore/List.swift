@@ -27,3 +27,16 @@ public func removeFromList(_ todos: [Todo], ids: [String]) -> [Todo] {
 public func clearCompletedInList(_ todos: [Todo]) -> [Todo] {
     todos.filter { !$0.completed }
 }
+
+public func countCompleted(_ todos: [Todo]) -> Int {
+    todos.filter(\.completed).count
+}
+
+/// Completes every todo in `ids`, or reopens them all when every selected todo is already complete.
+public func bulkToggle(_ todos: [Todo], ids: [String], now: Date = Date()) -> [Todo] {
+    let chosen = Set(ids)
+    let selected = todos.filter { chosen.contains($0.id) }
+    if selected.isEmpty { return todos }
+    let complete = selected.contains { !$0.completed }
+    return todos.map { chosen.contains($0.id) && $0.completed != complete ? toggleTodo($0, now: now) : $0 }
+}

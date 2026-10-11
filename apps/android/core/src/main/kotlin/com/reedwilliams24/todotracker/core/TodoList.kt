@@ -21,3 +21,14 @@ fun removeFromList(todos: List<Todo>, ids: Collection<String>): List<Todo> {
 }
 
 fun clearCompletedInList(todos: List<Todo>): List<Todo> = todos.filter { !it.completed }
+
+fun countCompleted(todos: List<Todo>): Int = todos.count { it.completed }
+
+/** Completes every todo in [ids], or reopens them all when every selected todo is already complete. */
+fun bulkToggle(todos: List<Todo>, ids: Collection<String>, now: Instant = Instant.now()): List<Todo> {
+    val chosen = ids.toSet()
+    val selected = todos.filter { it.id in chosen }
+    if (selected.isEmpty()) return todos
+    val complete = selected.any { !it.completed }
+    return todos.map { if (it.id in chosen && it.completed != complete) toggleTodo(it, now) else it }
+}

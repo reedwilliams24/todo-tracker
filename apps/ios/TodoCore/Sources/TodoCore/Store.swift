@@ -17,6 +17,7 @@ public enum TodoAction: Equatable, Sendable {
     case load([Todo])
     case prepend([Todo])
     case toggle(id: String)
+    case toggleMany(ids: [String])
     case rename(id: String, title: String)
     case remove(ids: [String])
     case clearCompleted
@@ -41,6 +42,12 @@ public func reduceTodos(_ state: TodoState, _ action: TodoAction, now: Date = Da
             ? snapshot(describeUndo(.complete, count: 1))
             : state.undoable
         return TodoState(todos: toggleInList(todos, id: id, now: now), undoable: undoable)
+    case .toggleMany(let ids):
+        let next = bulkToggle(todos, ids: ids, now: now)
+        if next == todos { return state }
+        let completed = zip(todos, next).filter { pair in !pair.0.completed && pair.1.completed }.count
+        let undoable = completed > 0 ? snapshot(describeUndo(.complete, count: completed)) : state.undoable
+        return TodoState(todos: next, undoable: undoable)
     case .rename(let id, let title):
         return TodoState(todos: renameInList(todos, id: id, title: title, now: now), undoable: state.undoable)
     case .remove(let ids):
