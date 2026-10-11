@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { serverGuestTodoMover } from "@/lib/account";
 import { createSupabaseAuthClient } from "@/lib/auth-client";
 import { accountTodoStorage, localTodoStorage } from "@/lib/storage";
-import { getSupabase, supabaseConfigured } from "@/lib/supabase";
+import { getRealtimeConnection, getSupabase, supabaseConfigured } from "@/lib/supabase";
 import { createSupabaseSyncServer } from "@/lib/sync-server";
 
 /** Header + list. Without Supabase config this is exactly the guest-only app. */
@@ -26,7 +26,8 @@ export function AccountShell() {
 
 function SignedInShell() {
   const supabase = useMemo(() => getSupabase(), []);
-  const client = useMemo(() => (supabase ? createSupabaseAuthClient(supabase) : null), [supabase]);
+  const realtime = useMemo(() => getRealtimeConnection(), []);
+  const client = useMemo(() => (supabase ? createSupabaseAuthClient(supabase, realtime) : null), [supabase, realtime]);
   const server = useMemo(() => (supabase ? createSupabaseSyncServer(supabase) : null), [supabase]);
   const mover = useMemo(() => serverGuestTodoMover(server!), [server]);
   const auth = useAuth(client, mover);
@@ -34,8 +35,8 @@ function SignedInShell() {
   const scope = status === "signedOut" || movePrompt !== null ? "guest" : `account:${userId}`;
   const sessionUserId = auth.session?.userId ?? null;
   const sync = useMemo(
-    () => (server && sessionUserId && scope !== "guest" ? { server, userId: sessionUserId } : null),
-    [server, sessionUserId, scope],
+    () => (server && sessionUserId && scope !== "guest" ? { server, userId: sessionUserId, realtime } : null),
+    [server, sessionUserId, scope, realtime],
   );
   return (
     <>

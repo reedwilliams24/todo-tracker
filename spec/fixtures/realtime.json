@@ -1,0 +1,98 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "realtime",
+  "spec": "features/realtime.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
+  "cases": [
+    {
+      "name": "constants",
+      "op": "realtimeConstants",
+      "given": {},
+      "then": {
+        "schema": "public",
+        "table": "todos",
+        "reconnectBaseMs": 1000,
+        "reconnectMaxMs": 30000
+      }
+    },
+    {
+      "name": "realtimeTopic: one channel per user, filtered on user_id",
+      "op": "realtimeTopic",
+      "given": {
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001"
+      },
+      "then": {
+        "channel": "todos:6a1f1c2e-0000-4000-8000-000000000001",
+        "filter": "user_id=eq.6a1f1c2e-0000-4000-8000-000000000001"
+      }
+    },
+    {
+      "name": "reconnectDelayMs: attempt 0",
+      "op": "reconnectDelayMs",
+      "given": {
+        "attempt": 0
+      },
+      "then": 1000
+    },
+    {
+      "name": "reconnectDelayMs: attempt 1",
+      "op": "reconnectDelayMs",
+      "given": {
+        "attempt": 1
+      },
+      "then": 2000
+    },
+    {
+      "name": "reconnectDelayMs: attempt 2",
+      "op": "reconnectDelayMs",
+      "given": {
+        "attempt": 2
+      },
+      "then": 4000
+    },
+    {
+      "name": "reconnectDelayMs: attempt 3",
+      "op": "reconnectDelayMs",
+      "given": {
+        "attempt": 3
+      },
+      "then": 8000
+    },
+    {
+      "name": "reconnectDelayMs: attempt 4",
+      "op": "reconnectDelayMs",
+      "given": {
+        "attempt": 4
+      },
+      "then": 16000
+    },
+    {
+      "name": "reconnectDelayMs: attempt 5",
+      "op": "reconnectDelayMs",
+      "given": {
+        "attempt": 5
+      },
+      "then": 30000
+    },
+    {
+      "name": "reconnectDelayMs: attempt 6",
+      "op": "reconnectDelayMs",
+      "given": {
+        "attempt": 6
+      },
+      "then": 30000
+    },
+    {
+      "name": "reconnectDelayMs: attempt 40",
+      "op": "reconnectDelayMs",
+      "given": {
+        "attempt": 40
+      },
+      "then": 30000
+    }
+  ]
+}

@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                         viewModel.useScope(
                             scope,
                             if (scope == TodoScope.ACCOUNT && server != null && userId != null) {
-                                SyncSetup(server, userId)
+                                SyncSetup(server, userId, auth.realtime)
                             } else {
                                 null
                             },
