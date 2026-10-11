@@ -11,14 +11,11 @@ Every merge to `main` ships automatically to the platforms it touches
 
 | Changed paths | What deploys |
 | --- | --- |
-| `apps/web/**` only | Web → Vercel production ([`deploy-web.yml`](.github/workflows/deploy-web.yml)) |
+| `apps/web/**` | Web → Vercel production (PRs get a preview link) |
 | Root config (`package.json`, lockfile, workspace) | Web |
 
-- **Web:** https://todo-tracker.vercel.app <!-- replace with the production URL Vercel assigns after the first deploy -->
-- **Android / iOS:** no alpha channel yet. Build from [`apps/android`](apps/android/README.md) or [`apps/ios`](apps/ios/README.md); CI uploads a debug APK on every run.
-
-The web workflow is inert until its repository secrets/variables are set
-(`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, var `VERCEL_ENABLED=true`).
+- **Web:** _URL goes here after the first deploy._
+- **Android / iOS:** no install channel yet ([REED-74](https://linear.app/reed-williams/issue/REED-74), [REED-75](https://linear.app/reed-williams/issue/REED-75)). Build from [`apps/android`](apps/android/README.md) or [`apps/ios`](apps/ios/README.md); CI uploads a debug APK on every run.
 
 ## Structure
 
@@ -118,17 +115,11 @@ Linear ticket's name as a link, followed by `Fixes REED-n`.
 
 ### Web (Vercel)
 
-Production: _not yet deployed — URL goes here after the first `main` deploy._
+Vercel's GitHub integration deploys `apps/web`: production on every push to `main`, a preview (linked on
+the PR) for pull requests. [`apps/web/vercel.json`](apps/web/vercel.json) has an `ignoreCommand` that skips
+the build unless `apps/web/**` or the root package/lockfile/workspace config changed, so native-only
+changes don't deploy.
 
-`.github/workflows/deploy-web.yml` deploys `apps/web` with the Vercel CLI: production on every push to
-`main`, a preview (commented on the PR) for pull requests. It only runs when `apps/web/**` or the root
-package/lockfile/workspace config change, so native-only changes skip it.
-Vercel's own Git integration is disabled in `vercel.json` so the workflow is the single deploy path.
-
-One-time setup (nothing is committed):
-
-1. Create a Vercel project from the repo root (`vercel link` locally, or in the dashboard). Root directory
-   stays the repo root; `vercel.json` points the build at `apps/web`.
-2. Add repository secrets: `VERCEL_TOKEN` (Account → Tokens), `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`
-   (from `.vercel/project.json` after `vercel link`).
-3. Add repository variable `VERCEL_ENABLED=true` to switch the workflow on.
+One-time setup (already done; nothing is committed): [vercel.com/new](https://vercel.com/new) → import
+`reedwilliams24/todo-tracker` → Root Directory `apps/web` → Deploy. Vercel detects the pnpm workspace and
+installs from the repo root.
