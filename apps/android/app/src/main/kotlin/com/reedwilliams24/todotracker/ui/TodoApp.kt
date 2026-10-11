@@ -585,7 +585,7 @@ private fun Field(
     onValueChange: (TextFieldValue) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = inputStyle,
+    style: TextStyle = inputStyle(),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
