@@ -14,7 +14,7 @@ The add form's title field accepts shorthand such as `call mom tomorrow 5pm #fam
    - the first `YYYY-MM-DD` at the start or after whitespace, optionally preceded by `on `, `by ` or `due `, **if it is a real date** (`isValidDueDate`). An invalid date stays in the title and the remaining rules still apply.
    - `in N day(s)` (N = 1–3 digits) → today + N.
    - otherwise `extractDueDate` ([voice](voice.md)): today, tonight, tomorrow, next week, weekdays.
-   Dates use the device's **local** calendar; fixture `now` values have no `Z`.
+     Dates use the device's **local** calendar; fixture `now` values have no `Z`.
 4. **Title**: `cleanTitle` ([voice](voice.md)) on what's left. Times such as `5pm` stay in the title because todos carry a date only.
 
 `hasQuickAddMeta(parse)` is true when the parse has a priority, a due date or at least one tag; the preview is shown only then.

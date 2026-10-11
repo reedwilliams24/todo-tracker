@@ -126,7 +126,7 @@ export function TodoApp() {
           data-testid={TEST_IDS.search}
           placeholder={t("search.placeholder.web")}
           aria-label={t("search.label")}
-          className="w-full rounded-xl border [&::-webkit-search-cancel-button]:appearance-none border-black/10 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-white/5 dark:focus:border-white/40"
+          className="w-full rounded-xl border border-black/10 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-white/5 dark:focus:border-white/40 [&::-webkit-search-cancel-button]:appearance-none"
         />
         {searching && (
           <button
@@ -152,9 +152,7 @@ export function TodoApp() {
               onClick={() => setFilter(option)}
               data-testid={TEST_IDS.filter(option)}
               className={`rounded-full px-3 py-1 transition ${
-                filter === option
-                  ? "bg-foreground text-background"
-                  : "opacity-70 hover:opacity-100"
+                filter === option ? "bg-foreground text-background" : "opacity-70 hover:opacity-100"
               }`}
             >
               {t(`filter.${option}`)}
@@ -172,7 +170,12 @@ export function TodoApp() {
               className="rounded-lg border border-black/10 bg-transparent px-2 py-1 dark:border-white/15"
             >
               {SORTS.map((option) => (
-                <option key={option} value={option} data-testid={TEST_IDS.sortOption(option)} className="text-foreground">
+                <option
+                  key={option}
+                  value={option}
+                  data-testid={TEST_IDS.sortOption(option)}
+                  className="text-foreground"
+                >
                   {t(`sort.${option}`)}
                 </option>
               ))}
@@ -184,7 +187,7 @@ export function TodoApp() {
               aria-pressed={selecting}
               onClick={() => (selecting ? exitSelectMode() : setSelecting(true))}
               data-testid={TEST_IDS.selectMode}
-              className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
+              className="underline-offset-4 opacity-70 hover:underline hover:opacity-100"
             >
               {t(selecting ? "select.done" : "select.enter")}
             </button>
@@ -194,7 +197,7 @@ export function TodoApp() {
               type="button"
               onClick={clearCompleted}
               data-testid={TEST_IDS.clearCompleted}
-              className="opacity-70 underline-offset-4 hover:underline hover:opacity-100"
+              className="underline-offset-4 opacity-70 hover:underline hover:opacity-100"
             >
               {t("list.clearCompleted", { count: completedCount })}
             </button>
@@ -211,9 +214,7 @@ export function TodoApp() {
         >
           {confirmingDelete ? (
             <>
-              <span className="font-medium">
-                {t("bulk.confirm", { count: selected.length })}
-              </span>
+              <span className="font-medium">{t("bulk.confirm", { count: selected.length })}</span>
               <span className="flex-1" />
               <button
                 type="button"
@@ -290,9 +291,7 @@ export function TodoApp() {
               onToggle={toggle}
               onRename={rename}
               onRemove={remove}
-              selection={
-                selecting ? { selected: selected.includes(todo.id), onSelect: toggleSelected } : undefined
-              }
+              selection={selecting ? { selected: selected.includes(todo.id), onSelect: toggleSelected } : undefined}
               drag={
                 !searching && !selecting
                   ? {

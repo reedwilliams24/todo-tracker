@@ -59,7 +59,9 @@ struct ContentView: View {
         HStack(spacing: 0) {
             ForEach(themePreferences, id: \.self) { option in
                 let selected = theme == option
-                Button { storedTheme = option.rawValue } label: {
+                Button {
+                    storedTheme = option.rawValue
+                } label: {
                     Text(t("theme.\(option.rawValue)"))
                         .font(.system(size: 12))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
@@ -100,7 +102,9 @@ struct ContentView: View {
         HStack(spacing: 4) {
             ForEach(TodoFilter.allCases, id: \.self) { option in
                 let selected = model.filter == option
-                Button { model.filter = option } label: {
+                Button {
+                    model.filter = option
+                } label: {
                     Text(t("filter.\(option.rawValue)"))
                         .font(.system(size: 14))
                         .lineLimit(1)
@@ -150,7 +154,9 @@ struct ContentView: View {
                 .padding(.trailing, 4)
             ForEach(TodoSort.allCases, id: \.self) { option in
                 let selected = model.sort == option
-                Button { model.sort = option } label: {
+                Button {
+                    model.sort = option
+                } label: {
                     Text(t("sort.\(option.rawValue)"))
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
@@ -180,7 +186,8 @@ struct ContentView: View {
                         .foregroundStyle(Theme.foreground)
                     Spacer(minLength: 0)
                     actionButton(t("bulk.cancel"), id: TestID.bulkDeleteCancel) { model.confirmingDelete = false }
-                    actionButton(t("bulk.delete"), id: TestID.bulkDeleteConfirm, danger: true, action: model.deleteSelected)
+                    actionButton(
+                        t("bulk.delete"), id: TestID.bulkDeleteConfirm, danger: true, action: model.deleteSelected)
                 }
             } else {
                 ViewThatFits(in: .horizontal) {
@@ -227,8 +234,11 @@ struct ContentView: View {
 
     private func bulkActionButtons(_ count: Int) -> some View {
         HStack(spacing: 12) {
-            actionButton(t("bulk.toggle"), id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
-            actionButton(t("bulk.delete"), id: TestID.bulkDelete, enabled: count > 0, danger: true) { model.confirmingDelete = true }
+            actionButton(
+                t("bulk.toggle"), id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
+            actionButton(t("bulk.delete"), id: TestID.bulkDelete, enabled: count > 0, danger: true) {
+                model.confirmingDelete = true
+            }
         }
     }
 
@@ -244,7 +254,8 @@ struct ContentView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
                 .background(danger ? Theme.danger : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
-                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).strokeBorder(danger ? Theme.danger : Theme.border))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.Radius.md).strokeBorder(danger ? Theme.danger : Theme.border))
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
@@ -272,7 +283,9 @@ struct ContentView: View {
                         onRename: { model.rename(todo.id, title: $0) },
                         onRemove: { model.remove(todo.id) },
                         selection: model.selecting
-                            ? TodoRowView.Selection(selected: model.selectedIds.contains(todo.id), onSelect: { model.toggleSelected(todo.id) })
+                            ? TodoRowView.Selection(
+                                selected: model.selectedIds.contains(todo.id),
+                                onSelect: { model.toggleSelected(todo.id) })
                             : nil
                     )
                     // Long-press a row and drop it on another to move it there.

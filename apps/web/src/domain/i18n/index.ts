@@ -88,11 +88,7 @@ function findPlural(message: string): { start: number; end: number; name: string
  * Formats a message with `{name}` interpolation and ICU-style
  * `{count, plural, one {...} other {...}}` selection (`#` = the number).
  */
-export function formatMessage(
-  locale: string,
-  message: string,
-  params: MessageParams = {},
-): string {
+export function formatMessage(locale: string, message: string, params: MessageParams = {}): string {
   let out = message;
   for (let plural = findPlural(out); plural; plural = findPlural(out)) {
     const raw = params[plural.name];

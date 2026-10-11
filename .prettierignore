@@ -1,0 +1,13 @@
+pnpm-lock.yaml
+**/.next/
+**/build/
+**/.build/
+apps/android/.gradle/
+apps/web/next-env.d.ts
+
+# Written by `pnpm spec:record` / `pnpm spec:generate`; spec:check compares them byte-for-byte.
+spec/fixtures/
+spec/scenarios/maestro/
+spec/test-ids.json
+apps/web/src/domain/test-ids.ts
+apps/web/src/domain/i18n/en.ts

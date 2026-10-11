@@ -61,34 +61,19 @@ export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
   };
 }
 
-export function updateTodo(
-  todo: Todo,
-  patch: Partial<Omit<Todo, "id" | "createdAt">>,
-  now: Date = new Date(),
-): Todo {
+export function updateTodo(todo: Todo, patch: Partial<Omit<Todo, "id" | "createdAt">>, now: Date = new Date()): Todo {
   return { ...todo, ...patch, updatedAt: now.toISOString() };
 }
 
-export function updateTodoText(
-  todos: readonly Todo[],
-  id: string,
-  text: string,
-  now: Date = new Date(),
-): Todo[] {
+export function updateTodoText(todos: readonly Todo[], id: string, text: string, now: Date = new Date()): Todo[] {
   if (!isValidTitle(text)) return [...todos];
   const title = text.trim();
-  return todos.map((todo) =>
-    todo.id === id && todo.title !== title ? updateTodo(todo, { title }, now) : todo,
-  );
+  return todos.map((todo) => (todo.id === id && todo.title !== title ? updateTodo(todo, { title }, now) : todo));
 }
 
 export function toggleTodo(todo: Todo, now: Date = new Date()): Todo {
   const completed = !todo.completed;
-  return updateTodo(
-    todo,
-    { completed, completedAt: completed ? now.toISOString() : undefined },
-    now,
-  );
+  return updateTodo(todo, { completed, completedAt: completed ? now.toISOString() : undefined }, now);
 }
 
 export function filterTodos(todos: readonly Todo[], filter: TodoFilter): Todo[] {
@@ -106,9 +91,7 @@ export function searchTodos(todos: readonly Todo[], query: string): Todo[] {
   const needle = query.trim().toLowerCase();
   if (!needle) return [...todos];
   return todos.filter(
-    (todo) =>
-      todo.title.toLowerCase().includes(needle) ||
-      (todo.notes?.toLowerCase().includes(needle) ?? false),
+    (todo) => todo.title.toLowerCase().includes(needle) || (todo.notes?.toLowerCase().includes(needle) ?? false),
   );
 }
 

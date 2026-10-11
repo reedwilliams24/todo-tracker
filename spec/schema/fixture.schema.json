@@ -4,12 +4,7 @@
   "title": "Conformance fixture file",
   "description": "One feature's golden cases. Each platform runner calls `op` with `given` and must produce exactly `then` after normalization (see spec/README.md).",
   "type": "object",
-  "required": [
-    "feature",
-    "spec",
-    "status",
-    "cases"
-  ],
+  "required": ["feature", "spec", "status", "cases"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
@@ -26,33 +21,17 @@
     "status": {
       "type": "object",
       "description": "Which platforms pass this feature's cases: pass | missing (link a follow-up ticket in the PR) | n/a.",
-      "required": [
-        "web",
-        "ios",
-        "android"
-      ],
+      "required": ["web", "ios", "android"],
       "additionalProperties": false,
       "properties": {
         "web": {
-          "enum": [
-            "pass",
-            "missing",
-            "n/a"
-          ]
+          "enum": ["pass", "missing", "n/a"]
         },
         "ios": {
-          "enum": [
-            "pass",
-            "missing",
-            "n/a"
-          ]
+          "enum": ["pass", "missing", "n/a"]
         },
         "android": {
-          "enum": [
-            "pass",
-            "missing",
-            "n/a"
-          ]
+          "enum": ["pass", "missing", "n/a"]
         }
       }
     },
@@ -61,12 +40,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": [
-          "name",
-          "op",
-          "given",
-          "then"
-        ],
+        "required": ["name", "op", "given", "then"],
         "additionalProperties": false,
         "properties": {
           "name": {

@@ -12,30 +12,36 @@ struct TodoFormView: View {
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
-            TextField(t("form.title.placeholder"), text: $form.title, prompt: Text(t("form.title.placeholder")).foregroundStyle(Theme.muted))
-                .font(.system(size: 16))
-                .foregroundStyle(Theme.foreground)
-                .padding(8)
-                .submitLabel(.done)
-                .onSubmit(submit)
-                .accessibilityLabel(t("form.title.label"))
-                .accessibilityIdentifier(TestID.formTitle)
+            TextField(
+                t("form.title.placeholder"), text: $form.title,
+                prompt: Text(t("form.title.placeholder")).foregroundStyle(Theme.muted)
+            )
+            .font(.system(size: 16))
+            .foregroundStyle(Theme.foreground)
+            .padding(8)
+            .submitLabel(.done)
+            .onSubmit(submit)
+            .accessibilityLabel(t("form.title.label"))
+            .accessibilityIdentifier(TestID.formTitle)
             HStack(spacing: 8) {
                 priorityPicker
-                TextField(t("form.dueDate.placeholder"), text: $form.dueDate, prompt: Text(t("form.dueDate.placeholder")).foregroundStyle(Theme.muted))
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.foreground)
-                    .keyboardType(.numbersAndPunctuation)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Theme.Radius.md)
-                            .stroke(dateOk ? Theme.border : Theme.danger, lineWidth: 1)
-                    )
-                    .accessibilityLabel(t("form.dueDate.label"))
-                    .accessibilityIdentifier(TestID.formDueDate)
+                TextField(
+                    t("form.dueDate.placeholder"), text: $form.dueDate,
+                    prompt: Text(t("form.dueDate.placeholder")).foregroundStyle(Theme.muted)
+                )
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.foreground)
+                .keyboardType(.numbersAndPunctuation)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.Radius.md)
+                        .stroke(dateOk ? Theme.border : Theme.danger, lineWidth: 1)
+                )
+                .accessibilityLabel(t("form.dueDate.label"))
+                .accessibilityIdentifier(TestID.formDueDate)
             }
             recurrencePicker
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -65,7 +71,9 @@ struct TodoFormView: View {
         HStack(spacing: 0) {
             ForEach([TodoPriority.low, .medium, .high], id: \.self) { option in
                 let selected = option == form.priority
-                Button { form.priority = option } label: {
+                Button {
+                    form.priority = option
+                } label: {
                     Text(t("priority.\(option.rawValue)"))
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground)
@@ -89,7 +97,9 @@ struct TodoFormView: View {
         HStack(spacing: 0) {
             ForEach([nil] + Recurrence.allCases.map(Optional.some), id: \.self) { (option: Recurrence?) in
                 let selected = (option?.rawValue ?? "") == form.recurrence
-                Button { form.recurrence = option?.rawValue ?? "" } label: {
+                Button {
+                    form.recurrence = option?.rawValue ?? ""
+                } label: {
                     Text(option.map { t("recurrence.\($0.rawValue)") } ?? t("recurrence.none"))
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground)
@@ -124,7 +134,9 @@ private struct QuickAddPreview: View {
     private var meta: String {
         var parts: [String] = []
         if let dueDate = parse.dueDate { parts.append(t("quickAdd.due", ["date": dueDate])) }
-        if let priority = parse.priority { parts.append(t("quickAdd.priority", ["priority": t("priority.\(priority.rawValue)")])) }
+        if let priority = parse.priority {
+            parts.append(t("quickAdd.priority", ["priority": t("priority.\(priority.rawValue)")]))
+        }
         parts += parse.tags.map { "#\($0)" }
         return parts.joined(separator: "  ·  ")
     }

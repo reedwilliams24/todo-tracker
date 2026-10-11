@@ -8,7 +8,9 @@ struct StatsPanelView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Button { open.toggle() } label: {
+            Button {
+                open.toggle()
+            } label: {
                 HStack {
                     Text(t("stats.title"))
                         .font(.system(size: 14, weight: .medium))
@@ -27,8 +29,12 @@ struct StatsPanelView: View {
             if open {
                 HStack(alignment: .top) {
                     value(t("stats.completed"), "\(stats.totalCompleted)", id: TestID.statsTotal)
-                    value(t("stats.currentStreak"), t("stats.days", ["count": stats.currentStreak]), id: TestID.statsCurrent)
-                    value(t("stats.longestStreak"), t("stats.days", ["count": stats.longestStreak]), id: TestID.statsLongest)
+                    value(
+                        t("stats.currentStreak"), t("stats.days", ["count": stats.currentStreak]),
+                        id: TestID.statsCurrent)
+                    value(
+                        t("stats.longestStreak"), t("stats.days", ["count": stats.longestStreak]),
+                        id: TestID.statsLongest)
                 }
                 chart
             }

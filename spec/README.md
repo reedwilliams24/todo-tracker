@@ -14,15 +14,15 @@ spec/
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `pnpm --filter @todo/spec test` | TypeScript fixture runner + schema validation |
-| `pnpm spec:record` | Re-records `fixtures/*.json` from `packages/spec/src/features/*.ts` and the current TS implementation |
-| `pnpm spec:generate` | Regenerates `apps/web/src/domain/test-ids.ts`, `scenarios/maestro/*.yaml` and the message catalogs from `i18n/en.json` (see `features/localization.md`) |
-| `pnpm spec:check` | Fails if fixtures or generated files are stale |
-| `pnpm spec:parity` | Prints the parity matrix from each fixture's and scenario's `status` |
-| `pnpm --filter web e2e` | Runs `scenarios/core/*.json` (and the older web-only specs) with Playwright |
-| `maestro test --include-tags spec -e APP_ID=… spec/scenarios/maestro` | Runs the scenarios on a device or emulator (see below) |
+| Command                                                               | What it does                                                                                                                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm --filter @todo/spec test`                                       | TypeScript fixture runner + schema validation                                                                                                           |
+| `pnpm spec:record`                                                    | Re-records `fixtures/*.json` from `packages/spec/src/features/*.ts` and the current TS implementation                                                   |
+| `pnpm spec:generate`                                                  | Regenerates `apps/web/src/domain/test-ids.ts`, `scenarios/maestro/*.yaml` and the message catalogs from `i18n/en.json` (see `features/localization.md`) |
+| `pnpm spec:check`                                                     | Fails if fixtures or generated files are stale                                                                                                          |
+| `pnpm spec:parity`                                                    | Prints the parity matrix from each fixture's and scenario's `status`                                                                                    |
+| `pnpm --filter web e2e`                                               | Runs `scenarios/core/*.json` (and the older web-only specs) with Playwright                                                                             |
+| `maestro test --include-tags spec -e APP_ID=… spec/scenarios/maestro` | Runs the scenarios on a device or emulator (see below)                                                                                                  |
 
 ## Fixtures
 

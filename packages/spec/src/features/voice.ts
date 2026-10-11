@@ -36,9 +36,12 @@ export const feature: Feature = {
       op: "extractDueDate",
       given: { text, now: "2026-01-05T09:00:00" },
     })),
-    ...["um I need to buy milk.", "  remind me to call the bank  ", "Please, uh, water the plants!", "add a todo to pay rent"].map(
-      (text) => ({ name: `cleanTitle: ${text.trim()}`, op: "cleanTitle", given: { text } }),
-    ),
+    ...[
+      "um I need to buy milk.",
+      "  remind me to call the bank  ",
+      "Please, uh, water the plants!",
+      "add a todo to pay rent",
+    ].map((text) => ({ name: `cleanTitle: ${text.trim()}`, op: "cleanTitle", given: { text } })),
     ...[
       "buy milk and call mom tomorrow, then high priority pay rent",
       "I need to email Bob. Also water plants on friday",
@@ -73,7 +76,11 @@ export const feature: Feature = {
         llm: [{ title: "Buy milk" }],
       },
     },
-    { name: "reconcileDrafts falls back to heuristic", op: "reconcileDrafts", given: { heuristic: [{ title: "buy milk" }], llm: [] } },
+    {
+      name: "reconcileDrafts falls back to heuristic",
+      op: "reconcileDrafts",
+      given: { heuristic: [{ title: "buy milk" }], llm: [] },
+    },
   ],
 };
 

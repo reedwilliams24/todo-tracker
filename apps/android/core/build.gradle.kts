@@ -17,5 +17,8 @@ sourceSets.test { resources.srcDir("../../../spec/fixtures") }
 tasks.test {
     useJUnitPlatform()
     inputs.dir("../../../spec/fixtures")
-    testLogging { events("failed"); exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
 }

@@ -5,7 +5,10 @@ const val UNDO_TIMEOUT_MS = 5000L
 /** A snapshot of the list before a destructive action, so it can be restored exactly. */
 data class UndoEntry(val label: String, val before: List<Todo>, val at: Long)
 
-enum class UndoKind { COMPLETE, DELETE }
+enum class UndoKind {
+    COMPLETE,
+    DELETE,
+}
 
 fun describeUndo(action: UndoKind, count: Int): String {
     val noun = if (count == 1) "todo" else "$count todos"

@@ -5,19 +5,19 @@ extension FixtureOps {
     static var undoOps: [String: Op] {
         [
             "describeUndo": { g in
-                    return describeUndo(try g.decode("action"), count: try g.decode("count"))
+                return describeUndo(try g.decode("action"), count: try g.decode("count"))
             },
             "isUndoExpired": { g in
-                    let entry = UndoEntry(label: "", before: [], at: Timestamp.milliseconds(try g.date("at")))
-                    let timeout = try g.decode("timeoutMs", as: Int64?.self) ?? undoTimeoutMs
-                    return isUndoExpired(entry, now: Timestamp.milliseconds(try g.date("now")), timeoutMs: timeout)
+                let entry = UndoEntry(label: "", before: [], at: Timestamp.milliseconds(try g.date("at")))
+                let timeout = try g.decode("timeoutMs", as: Int64?.self) ?? undoTimeoutMs
+                return isUndoExpired(entry, now: Timestamp.milliseconds(try g.date("now")), timeoutMs: timeout)
             },
             "applyActions": { g in
-                    var state = TodoState(todos: try g.decode("todos"))
-                    for step in try g.decode("steps", as: [Step].self) {
-                        state = try step.apply(to: state)
-                    }
-                    return ApplyActionsResult(todos: state.todos, undoLabel: state.undoable?.label)
+                var state = TodoState(todos: try g.decode("todos"))
+                for step in try g.decode("steps", as: [Step].self) {
+                    state = try step.apply(to: state)
+                }
+                return ApplyActionsResult(todos: state.todos, undoLabel: state.undoable?.label)
             },
         ]
     }
@@ -58,7 +58,8 @@ extension FixtureOps {
             case "rename": action = .rename(id: try require(id), title: try require(title))
             case "remove": action = .remove(ids: try require(ids))
             case "reorder":
-                action = .reorder(visibleIds: try require(visibleIds), id: try require(id), targetId: try require(targetId))
+                action = .reorder(
+                    visibleIds: try require(visibleIds), id: try require(id), targetId: try require(targetId))
             case "clearCompleted": action = .clearCompleted
             case "undo": action = .undo
             case "expireUndo": action = .expireUndo

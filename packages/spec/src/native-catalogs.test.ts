@@ -4,7 +4,9 @@ import { androidXml, form, toNative, xcstrings, type Catalog } from "./native-ca
 
 /** Minimal printf: what Android `getString` / iOS `String(format:)` do with these patterns. */
 function printf(pattern: string, args: unknown[]): string {
-  return pattern.replace(/%%|%(\d+)\$[sd]/g, (match, index?: string) => (match === "%%" ? "%" : String(args[Number(index) - 1])));
+  return pattern.replace(/%%|%(\d+)\$[sd]/g, (match, index?: string) =>
+    match === "%%" ? "%" : String(args[Number(index) - 1]),
+  );
 }
 
 const catalog = Object.entries(en) as Catalog;
@@ -15,7 +17,12 @@ describe("native catalogs", () => {
     for (const count of [0, 1, 2, 5]) {
       const params = Object.fromEntries(message.args.map((a) => [a, a === message.plural ? count : `<${a}>`]));
       const native = form(message, message.plural && count === 1 ? "one" : "other");
-      const rendered = message.args.length ? printf(native, message.args.map((a) => params[a])) : native;
+      const rendered = message.args.length
+        ? printf(
+            native,
+            message.args.map((a) => params[a]),
+          )
+        : native;
       expect(rendered).toBe(formatMessage("en", pattern, params));
     }
   });
@@ -51,6 +58,11 @@ describe("native catalogs", () => {
   it("rejects ICU the native formats can't express", () => {
     expect(() => toNative("k", "{count, plural, =0 {none} other {#}}")).toThrow(/=0/);
     expect(() => toNative("k", "{a, plural, one {x} other {y}} {b, plural, one {x} other {y}}")).toThrow(/one plural/);
-    expect(() => androidXml([["a.b", "x"], ["a_b", "y"]])).toThrow(/same resource/);
+    expect(() =>
+      androidXml([
+        ["a.b", "x"],
+        ["a_b", "y"],
+      ]),
+    ).toThrow(/same resource/);
   });
 });

@@ -13,7 +13,7 @@ extension String {
     var jsTrimmed: String {
         let scalars = unicodeScalars
         guard let start = scalars.firstIndex(where: { !isJSWhitespace($0) }),
-              let end = scalars.lastIndex(where: { !isJSWhitespace($0) })
+            let end = scalars.lastIndex(where: { !isJSWhitespace($0) })
         else { return "" }
         return String(scalars[start...end])
     }

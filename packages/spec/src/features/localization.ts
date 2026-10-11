@@ -39,8 +39,16 @@ export const feature: Feature = {
         ["missing count is 0", "{count, plural, one {# todo} other {# todos}}", {}],
         ["string count", "{count, plural, one {# todo} other {# todos}}", { count: "1" }],
         ["missing branch falls back to other", "{count, plural, =5 {five} other {#}}", { count: 1 }],
-        ["parameters inside a branch", "Added {count, plural, one {{first}} other {# todos}}", { count: 1, first: "Buy milk" }],
-        ["two plurals", "{a, plural, one {# cat} other {# cats}} and {b, plural, one {# dog} other {# dogs}}", { a: 1, b: 3 }],
+        [
+          "parameters inside a branch",
+          "Added {count, plural, one {{first}} other {# todos}}",
+          { count: 1, first: "Buy milk" },
+        ],
+        [
+          "two plurals",
+          "{a, plural, one {# cat} other {# cats}} and {b, plural, one {# dog} other {# dogs}}",
+          { a: 1, b: 3 },
+        ],
       ] as const
     ).map(([label, message, params]) => ({
       name: `formatMessage: ${label}`,
@@ -68,7 +76,11 @@ export const feature: Feature = {
       op: "translate",
       given: { locale: "fr", key: "list.remaining", params: { count: 1 } },
     },
-    { name: "translate: unknown key renders as the key", op: "translate", given: { locale: "en", key: "nope.missing", params: {} } },
+    {
+      name: "translate: unknown key renders as the key",
+      op: "translate",
+      given: { locale: "en", key: "nope.missing", params: {} },
+    },
   ],
 };
 

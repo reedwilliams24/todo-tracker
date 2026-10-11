@@ -70,11 +70,7 @@ function coerceExisting(value: unknown): ExistingTodo[] {
   return todos;
 }
 
-async function parseWithOllama(
-  transcript: string,
-  today: string,
-  existing: ExistingTodo[],
-): Promise<TodoDraft[]> {
+async function parseWithOllama(transcript: string, today: string, existing: ExistingTodo[]): Promise<TodoDraft[]> {
   const response = await fetch(`${OLLAMA_URL}/api/generate`, {
     method: "POST",
     headers: { "content-type": "application/json" },

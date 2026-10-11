@@ -5,20 +5,20 @@ import TodoCore
 extension FixtureOps {
     static var statsOps: [String: Op] {
         [
-            "statsConstants": { g in
-                    return StatsConstants()
+            "statsConstants": { _ in
+                return StatsConstants()
             },
             "computeStats": { g in
-                    let zone: String? = try g.decode("timeZone")
-                    guard let timeZone = zone.map({ TimeZone(identifier: $0) }) ?? .current else {
+                let zone: String? = try g.decode("timeZone")
+                guard let timeZone = zone.map({ TimeZone(identifier: $0) }) ?? .current else {
                     throw BadGiven(description: "given.timeZone is not a time zone: \(zone ?? "")")
-                    }
-                    return computeStats(
+                }
+                return computeStats(
                     try g.decode("todos"),
                     now: try g.date("now"),
                     days: try g.decode("days", as: Int?.self) ?? statsDays,
                     timeZone: timeZone
-                    )
+                )
             },
         ]
     }

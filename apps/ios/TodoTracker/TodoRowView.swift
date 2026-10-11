@@ -76,8 +76,10 @@ struct TodoRowView: View {
     private var row: some View {
         HStack(spacing: 10) {
             let toggleLabel = t(todo.completed ? "item.markActive" : "item.markComplete", ["title": todo.title])
-            Toggle(toggleLabel,
-                   isOn: Binding(get: { todo.completed }, set: { _ in onToggle() }))
+            Toggle(
+                toggleLabel,
+                isOn: Binding(get: { todo.completed }, set: { _ in onToggle() })
+            )
             .toggleStyle(CheckboxToggleStyle())
             .accessibilityLabel(toggleLabel)
             .accessibilityIdentifier(TestID.itemToggle(todo.title))
@@ -196,7 +198,9 @@ struct TodoRowView: View {
 /// The RN app's square checkbox; keeps Toggle semantics (value 0/1) for accessibility.
 private struct CheckboxToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
-        Button { configuration.isOn.toggle() } label: {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
             RoundedRectangle(cornerRadius: Theme.Radius.sm)
                 .strokeBorder(Theme.foreground, lineWidth: 1.5)
                 .background(
@@ -217,6 +221,6 @@ private struct CheckboxToggleStyle: ToggleStyle {
     }
 }
 
-private extension String {
-    var jsTrimmedTitle: String { trimmingCharacters(in: .whitespacesAndNewlines) }
+extension String {
+    fileprivate var jsTrimmedTitle: String { trimmingCharacters(in: .whitespacesAndNewlines) }
 }

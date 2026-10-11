@@ -203,7 +203,9 @@ export function xcstrings(catalog: Catalog): string {
     } else {
       const index = message.args.indexOf(message.plural) + 1;
       en = {
-        ...unit(`${iosText(message.prefix, message, false)}%${index}$#@${message.plural}@${iosText(message.suffix, message, false)}`),
+        ...unit(
+          `${iosText(message.prefix, message, false)}%${index}$#@${message.plural}@${iosText(message.suffix, message, false)}`,
+        ),
         substitutions: {
           [message.plural]: {
             argNum: index,

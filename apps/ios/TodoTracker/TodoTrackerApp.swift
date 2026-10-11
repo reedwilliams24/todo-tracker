@@ -11,7 +11,8 @@ struct TodoTrackerApp: App {
         let container = SwiftDataTodoStore.makeContainer(inMemory: inMemory)
         self.container = container
         let defaults = inMemory ? Self.uiTestingDefaults() : .standard
-        _model = State(initialValue: TodoViewModel(store: SwiftDataTodoStore(context: container.mainContext), defaults: defaults))
+        _model = State(
+            initialValue: TodoViewModel(store: SwiftDataTodoStore(context: container.mainContext), defaults: defaults))
     }
 
     /// UI tests start from a clean sort preference, like the in-memory store.

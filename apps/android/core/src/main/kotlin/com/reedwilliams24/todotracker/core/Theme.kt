@@ -21,11 +21,12 @@ val DEFAULT_THEME = ThemePreference.SYSTEM
 fun parseThemePreference(raw: String?): ThemePreference =
     ThemePreference.entries.firstOrNull { it.key == raw } ?: DEFAULT_THEME
 
-fun resolveTheme(preference: ThemePreference, systemDark: Boolean): ResolvedTheme = when (preference) {
-    ThemePreference.LIGHT -> ResolvedTheme.LIGHT
-    ThemePreference.DARK -> ResolvedTheme.DARK
-    ThemePreference.SYSTEM -> if (systemDark) ResolvedTheme.DARK else ResolvedTheme.LIGHT
-}
+fun resolveTheme(preference: ThemePreference, systemDark: Boolean): ResolvedTheme =
+    when (preference) {
+        ThemePreference.LIGHT -> ResolvedTheme.LIGHT
+        ThemePreference.DARK -> ResolvedTheme.DARK
+        ThemePreference.SYSTEM -> if (systemDark) ResolvedTheme.DARK else ResolvedTheme.LIGHT
+    }
 
 /** light -> dark -> system -> light */
 fun nextThemePreference(preference: ThemePreference): ThemePreference =
