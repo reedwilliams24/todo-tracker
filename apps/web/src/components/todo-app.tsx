@@ -11,6 +11,7 @@ import {
   TEST_IDS,
   type TodoFilter,
   type TodoSort,
+  type TodoStorage,
 } from "@/domain";
 import { useT } from "@/hooks/use-t";
 import { useTodos } from "@/hooks/use-todos";
@@ -24,7 +25,7 @@ import { StatsPanel } from "@/components/stats-panel";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
-export function TodoApp() {
+export function TodoApp({ storage }: { storage?: TodoStorage }) {
   const {
     todos,
     hydrated,
@@ -42,7 +43,7 @@ export function TodoApp() {
     addSubtask,
     toggleSubtask,
     removeSubtask,
-  } = useTodos();
+  } = useTodos(storage);
   const t = useT();
   const [sort, setSort] = useSort(localSortStorage);
   const [filter, setFilter] = useState<TodoFilter>("all");

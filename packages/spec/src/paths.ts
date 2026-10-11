@@ -19,6 +19,9 @@ export type ScenarioStatus = { web: string; ios: string; android: string };
 export type Scenario = {
   name: string;
   status: ScenarioStatus;
+  /** "supabase": runs only against a configured build + local `supabase start` (no Maestro flow). */
+  requires?: "supabase";
+  note?: string;
   steps: (Record<string, unknown> & { do?: string; expect?: string })[];
 };
 

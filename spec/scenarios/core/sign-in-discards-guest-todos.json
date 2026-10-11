@@ -1,0 +1,43 @@
+{
+  "name": "sign-in-discards-guest-todos",
+  "requires": "supabase",
+  "status": {
+    "web": "pass",
+    "ios": "missing",
+    "android": "missing"
+  },
+  "note": "Needs a configured build + local `supabase start`; native follow-up: FOLLOWUP",
+  "steps": [
+    {
+      "do": "add",
+      "title": "Buy milk"
+    },
+    {
+      "do": "signIn",
+      "email": "reed@example.com"
+    },
+    {
+      "expect": "movePrompt",
+      "text": "Move your 1 guest todo to your account?"
+    },
+    {
+      "do": "chooseGuestTodos",
+      "choice": "discard"
+    },
+    {
+      "expect": "titles",
+      "titles": []
+    },
+    {
+      "do": "signOut"
+    },
+    {
+      "expect": "guestBanner",
+      "value": true
+    },
+    {
+      "expect": "titles",
+      "titles": []
+    }
+  ]
+}

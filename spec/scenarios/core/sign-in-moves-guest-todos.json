@@ -1,0 +1,51 @@
+{
+  "name": "sign-in-moves-guest-todos",
+  "requires": "supabase",
+  "status": {
+    "web": "pass",
+    "ios": "missing",
+    "android": "missing"
+  },
+  "note": "Needs a configured build + local `supabase start`; native follow-up: FOLLOWUP",
+  "steps": [
+    {
+      "do": "add",
+      "title": "Buy milk"
+    },
+    {
+      "do": "add",
+      "title": "Walk dog"
+    },
+    {
+      "do": "signIn",
+      "email": "reed@example.com"
+    },
+    {
+      "expect": "movePrompt",
+      "text": "Move your 2 guest todos to your account?"
+    },
+    {
+      "do": "chooseGuestTodos",
+      "choice": "move"
+    },
+    {
+      "expect": "movePrompt",
+      "text": null
+    },
+    {
+      "expect": "account",
+      "email": "reed@example.com"
+    },
+    {
+      "expect": "titles",
+      "titles": ["Buy milk", "Walk dog"]
+    },
+    {
+      "do": "signOut"
+    },
+    {
+      "expect": "titles",
+      "titles": []
+    }
+  ]
+}

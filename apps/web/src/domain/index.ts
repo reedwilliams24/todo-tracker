@@ -14,3 +14,4 @@ export * from "./stats";
 export * from "./theme";
 export * from "./subtasks";
 export * from "./sync";
+export * from "./auth";

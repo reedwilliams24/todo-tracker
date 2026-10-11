@@ -30,4 +30,8 @@ let messageArgs: [String: MessageArgs] = [
     "item.reminder": MessageArgs(["label"]),
     "item.recurrence": MessageArgs(["label"]),
     "voice.added": MessageArgs(["count", "first"], plural: "count"),
+    "auth.codeSent": MessageArgs(["email"]),
+    "auth.resendIn": MessageArgs(["seconds"]),
+    "auth.move.prompt": MessageArgs(["count"], plural: "count"),
+    "auth.account.signedInAs": MessageArgs(["email"]),
 ]
