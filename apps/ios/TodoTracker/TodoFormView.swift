@@ -3,6 +3,7 @@ import TodoCore
 
 struct TodoFormView: View {
     let onAdd: (TodoDraft) -> Void
+    var onPickReminder: () -> Void = {}
 
     @State private var form = TodoFormState.empty
 
@@ -43,6 +44,7 @@ struct TodoFormView: View {
                 .accessibilityLabel(t("form.dueDate.label"))
                 .accessibilityIdentifier(TestID.formDueDate)
             }
+            reminderPicker
             recurrencePicker
                 .frame(maxWidth: .infinity, alignment: .leading)
             let preview = parsed
@@ -93,6 +95,40 @@ struct TodoFormView: View {
         .accessibilityIdentifier(TestID.formPriority)
     }
 
+    /// "No reminder" plus the spec offsets; disabled until a due date is entered.
+    private var reminderPicker: some View {
+        let enabled = !form.dueDate.isEmpty
+        let keys = [""] + reminderOffsets.map(\.rawValue)
+        return HStack(spacing: 0) {
+            ForEach(keys, id: \.self) { key in
+                let selected = key == form.reminder
+                Button {
+                    form.reminder = key
+                    if !key.isEmpty { onPickReminder() }
+                } label: {
+                    Text(t(key.isEmpty ? "reminder.none" : "reminder.\(key)"))
+                        .font(.system(size: 12))
+                        .lineLimit(1)
+                        .foregroundStyle(selected ? Theme.card : Theme.foreground)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 6)
+                        .frame(maxWidth: .infinity)
+                        .background(selected ? Theme.foreground : .clear)
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier(TestID.formReminderOption(key))
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(t("form.reminder.label"))
+        .accessibilityIdentifier(TestID.formReminder)
+    }
+
     private var recurrencePicker: some View {
         HStack(spacing: 0) {
             ForEach([nil] + Recurrence.allCases.map(Optional.some), id: \.self) { (option: Recurrence?) in
@@ -122,6 +158,7 @@ struct TodoFormView: View {
     private func submit() {
         guard canAdd else { return }
         var draft = quickAddToDraft(parsed, fallbackPriority: form.priority, fallbackDueDate: form.dueDate)
+        draft.reminder = draft.dueDate == nil ? nil : ReminderOffset(rawValue: form.reminder)
         draft.recurrence = Recurrence(rawValue: form.recurrence)
         onAdd(draft)
         form = .empty

@@ -85,6 +85,13 @@
     <string name="recurrence_daily">Daily</string>
     <string name="recurrence_weekly">Weekly</string>
     <string name="recurrence_monthly">Monthly</string>
+    <string name="form_reminder_label">Reminder</string>
+    <string name="reminder_none">No reminder</string>
+    <string name="reminder_at">When due</string>
+    <string name="reminder_1h">1 hour before</string>
+    <string name="reminder_1d">1 day before</string>
+    <string name="reminder_blocked">Notifications are blocked in this browser.</string>
+    <string name="item_reminder">Reminder %1$s</string>
     <string name="item_recurrence">↻ %1$s</string>
     <string name="item_repeats_daily">Repeats daily</string>
     <string name="item_repeats_weekly">Repeats weekly</string>

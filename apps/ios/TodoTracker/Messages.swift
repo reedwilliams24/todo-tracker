@@ -21,6 +21,7 @@ let messageArgs: [String: MessageArgs] = [
     "stats.days": MessageArgs(["count"]),
     "stats.chart": MessageArgs(["days"]),
     "stats.day": MessageArgs(["date", "count"]),
+    "item.reminder": MessageArgs(["label"]),
     "item.recurrence": MessageArgs(["label"]),
     "voice.added": MessageArgs(["count", "first"], plural: "count"),
 ]

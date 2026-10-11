@@ -157,6 +157,16 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection, drag }
           {todo.dueDate}
         </span>
       )}
+      {todo.reminder && (
+        <span
+          data-testid={TEST_IDS.itemReminder(todo.title)}
+          className="text-xs opacity-60"
+          aria-label={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
+          title={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
+        >
+          {t(`reminder.${todo.reminder}`)}
+        </span>
+      )}
 
       {todo.recurrence && (
         <span

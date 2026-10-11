@@ -53,10 +53,21 @@ internal typealias Op = (JsonObject) -> JsonElement
  * added in parallel don't conflict.
  */
 private val OPS: Map<String, Op> = buildMap {
-    listOf(listOps, quickAddOps, recurrenceOps, statsOps, storageOps, themeOps, todoOps, undoOps, voiceOps).forEach {
-        module ->
-        module.forEach { (op, impl) -> check(put(op, impl) == null) { "op \"$op\" is defined twice" } }
-    }
+    listOf(
+            listOps,
+            quickAddOps,
+            recurrenceOps,
+            remindersOps,
+            statsOps,
+            storageOps,
+            themeOps,
+            todoOps,
+            undoOps,
+            voiceOps,
+        )
+        .forEach { module ->
+            module.forEach { (op, impl) -> check(put(op, impl) == null) { "op \"$op\" is defined twice" } }
+        }
 }
 
 /** Runs the Kotlin implementation of an op named in spec/fixtures. Unknown ops fail. */

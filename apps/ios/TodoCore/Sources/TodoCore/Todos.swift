@@ -2,19 +2,23 @@ import Foundation
 
 public let defaultPriority: TodoPriority = .medium
 
-/// Controlled-input state for the add-todo form; `dueDate` and `recurrence` are "" when unset.
+/// Controlled-input state for the add-todo form; `dueDate`, `reminder` and `recurrence` are "" when unset.
 public struct TodoFormState: Codable, Equatable, Sendable {
     public var title: String
     public var priority: TodoPriority
     public var dueDate: String
+    /// A `ReminderOffset` raw value, or "".
+    public var reminder: String
     public var recurrence: String
 
     public init(
-        title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "", recurrence: String = ""
+        title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "", reminder: String = "",
+        recurrence: String = ""
     ) {
         self.title = title
         self.priority = priority
         self.dueDate = dueDate
+        self.reminder = reminder
         self.recurrence = recurrence
     }
 
@@ -23,6 +27,7 @@ public struct TodoFormState: Codable, Equatable, Sendable {
         title = try c.decode(String.self, forKey: .title)
         priority = try c.decode(TodoPriority.self, forKey: .priority)
         dueDate = try c.decode(String.self, forKey: .dueDate)
+        reminder = try c.decodeIfPresent(String.self, forKey: .reminder) ?? ""
         recurrence = try c.decodeIfPresent(String.self, forKey: .recurrence) ?? ""
     }
 
@@ -34,6 +39,7 @@ public func toTodoDraft(_ form: TodoFormState) -> TodoDraft {
         title: form.title,
         priority: form.priority,
         dueDate: form.dueDate.isEmpty ? nil : form.dueDate,
+        reminder: form.dueDate.isEmpty ? nil : ReminderOffset(rawValue: form.reminder),
         recurrence: Recurrence(rawValue: form.recurrence)
     )
 }
@@ -78,6 +84,7 @@ public func createTodo(_ draft: TodoDraft, now: Date = Date()) -> Todo {
         completed: false,
         priority: draft.priority ?? defaultPriority,
         dueDate: draft.dueDate,
+        reminder: draft.dueDate?.isEmpty == false ? draft.reminder : nil,
         recurrence: draft.recurrence,
         createdAt: timestamp,
         updatedAt: timestamp

@@ -147,6 +147,15 @@ struct TodoRowView: View {
                                 .fixedSize()
                                 .accessibilityIdentifier(TestID.itemRecurrence(todo.title))
                         }
+                        if let reminder = todo.reminder {
+                            Text(t("reminder.\(reminder.rawValue)"))
+                                .font(.system(size: 12))
+                                .foregroundStyle(Theme.muted)
+                                .lineLimit(1)
+                                .fixedSize()
+                                .accessibilityHint(t("form.reminder.label"))
+                                .accessibilityIdentifier(TestID.itemReminder(todo.title))
+                        }
                     }
                 }
             }

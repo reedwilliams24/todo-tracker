@@ -8,6 +8,11 @@ export const feature: Feature = {
   status: { web: "pass", ios: "pass", android: "pass" },
   cases: [
     { name: "parse valid list", op: "parseStoredTodos", given: { raw: JSON.stringify(sample) } },
+    {
+      name: "parse keeps reminder",
+      op: "parseStoredTodos",
+      given: { raw: JSON.stringify([todo("r", { dueDate: "2026-02-01", reminder: "1h" })]) },
+    },
     { name: "parse null", op: "parseStoredTodos", given: { raw: null } },
     { name: "parse empty string", op: "parseStoredTodos", given: { raw: "" } },
     { name: "parse corrupt JSON", op: "parseStoredTodos", given: { raw: "[{oops" } },

@@ -29,6 +29,7 @@ enum FixtureOps {
             listOps,
             quickAddOps,
             recurrenceOps,
+            remindersOps,
             statsOps,
             storageOps,
             themeOps,

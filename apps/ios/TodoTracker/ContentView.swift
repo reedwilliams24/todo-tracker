@@ -23,7 +23,7 @@ struct ContentView: View {
                     Spacer(minLength: 0)
                     themePicker
                 }
-                TodoFormView(onAdd: model.add)
+                TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
                 toolbar
                 sortControl
                 if model.selecting { bulkBar }

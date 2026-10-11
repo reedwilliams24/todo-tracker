@@ -54,6 +54,7 @@ function maestroStep(step: Step): string[] {
         `- inputText: ${q(s.title!)}`,
         ...(s.priority ? tap(id("formPriorityOption", s.priority)) : []),
         ...(s.recurrence ? tap(id("formRecurrenceOption", s.recurrence)) : []),
+        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
         ...(s.dueDate ? [...tap(id("formDueDate")), `- inputText: ${q(s.dueDate)}`] : []),
         "- hideKeyboard",
         ...tap(id("formSubmit")),
@@ -119,6 +120,8 @@ function maestroStep(step: Step): string[] {
       return visible(id("itemRecurrence", s.title!), [`    text: ${q(s.text)}`]);
     case "remaining":
       return visible(id("remaining"), [`    text: ${q(s.text)}`]);
+    case "reminder":
+      return visible(id("itemReminder", s.title!), [`    text: ${q(s.text)}`]);
     case "selected":
       return visible(id("selectedCount"), [`    text: ${q(s.text)}`]);
     case "stats":

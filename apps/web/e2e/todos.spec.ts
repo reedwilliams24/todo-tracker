@@ -199,6 +199,24 @@ test("copy comes from the shared catalog with pluralised remaining count", async
   await expect(page.getByText("2 tasks remaining")).toBeVisible();
 });
 
+test("reminder option is tied to a due date and shown on the todo", async ({ page }) => {
+  const reminder = page.getByLabel("Reminder");
+  await expect(reminder).toBeDisabled();
+
+  await page.getByLabel("Todo title").fill("Pay rent");
+  await page.getByLabel("Due date").fill("2030-01-01");
+  await expect(reminder).toBeEnabled();
+  await reminder.selectOption("1d");
+  await page.getByRole("button", { name: "Add" }).click();
+
+  const item = page.getByRole("listitem").first();
+  await expect(item).toContainText("2030-01-01");
+  await expect(item.getByLabel("Reminder 1 day before")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("listitem").first().getByLabel("Reminder 1 day before")).toBeVisible();
+});
+
 test("completing a recurring todo schedules the next occurrence", async ({ page }) => {
   await page.getByLabel("Todo title").fill("Water plants");
   await page.getByLabel("Due date").fill("2026-01-31");
@@ -343,7 +361,7 @@ test("theme preference toggles dark class and persists", async ({ page }) => {
 
 test("keyboard shortcuts focus and clear search", async ({ page }) => {
   await addTodo(page, "Alpha");
-  await page.locator("body").click();
+  await page.getByRole("heading", { name: "Todo Tracker" }).click();
   await page.keyboard.press("/");
   const search = page.getByRole("searchbox", { name: "Search todos" });
   await expect(search).toBeFocused();

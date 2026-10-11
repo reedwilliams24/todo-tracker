@@ -1,5 +1,10 @@
 package com.reedwilliams24.todotracker.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,6 +59,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -78,7 +84,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reedwilliams24.todotracker.TodoViewModel
 import com.reedwilliams24.todotracker.core.EMPTY_TODO_FORM
 import com.reedwilliams24.todotracker.core.RECURRENCES
+import com.reedwilliams24.todotracker.core.REMINDER_OFFSETS
 import com.reedwilliams24.todotracker.core.Recurrence
+import com.reedwilliams24.todotracker.core.ReminderOffset
 import com.reedwilliams24.todotracker.core.STATS_DAYS
 import com.reedwilliams24.todotracker.core.THEME_PREFERENCES
 import com.reedwilliams24.todotracker.core.TestIds
@@ -175,7 +183,24 @@ fun TodoApp(viewModel: TodoViewModel) {
                 ThemeToggle(theme, t, onSelect = viewModel::setTheme)
             }
 
-            TodoForm(t, onAdd = viewModel::add)
+            val context = LocalContext.current
+            val notificationPermission =
+                rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+                    viewModel.syncReminders()
+                }
+            TodoForm(
+                t,
+                onAdd = viewModel::add,
+                onPickReminder = {
+                    if (
+                        Build.VERSION.SDK_INT >= 33 &&
+                            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+                                PackageManager.PERMISSION_GRANTED
+                    ) {
+                        notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                },
+            )
 
             Row(
                 Modifier.fillMaxWidth(),
@@ -698,10 +723,11 @@ private fun Field(
 }
 
 @Composable
-private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit) {
+private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
+    var reminder by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.reminder) }
     var recurrence by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.recurrence) }
     val parsed = remember(title) { parseQuickAdd(title) }
     val dateOk = isValidDueDate(dueDate)
@@ -709,10 +735,12 @@ private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit) {
 
     fun submit() {
         if (!canAdd) return
-        onAdd(quickAddToDraft(parsed, priority, dueDate).copy(recurrence = Recurrence.fromKey(recurrence)))
+        val draft = quickAddToDraft(parsed, priority, dueDate).copy(recurrence = Recurrence.fromKey(recurrence))
+        onAdd(draft.copy(reminder = if (draft.dueDate == null) null else ReminderOffset.fromKey(reminder)))
         title = EMPTY_TODO_FORM.title
         priority = EMPTY_TODO_FORM.priority
         dueDate = EMPTY_TODO_FORM.dueDate
+        reminder = EMPTY_TODO_FORM.reminder
         recurrence = EMPTY_TODO_FORM.recurrence
     }
 
@@ -771,6 +799,37 @@ private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit) {
                         .testTag(TestIds.formDueDate)
                         .padding(horizontal = Spacing.s2, vertical = Spacing.s1_5),
             )
+        }
+        val reminderEnabled = dueDate.isNotEmpty()
+        Row(
+            Modifier.fillMaxWidth()
+                .alpha(if (reminderEnabled) 1f else 0.4f)
+                .clip(RoundedCornerShape(Radius.md))
+                .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
+                .selectableGroup()
+                .semantics { contentDescription = t("form.reminder.label") }
+                .testTag(TestIds.formReminder)
+        ) {
+            (listOf("" to t("reminder.none")) + REMINDER_OFFSETS.map { it.key to t("reminder.${it.key}") }).forEach {
+                (key, label) ->
+                val selected = key == reminder
+                Text(
+                    label,
+                    fontSize = FontSize.xs,
+                    color = if (selected) Palette.card else Palette.foreground,
+                    maxLines = 1,
+                    textAlign = TextAlign.Center,
+                    modifier =
+                        Modifier.weight(1f)
+                            .background(if (selected) Palette.foreground else Palette.card)
+                            .selectable(selected = selected, enabled = reminderEnabled, role = Role.RadioButton) {
+                                reminder = key
+                                if (key.isNotEmpty()) onPickReminder()
+                            }
+                            .testTag(TestIds.formReminderOption(key))
+                            .padding(horizontal = Spacing.s1, vertical = Spacing.s1_5),
+                )
+            }
         }
         Row(
             Modifier.clip(RoundedCornerShape(Radius.md))
@@ -961,6 +1020,20 @@ private fun TodoItem(
                     modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)),
                 )
             }
+        }
+
+        todo.reminder?.let {
+            Text(
+                t("reminder.${it.key}"),
+                fontSize = FontSize.xs,
+                color = Palette.muted,
+                maxLines = 1,
+                modifier =
+                    Modifier.semantics {
+                            contentDescription = t("item.reminder", "label" to t("reminder.${it.key}").lowercase())
+                        }
+                        .testTag(TestIds.itemReminder(todo.title)),
+            )
         }
 
         todo.recurrence?.let {

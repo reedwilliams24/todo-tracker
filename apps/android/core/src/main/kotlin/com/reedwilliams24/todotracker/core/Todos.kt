@@ -26,6 +26,7 @@ fun toTodoDraft(form: TodoFormState): TodoDraft =
         title = form.title,
         priority = form.priority,
         dueDate = form.dueDate.ifEmpty { null },
+        reminder = if (form.dueDate.isEmpty()) null else ReminderOffset.fromKey(form.reminder),
         recurrence = Recurrence.fromKey(form.recurrence),
     )
 
@@ -57,6 +58,7 @@ fun createTodo(draft: TodoDraft, now: Instant = Instant.now()): Todo {
         completed = false,
         priority = draft.priority ?: DEFAULT_PRIORITY,
         dueDate = draft.dueDate,
+        reminder = if (draft.dueDate.isNullOrEmpty()) null else draft.reminder,
         recurrence = draft.recurrence,
         createdAt = stamp,
         updatedAt = stamp,

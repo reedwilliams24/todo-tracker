@@ -42,6 +42,7 @@ async function run(page: Page, step: Step) {
       if (s.priority) await page.getByTestId(id("formPriority")).selectOption(s.priority);
       if (s.dueDate) await page.getByTestId(id("formDueDate")).fill(s.dueDate);
       if (s.recurrence) await page.getByTestId(id("formRecurrence")).selectOption(s.recurrence);
+      if (s.reminder) await page.getByTestId(id("formReminder")).selectOption(s.reminder);
       await page.getByTestId(id("formSubmit")).click();
       await expect(page.getByTestId(id("item", s.title!))).toBeVisible();
       return;
@@ -112,6 +113,8 @@ async function run(page: Page, step: Step) {
       ).toBeVisible();
     case "remaining":
       return expect(page.getByTestId(id("remaining"))).toHaveText(s.text!);
+    case "reminder":
+      return expect(page.getByTestId(id("itemReminder", s.title!))).toHaveText(s.text!);
     case "selected":
       return expect(page.getByTestId(id("selectedCount"))).toHaveText(s.text!);
     case "stats":

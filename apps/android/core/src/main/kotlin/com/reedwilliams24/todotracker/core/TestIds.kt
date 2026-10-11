@@ -21,6 +21,10 @@ object TestIds {
 
     fun formRecurrenceOption(recurrence: String) = "todo-form-recurrence-$recurrence"
 
+    const val formReminder = "todo-form-reminder"
+
+    fun formReminderOption(reminder: String) = "todo-form-reminder-$reminder"
+
     const val formSubmit = "todo-form-submit"
     const val formTitle = "todo-form-title"
 
@@ -37,6 +41,8 @@ object TestIds {
     fun itemPriority(title: String) = "todo-priority-$title"
 
     fun itemRecurrence(title: String) = "todo-recurrence-$title"
+
+    fun itemReminder(title: String) = "todo-reminder-$title"
 
     fun itemSelect(title: String) = "todo-select-item-$title"
 

@@ -221,6 +221,17 @@
         }
       }
     },
+    "form.reminder.label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder"
+          }
+        }
+      }
+    },
     "form.title.label" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -382,6 +393,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "↻ %1$@"
+          }
+        }
+      }
+    },
+    "item.reminder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder %1$@"
           }
         }
       }
@@ -635,6 +657,61 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weekly"
+          }
+        }
+      }
+    },
+    "reminder.1d" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 day before"
+          }
+        }
+      }
+    },
+    "reminder.1h" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 hour before"
+          }
+        }
+      }
+    },
+    "reminder.at" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When due"
+          }
+        }
+      }
+    },
+    "reminder.blocked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications are blocked in this browser."
+          }
+        }
+      }
+    },
+    "reminder.none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reminder"
           }
         }
       }

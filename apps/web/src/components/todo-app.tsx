@@ -14,6 +14,7 @@ import {
 } from "@/domain";
 import { useT } from "@/hooks/use-t";
 import { useTodos } from "@/hooks/use-todos";
+import { useReminders } from "@/hooks/use-reminders";
 import { useSort } from "@/domain/react";
 import { localSortStorage } from "@/lib/storage";
 import { TodoForm } from "@/components/todo-form";
@@ -43,6 +44,7 @@ export function TodoApp() {
   const [sort, setSort] = useSort(localSortStorage);
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
+  const { permission, request } = useReminders(todos);
   const [selecting, setSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -115,6 +117,12 @@ export function TodoApp() {
   return (
     <section className="flex flex-col gap-4">
       <TodoForm onAdd={addTodo} />
+      {permission === "default" && (
+        <button type="button" onClick={request} className="self-start text-xs underline opacity-60 hover:opacity-100">
+          Enable due-date notifications
+        </button>
+      )}
+      {permission === "denied" && <p className="text-xs opacity-60">{t("reminder.blocked")}</p>}
       <VoiceCapture todos={todos} onAddMany={addMany} onUndo={removeMany} />
 
       <div className="relative">
