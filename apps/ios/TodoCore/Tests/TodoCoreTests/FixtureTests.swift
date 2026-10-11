@@ -52,7 +52,7 @@ final class FixtureTests: XCTestCase {
         XCTAssertFalse(file.cases.isEmpty)
         var passed = 0
         for fixture in file.cases {
-            activity(fixture.name) {
+            XCTContext.runActivity(named: fixture.name) { _ in
                 do {
                     let actual = try FixtureOps.run(op: fixture.op, given: fixture.given)
                     XCTAssertEqual(actual, fixture.then, "\(feature): \(fixture.name)\n  actual:   \(actual)\n  expected: \(fixture.then)")
@@ -64,13 +64,4 @@ final class FixtureTests: XCTestCase {
         }
         print("fixtures \(feature): \(passed)/\(file.cases.count) passed")
     }
-}
-
-/// Groups each fixture in the Xcode report; swift-corelibs-xctest (Linux) has no XCTContext.
-private func activity(_ name: String, _ body: () -> Void) {
-    #if canImport(Darwin)
-    XCTContext.runActivity(named: name) { _ in body() }
-    #else
-    body()
-    #endif
 }
