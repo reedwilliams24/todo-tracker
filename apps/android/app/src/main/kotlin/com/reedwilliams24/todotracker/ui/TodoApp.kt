@@ -50,7 +50,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -83,7 +82,6 @@ import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoFilter
 import com.reedwilliams24.todotracker.core.TodoPriority
 import com.reedwilliams24.todotracker.core.TodoSort
-import com.reedwilliams24.todotracker.core.Translator
 import com.reedwilliams24.todotracker.core.countCompleted
 import com.reedwilliams24.todotracker.core.countRemaining
 import com.reedwilliams24.todotracker.core.filterTodos
@@ -93,7 +91,6 @@ import com.reedwilliams24.todotracker.core.isValidDueDate
 import com.reedwilliams24.todotracker.core.isValidTitle
 import com.reedwilliams24.todotracker.core.parseQuickAdd
 import com.reedwilliams24.todotracker.core.quickAddToDraft
-import com.reedwilliams24.todotracker.core.resolveLocale
 import com.reedwilliams24.todotracker.core.sortTodos
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -311,11 +308,6 @@ fun TodoApp(viewModel: TodoViewModel) {
 }
 
 /** UI copy for the device's preferred locales (spec/features/localization.md). */
-@Composable
-private fun rememberTranslator(): Translator {
-    val locales = LocalConfiguration.current.locales
-    return remember(locales) { Translator(resolveLocale(List(locales.size()) { locales[it].toLanguageTag() })) }
-}
 
 @Composable
 private fun LinkText(label: String, tag: String, onClick: () -> Unit) {

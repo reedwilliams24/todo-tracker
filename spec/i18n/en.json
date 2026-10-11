@@ -1,5 +1,5 @@
 {
-  "$comment": "English message catalog: the source of truth for UI copy on every platform (see features/localization.md). `pnpm spec:generate` writes apps/web/src/domain/i18n/en.ts, apps/android/core/.../Messages.kt and apps/ios/TodoCore/Sources/TodoCore/Messages.swift.",
+  "$comment": "English message catalog: the source of truth for UI copy on every platform (see features/localization.md). `pnpm spec:generate` writes apps/web/src/domain/i18n/en.ts, Android res/values/messages.xml and iOS TodoTracker/Localizable.xcstrings.",
   "app.title": "Todo Tracker",
   "app.tagline.web": "Local-first tasks, stored in your browser.",
   "app.tagline.mobile": "A tiny local-first todo list.",

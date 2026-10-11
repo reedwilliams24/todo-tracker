@@ -8,6 +8,7 @@ import XCTest
 final class FixtureTests: XCTestCase {
     private struct FixtureFile: Decodable {
         let feature: String
+        let status: [String: String]?
         let cases: [FixtureCase]
     }
 
@@ -50,6 +51,10 @@ final class FixtureTests: XCTestCase {
         let url = Self.fixturesDir.appendingPathComponent("\(feature).json")
         let file = try JSONDecoder().decode(FixtureFile.self, from: Data(contentsOf: url))
         XCTAssertEqual(file.feature, feature)
+        if file.status?["ios"] == "n/a" {
+            print("fixtures \(feature): n/a on iOS")
+            return
+        }
         XCTAssertFalse(file.cases.isEmpty)
         var passed = 0
         for fixture in file.cases {

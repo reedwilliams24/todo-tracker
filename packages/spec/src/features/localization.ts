@@ -4,7 +4,7 @@ import type { Feature, Ops } from "../types";
 export const feature: Feature = {
   feature: "localization",
   spec: "features/localization.md",
-  status: { web: "pass", ios: "pass", android: "pass" },
+  status: { web: "pass", ios: "n/a", android: "n/a" },
   cases: [
     { name: "messages: the English catalog", op: "messages", given: {} },
     ...(

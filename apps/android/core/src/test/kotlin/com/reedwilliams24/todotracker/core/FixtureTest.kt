@@ -32,8 +32,10 @@ class FixtureTest {
     fun fixtures(): List<DynamicContainer> {
         val files = fixtureDir.listFiles { f -> f.extension == "json" }!!.sortedBy { it.name }
         assertTrue(files.isNotEmpty(), "no fixture files found in $fixtureDir")
-        return files.map { file ->
-            val cases = Json.parseToJsonElement(file.readText()).jsonObject.getValue("cases").jsonArray
+        return files.mapNotNull { file ->
+            val fixture = Json.parseToJsonElement(file.readText()).jsonObject
+            if (fixture["status"]?.jsonObject?.get("android")?.jsonPrimitive?.content == "n/a") return@mapNotNull null
+            val cases = fixture.getValue("cases").jsonArray
             DynamicContainer.dynamicContainer(file.name, cases.map { raw ->
                 val case = raw.jsonObject
                 val name = case.getValue("name").jsonPrimitive.content
@@ -57,7 +59,6 @@ internal typealias Op = (JsonObject) -> JsonElement
 private val OPS: Map<String, Op> = buildMap {
     listOf(
         listOps,
-        localizationOps,
         quickAddOps,
         recurrenceOps,
         statsOps,
