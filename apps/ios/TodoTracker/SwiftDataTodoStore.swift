@@ -12,9 +12,12 @@ protocol TodoStore {
 @MainActor
 final class SwiftDataTodoStore: TodoStore {
     private let context: ModelContext
+    /// The widget reads the on-disk store, so in-memory stores (UI tests) don't reload it.
+    private let reloadsWidget: Bool
 
     init(context: ModelContext) {
         self.context = context
+        reloadsWidget = context.container.configurations.contains { !$0.isStoredInMemoryOnly }
     }
 
     static func makeContainer(inMemory: Bool) -> ModelContainer {
@@ -43,6 +46,6 @@ final class SwiftDataTodoStore: TodoStore {
         }
         existing.values.forEach(context.delete)
         try? context.save()
-        WidgetCenter.shared.reloadTimelines(ofKind: todayWidgetKind)
+        if reloadsWidget { WidgetCenter.shared.reloadTimelines(ofKind: todayWidgetKind) }
     }
 }
