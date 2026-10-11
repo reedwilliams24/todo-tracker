@@ -14,7 +14,8 @@
     "priority": { "$ref": "#/$defs/priority" },
     "dueDate": { "$ref": "#/$defs/date" },
     "createdAt": { "$ref": "#/$defs/timestamp" },
-    "updatedAt": { "$ref": "#/$defs/timestamp" }
+    "updatedAt": { "$ref": "#/$defs/timestamp" },
+    "completedAt": { "$ref": "#/$defs/timestamp", "description": "When the todo was last completed. Set by toggle on completion, removed on reopen. Older data may have completed todos without it." }
   },
   "$defs": {
     "priority": { "enum": ["low", "medium", "high"] },

@@ -64,6 +64,8 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("clearCompleted")).click();
     case "undo":
       return page.getByTestId(id("undoAction")).click();
+    case "openStats":
+      return page.getByTestId(id("statsToggle")).click();
     case "relaunch":
       return void (await page.reload());
     case "selectMode":
@@ -98,6 +100,10 @@ async function run(page: Page, step: Step) {
     case "overdue":
       if (s.value) return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeVisible();
       return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeHidden();
+    case "stats":
+      await expect(page.getByTestId(id("statsTotal"))).toHaveText(s.total!);
+      await expect(page.getByTestId(id("statsCurrent"))).toHaveText(s.current!);
+      return expect(page.getByTestId(id("statsLongest"))).toHaveText(s.longest!);
     case "undo":
       if (s.label === null) return expect(page.getByTestId(id("undoToast"))).toBeHidden();
       return expect(page.getByTestId(id("undoLabel"))).toHaveText(s.label!);

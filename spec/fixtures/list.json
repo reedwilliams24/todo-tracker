@@ -1520,7 +1520,8 @@
           "priority": "high",
           "createdAt": "2026-01-01T09:00:00.000Z",
           "updatedAt": "2026-01-05T10:00:00.000Z",
-          "notes": "2% organic"
+          "notes": "2% organic",
+          "completedAt": "2026-01-05T10:00:00.000Z"
         },
         {
           "id": "b",
