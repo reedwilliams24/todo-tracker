@@ -89,13 +89,17 @@ pnpm build
 
 ### Required CI checks
 
-`main` is protected: a PR can only be merged once the `lint`, `typecheck`,
-`test`, `spec`, `build`, `e2e`, `android` and `ios` jobs from `.github/workflows/ci.yml` have passed on
-the latest commit, and the branch is up to date with `main`. Pending or failing
-checks block the merge button.
+`main` is protected by a ruleset with a **merge queue**: a PR only needs the
+`lint`, `typecheck`, `test`, `spec`, `build`, `e2e`, `android` and `ios` jobs
+from `.github/workflows/ci.yml` passing on its own head to be queued. The queue
+then builds each PR on top of `main` plus the PRs ahead of it (the `merge_group`
+trigger in the workflow) and merges when those checks pass, so branches never
+have to be rebased just to get back to "up to date with `main`". A PR that has
+real conflicts with `main` still has to be resolved before it can enter the queue.
 
-The rule is applied with `scripts/protect-main.sh` (needs repo admin). Keep the
-job names in that script in sync with the workflow.
+The ruleset is configured in the GitHub UI (Settings → Rules → Rulesets, needs
+repo admin); `scripts/protect-main.sh` documents the settings. Keep the job
+names there in sync with the workflow.
 
 ## Pull requests
 
