@@ -20,6 +20,7 @@ final class StoredTodo {
     var dueDate: String?
     var createdAt: String
     var updatedAt: String
+    var completedAt: String?
 
     init(_ todo: Todo, position: Int) {
         id = todo.id
@@ -31,6 +32,7 @@ final class StoredTodo {
         dueDate = todo.dueDate
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
+        completedAt = todo.completedAt
     }
 
     func update(_ todo: Todo, position: Int) {
@@ -42,6 +44,7 @@ final class StoredTodo {
         dueDate = todo.dueDate
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
+        completedAt = todo.completedAt
     }
 
     var todo: Todo? {
@@ -54,7 +57,8 @@ final class StoredTodo {
             priority: priority,
             dueDate: dueDate,
             createdAt: createdAt,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            completedAt: completedAt
         )
     }
 }

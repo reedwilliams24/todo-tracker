@@ -285,3 +285,19 @@ test("shows clear-completed count and bulk completes/deletes a selection", async
   await expect(page.getByRole("listitem")).toHaveCount(0);
   await expect(toolbar).toBeHidden();
 });
+
+test("stats panel counts completions and a one-day streak", async ({ page }) => {
+  await page.getByLabel("Todo title").fill("Stretch");
+  await page.getByRole("button", { name: "Add" }).click();
+  await page.getByRole("checkbox", { name: 'Mark "Stretch" as complete' }).check();
+
+  await page.getByRole("button", { name: "Stats Show" }).click();
+  await expect(page.getByTestId(TEST_IDS.statsTotal)).toHaveText("1");
+  await expect(page.getByTestId(TEST_IDS.statsCurrent)).toHaveText("1d");
+  await expect(page.getByTestId(TEST_IDS.statsLongest)).toHaveText("1d");
+  await expect(page.getByLabel("Completed per day, last 30 days").getByRole("listitem")).toHaveCount(30);
+
+  await page.reload();
+  await page.getByRole("button", { name: "Stats Show" }).click();
+  await expect(page.getByTestId(TEST_IDS.statsTotal)).toHaveText("1");
+});

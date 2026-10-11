@@ -77,6 +77,8 @@ function maestroStep(step: Step): string[] {
       return tap(id("clearCompleted"));
     case "undo":
       return tap(id("undoAction"));
+    case "openStats":
+      return [`- scrollUntilVisible:`, `    element:`, `      id: ${q(id("statsToggle"))}`, ...tap(id("statsToggle"))];
     case "relaunch":
       return ["- runFlow: relaunch.yaml"];
     case "selectMode":
@@ -111,6 +113,12 @@ function maestroStep(step: Step): string[] {
       return step.value
         ? visible(id("itemOverdue", s.title!))
         : [`- assertNotVisible:`, `    id: ${q(id("itemOverdue", s.title!))}`];
+    case "stats":
+      return [
+        ...visible(id("statsTotal"), [`    text: ${q(s.total)}`]),
+        ...visible(id("statsCurrent"), [`    text: ${q(s.current)}`]),
+        ...visible(id("statsLongest"), [`    text: ${q(s.longest)}`]),
+      ];
     case "undo":
       return s.label === null
         ? [`- assertNotVisible:`, `    id: ${q(id("undoToast"))}`]

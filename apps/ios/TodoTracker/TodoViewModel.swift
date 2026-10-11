@@ -30,6 +30,7 @@ final class TodoViewModel {
     var allVisibleSelected: Bool { !visibleTodos.isEmpty && selected.count == visibleTodos.count }
     var remainingText: String { t("list.remaining", ["count": remaining]) }
     var undoLabel: String? { state.undoable?.label }
+    var stats: TodoStats { computeStats(state.todos, now: now()) }
     var emptyText: String {
         state.todos.isEmpty ? t("list.empty") : t("list.emptyFiltered", ["filter": filter.rawValue])
     }
