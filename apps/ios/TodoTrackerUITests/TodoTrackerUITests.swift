@@ -24,9 +24,12 @@ final class TodoTrackerUITests: XCTestCase {
         XCTAssertEqual(toggle.value as? String, "0")
 
         app.buttons["todo-delete-Buy milk"].tap()
+        let deletedAt = Date()
         XCTAssertTrue(app.staticTexts["todo-empty"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["undo-toast-label"].label, "Deleted todo")
-        XCTAssertFalse(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 3))
+        // The toast lives 5s from the delete; count slow Simulator queries against that window.
+        let shownFor = Date().timeIntervalSince(deletedAt)
+        XCTAssertFalse(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: max(0.1, 4 - shownFor)))
         XCTAssertTrue(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 5))
     }
 }
