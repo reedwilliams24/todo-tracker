@@ -1,0 +1,11 @@
+name: Setup Android
+description: Install JDK 17 and Gradle with build caching
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
+    - uses: gradle/actions/setup-gradle@v4

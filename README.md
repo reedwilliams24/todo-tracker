@@ -87,19 +87,24 @@ pnpm test
 pnpm build
 ```
 
-### Required CI checks
+## CI
 
-`main` is protected by a ruleset with a **merge queue**: a PR only needs the
-`lint`, `typecheck`, `test`, `spec`, `build`, `e2e`, `android` and `ios` jobs
-from `.github/workflows/ci.yml` passing on its own head to be queued. The queue
-then builds each PR on top of `main` plus the PRs ahead of it (the `merge_group`
-trigger in the workflow) and merges when those checks pass, so branches never
-have to be rebased just to get back to "up to date with `main`". A PR that has
-real conflicts with `main` still has to be resolved before it can enter the queue.
+`.github/workflows/ci.yml` runs two tiers:
 
-The ruleset is configured in the GitHub UI (Settings → Rules → Rulesets, needs
-repo admin); `scripts/protect-main.sh` documents the settings. Keep the job
-names there in sync with the workflow.
+| Tier | Jobs | When |
+| --- | --- | --- |
+| Fast checks | `lint`, `typecheck`, `spec`, `build` | every PR and push |
+| Unit tests | `unit-tests-web` (vitest + TS fixture runner), `unit-tests-android` (`:core:test` + debug APK + lint), `unit-tests-ios` (`swift test`), `build-ios` (compiles the SwiftUI app when it changes) | every PR, only for the platforms the PR touches |
+| E2E tests | `e2e-tests-web` (Playwright), `e2e-tests-android` (Maestro on an emulator), `e2e-tests-ios` (XCUITest + Maestro on the Simulator) | push to `main` (or `workflow_dispatch` with `e2e: true`) |
+
+Platform detection: files under `apps/<platform>` count for that platform only; everything
+else (`spec/`, `packages/`, root config, workflows) counts for all three.
+
+The `main` ruleset requires exactly one check, `ci`: a gate job that passes when every PR
+job passed or was skipped by the path filter. Jobs can be added, split or renamed in
+`ci.yml` without editing the ruleset (which the Devin app can't do; see
+`scripts/protect-main.sh` for the one-time UI steps). E2E jobs are not required: they run
+after merge, and a failure on `main` is fixed in a follow-up PR.
 
 ## Pull requests
 
