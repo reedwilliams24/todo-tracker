@@ -50,7 +50,9 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     fun add(draft: TodoDraft) = dispatch(TodoAction.Prepend(addTodos(emptyList(), listOf(draft)).created))
     fun toggle(id: String) = dispatch(TodoAction.Toggle(id))
     fun rename(id: String, title: String) = dispatch(TodoAction.Rename(id, title))
+    fun toggleMany(ids: List<String>) = dispatch(TodoAction.ToggleMany(ids))
     fun remove(id: String) = dispatch(TodoAction.Remove(listOf(id)))
+    fun removeMany(ids: List<String>) = dispatch(TodoAction.Remove(ids))
     fun clearCompleted() = dispatch(TodoAction.ClearCompleted)
     fun undo() = dispatch(TodoAction.Undo)
 

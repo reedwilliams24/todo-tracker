@@ -61,9 +61,9 @@ Swift and Kotlin load the same files; nothing is copied or regenerated per platf
 
 `scenarios/core.json` lists user flows as steps. Every platform drives its UI through the IDs in `test-ids.json` (`data-testid` on web, `accessibilityIdentifier` in SwiftUI, `Modifier.testTag` with `testTagsAsResourceId` in Compose). `{title}` placeholders take the todo's title.
 
-Actions (`do`): `add {title, priority?, dueDate?, reminder?}`, `type {text}` (fills the add form's title without submitting), `submit`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `sort {sort}`, `search {query}`, `clearCompleted`, `undo`, `relaunch`.
+Actions (`do`): `add {title, priority?, dueDate?, reminder?}`, `type {text}` (fills the add form's title without submitting), `submit`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `sort {sort}`, `search {query}`, `clearCompleted`, `undo`, `relaunch`, `selectMode` (tap Select/Done), `select {title}`, `selectAll`, `bulkToggle`, `bulkDelete {confirm}` (tap Delete, then Delete or Cancel in the confirmation).
 
-Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maestro checks each is visible), `remaining {text}`, `completed {title, value}`, `overdue {title, value}`, `undo {label | null}`, `reminder {title, text}` (the reminder label shown on the todo), `quickAddPreview {title | null}` (`null`: preview hidden), `priority {title, priority}` (case-insensitive), `dueDate {title, dueDate}`.
+Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maestro checks each is visible), `remaining {text}`, `completed {title, value}`, `overdue {title, value}`, `undo {label | null}`, `reminder {title, text}` (the reminder label shown on the todo), `quickAddPreview {title | null}` (`null`: preview hidden), `priority {title, priority}` (case-insensitive), `dueDate {title, dueDate}`, `selected {text}`, `clearCompleted {text}`.
 
 A scenario may set `platforms` (`web`, `mobile`) when a feature isn't on every platform yet, e.g. mobile has no search today.
 

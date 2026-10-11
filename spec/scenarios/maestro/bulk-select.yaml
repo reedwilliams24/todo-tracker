@@ -1,0 +1,91 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: bulk-select
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Call mom"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Call mom"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Walk the dog"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Walk the dog"
+- tapOn:
+    id: "todo-select-mode"
+- assertVisible:
+    id: "todo-selected-count"
+    text: "0 selected"
+- tapOn:
+    id: "todo-select-item-Buy milk"
+- tapOn:
+    id: "todo-select-item-Call mom"
+- assertVisible:
+    id: "todo-selected-count"
+    text: "2 selected"
+- tapOn:
+    id: "todo-bulk-toggle"
+- assertVisible:
+    id: "todo-toggle-Buy milk"
+    checked: true
+- assertVisible:
+    id: "todo-toggle-Call mom"
+    checked: true
+- assertVisible:
+    id: "todo-toggle-Walk the dog"
+    checked: false
+- assertVisible:
+    id: "undo-toast-label"
+    text: "Completed 2 todos"
+- assertVisible:
+    id: "todo-clear-completed"
+    text: "Clear completed (2)"
+- tapOn:
+    id: "todo-select-mode"
+- tapOn:
+    id: "todo-select-all"
+- assertVisible:
+    id: "todo-selected-count"
+    text: "3 selected"
+- tapOn:
+    id: "todo-bulk-delete"
+- tapOn:
+    id: "todo-bulk-delete-cancel"
+- assertVisible:
+    id: "todo-selected-count"
+    text: "3 selected"
+- tapOn:
+    id: "todo-bulk-delete"
+- tapOn:
+    id: "todo-bulk-delete-confirm"
+- assertVisible:
+    id: "todo-empty"
+- assertVisible:
+    id: "undo-toast-label"
+    text: "Deleted 3 todos"
+- tapOn:
+    id: "undo-toast-action"
+- assertVisible:
+    id: "todo-item-Walk the dog"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- assertVisible:
+    id: "todo-item-Call mom"

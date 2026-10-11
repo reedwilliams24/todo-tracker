@@ -257,3 +257,39 @@ test("highlights overdue todos and sorts by due date", async ({ page }) => {
   await expect(overdue.getByLabel("Overdue, was due 2000-01-02")).toBeHidden();
   await expect(overdue.getByLabel("Due 2000-01-02")).toBeVisible();
 });
+
+test("shows clear-completed count and bulk completes/deletes a selection", async ({ page }) => {
+  await addTodo(page, "One");
+  await addTodo(page, "Two");
+  await addTodo(page, "Three");
+  await page.getByRole("checkbox", { name: 'Mark "Three" as complete' }).check();
+  await expect(page.getByRole("button", { name: "Clear completed (1)" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Select", exact: true }).click();
+  const toolbar = page.getByRole("toolbar", { name: "Bulk actions" });
+  await expect(toolbar.getByText("0 selected")).toBeVisible();
+  await expect(toolbar.getByRole("button", { name: "Delete" })).toBeDisabled();
+
+  await page.getByRole("checkbox", { name: 'Select "One"' }).check();
+  await page.getByRole("checkbox", { name: 'Select "Two"' }).check();
+  await expect(toolbar.getByText("2 selected")).toBeVisible();
+  await toolbar.getByRole("button", { name: "Toggle complete" }).click();
+  await expect(toolbar).toBeHidden();
+  await expect(page.getByText("0 tasks remaining")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Clear completed (3)" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Select", exact: true }).click();
+  await toolbar.getByRole("button", { name: "Select all" }).click();
+  await expect(toolbar.getByText("3 selected")).toBeVisible();
+
+  await toolbar.getByRole("button", { name: "Delete" }).click();
+  await expect(toolbar.getByText("Delete 3 todos?")).toBeVisible();
+  await toolbar.getByRole("button", { name: "Cancel" }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(3);
+  await expect(toolbar.getByText("3 selected")).toBeVisible();
+
+  await toolbar.getByRole("button", { name: "Delete" }).click();
+  await toolbar.getByRole("button", { name: "Delete" }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(0);
+  await expect(toolbar).toBeHidden();
+});

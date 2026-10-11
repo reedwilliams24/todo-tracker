@@ -78,6 +78,7 @@ private fun applyStep(state: TodoState, step: JsonObject): TodoState {
     val action = when (val name = step.str("action")) {
         "add" -> TodoAction.Prepend(addTodos(emptyList(), step.drafts("drafts"), now).created)
         "toggle" -> TodoAction.Toggle(step.str("id"))
+        "toggleMany" -> TodoAction.ToggleMany(step.getValue("ids").jsonArray.map { it.jsonPrimitive.content })
         "rename" -> TodoAction.Rename(step.str("id"), step.str("title"))
         "remove" -> TodoAction.Remove(step.getValue("ids").jsonArray.map { it.jsonPrimitive.content })
         "clearCompleted" -> TodoAction.ClearCompleted
@@ -125,6 +126,7 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     )
     "toDateKey" -> JsonPrimitive(toDateKey(g.local("now")))
     "countRemaining" -> JsonPrimitive(countRemaining(g.todos()))
+    "countCompleted" -> JsonPrimitive(countCompleted(g.todos()))
     "addTodos" -> addTodos(g.todos(), g.drafts("drafts"), g.instant("now")).let {
         buildJsonObject {
             put("todos", encode(it.todos))
@@ -133,6 +135,7 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     }
     "removeFromList" -> encode(removeFromList(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content }))
     "clearCompletedInList" -> encode(clearCompletedInList(g.todos()))
+    "bulkToggle" -> encode(bulkToggle(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content }, g.instant("now")))
     "describeUndo" -> JsonPrimitive(
         describeUndo(UndoKind.valueOf(g.str("action").uppercase()), g.getValue("count").jsonPrimitive.int),
     )

@@ -67,6 +67,17 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("undoAction")).click();
     case "relaunch":
       return void (await page.reload());
+    case "selectMode":
+      return page.getByTestId(id("selectMode")).click();
+    case "select":
+      return page.getByTestId(id("itemSelect", s.title!)).click();
+    case "selectAll":
+      return page.getByTestId(id("selectAll")).click();
+    case "bulkToggle":
+      return page.getByTestId(id("bulkToggle")).click();
+    case "bulkDelete":
+      await page.getByTestId(id("bulkDelete")).click();
+      return page.getByTestId(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel")).click();
   }
   switch (step.expect) {
     case "empty":
@@ -93,6 +104,10 @@ async function run(page: Page, step: Step) {
     case "undo":
       if (s.label === null) return expect(page.getByTestId(id("undoToast"))).toBeHidden();
       return expect(page.getByTestId(id("undoLabel"))).toHaveText(s.label!);
+    case "selected":
+      return expect(page.getByTestId(id("selectedCount"))).toHaveText(s.text!);
+    case "clearCompleted":
+      return expect(page.getByTestId(id("clearCompleted"))).toHaveText(s.text!);
   }
   throw new Error(`Unknown step ${JSON.stringify(step)}`);
 }

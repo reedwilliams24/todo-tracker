@@ -20,6 +20,7 @@
     "reminder-on-due-date": { "web": "pass", "ios": "pass", "android": "pass" },
     "quick-add-shorthand": { "web": "pass", "ios": "pass", "android": "pass" },
     "sort-by-due-date-and-overdue": { "web": "pass", "ios": "pass", "android": "pass" },
+    "bulk-select": { "web": "pass", "ios": "pass", "android": "pass" },
     "search": { "web": "pass", "ios": "n/a", "android": "n/a" }
   }
 }
