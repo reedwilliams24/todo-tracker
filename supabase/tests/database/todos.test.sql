@@ -2,7 +2,7 @@
 -- Run with `supabase test db`.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(44);
+select plan(47);
 
 -- ------------------------------------------------------------------ fixtures
 
@@ -30,7 +30,7 @@ $$;
 
 select has_table('public', 'todos', 'todos table exists');
 select columns_are('public', 'todos', array[
-  'id', 'user_id', 'title', 'notes', 'completed', 'priority', 'due_date', 'reminder', 'recurrence',
+  'id', 'user_id', 'title', 'notes', 'completed', 'priority', 'due_date', 'recurrence',
   'completed_at', 'created_at', 'updated_at', 'deleted_at', 'server_seq'], 'todos has the typed columns');
 select col_is_pk('public', 'todos', array['user_id', 'id'], 'primary key is (user_id, id)');
 select has_index('public', 'todos', 'todos_user_id_server_seq_idx', array['user_id', 'server_seq'],
@@ -64,6 +64,8 @@ select ok((select bool_and(server_seq < 999999) from pushed), 'server_seq in the
 select is((select array_agg(id order by server_seq) from pushed), array['a1', 'a2'], 'rows come back ordered by server_seq');
 select is((select title from pushed where id = 'a1'), 'Buy milk', 'returned row has the stored fields');
 select is((select count(distinct server_seq)::int from pushed), 2, 'each row in one push gets its own server_seq');
+select is((select updated_at::text from pushed where id = 'a1'), '2026-01-01T10:00:00.000Z',
+  'timestamps come back exactly as sent (UTC, milliseconds, Z)');
 
 -- ------------------------------------------------------------------ last writer wins
 
@@ -115,9 +117,9 @@ select is((select title from public.push_todos(jsonb_build_array(
   'Dup with delete', 'the same id twice in one push keeps the tombstone');
 
 -- Direct table writes follow the same rules as push_todos.
-update public.todos set title = 'Direct stale', updated_at = '2026-01-01T00:00:00Z' where id = 'a2';
+update public.todos set title = 'Direct stale', updated_at = '2026-01-01T00:00:00.000Z' where id = 'a2';
 select is((select title from public.todos where id = 'a2'), 'Newer dup', 'a direct update with an older updated_at is ignored');
-update public.todos set title = 'Direct newer', updated_at = '2026-03-01T00:00:00Z', server_seq = 1 where id = 'a2';
+update public.todos set title = 'Direct newer', updated_at = '2026-03-01T00:00:00.000Z', server_seq = 1 where id = 'a2';
 select is((select title from public.todos where id = 'a2'), 'Direct newer', 'a direct newer update applies');
 select cmp_ok(pg_temp.seq('00000000-0000-0000-0000-00000000000a', 'a2'), '>',
   (select max(seq) from seqs), 'a direct update cannot set server_seq; the server assigns the next value');
@@ -147,11 +149,12 @@ select is((select count(*)::int from public.push_todos(jsonb_build_array(
   1, 'user B pushing A''s id creates B''s own row');
 select is((select count(*)::int from public.todos), 1, 'user B sees only their own row');
 
-update public.todos set title = 'Hijacked', updated_at = '2027-01-01T00:00:00Z'
+update public.todos set title = 'Hijacked', updated_at = '2027-01-01T00:00:00.000Z'
 where user_id = '00000000-0000-0000-0000-00000000000a';
 select throws_ok(
   $$ insert into public.todos (id, user_id, title, completed, priority, created_at, updated_at)
-     values ('x', '00000000-0000-0000-0000-00000000000a', 'Spoof', false, 'low', now(), now()) $$,
+     values ('x', '00000000-0000-0000-0000-00000000000a', 'Spoof', false, 'low',
+             '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z') $$,
   '42501', null, 'user B cannot insert a row for user A');
 select throws_ok($$ delete from public.todos $$, '42501', null, 'clients cannot hard-delete');
 
@@ -168,13 +171,19 @@ reset role;
 
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
 select throws_ok($$ select public.push_todos('{}') $$, '22023', null, 'push_todos rejects a non-array');
+select throws_ok($$ select public.push_todos(jsonb_build_array(pg_temp.todo('bad', 'Bad', '2026-01-01T10:00:00Z'))) $$,
+  '23514', null, 'push_todos rejects a timestamp without milliseconds');
+select throws_ok($$ select public.push_todos(jsonb_build_array(pg_temp.todo('bad', 'Bad', '2026-01-01T10:00:00.000+01:00'))) $$,
+  '23514', null, 'push_todos rejects a non-UTC timestamp');
 reset role;
 
 -- ------------------------------------------------------------------ tombstone purge
 
 -- a1 and a3 were deleted on 2026-01-01; a4 is deleted now.
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
-select public.push_todos(jsonb_build_array(pg_temp.todo('a4', 'Recently deleted', now()::text, now()::text)));
+select public.push_todos(jsonb_build_array(pg_temp.todo('a4', 'Recently deleted',
+  to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+  to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'))));
 reset role;
 select is(public.purge_todo_tombstones(), 2::bigint, 'purge deletes tombstones older than 30 days');
 select is((select array_agg(id order by id) from public.todos where user_id = '00000000-0000-0000-0000-00000000000a'),

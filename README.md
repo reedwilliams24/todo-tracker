@@ -82,7 +82,7 @@ web-only for now.
 
 Accounts and sync (REED-61) use Supabase. The schema, RLS and the `push_todos` RPC live in
 `supabase/migrations`; the contract clients code against is in
-[`spec/features/sync.md`](spec/features/sync.md). Running it locally needs Docker:
+[`spec/server.md`](spec/server.md). Running it locally needs Docker:
 
 ```bash
 pnpm exec supabase start   # local stack; prints the API URL and anon key

@@ -32,6 +32,7 @@ enum FixtureOps {
             remindersOps,
             statsOps,
             storageOps,
+            syncOps,
             themeOps,
             todoOps,
             undoOps,

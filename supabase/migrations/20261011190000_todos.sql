@@ -6,6 +6,12 @@
 
 create sequence public.todos_server_seq as bigint;
 
+-- Timestamps are stored exactly as clients send them (the Todo format, UTC with milliseconds and Z),
+-- so pulls return them byte-for-byte and clients can compare updated_at as strings. In this fixed
+-- format string order is time order, so the server compares them the same way.
+create domain public.utc_timestamp as text
+check (value ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$');
+
 create table public.todos (
   id text not null check (char_length(id) between 1 and 200),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
@@ -14,12 +20,11 @@ create table public.todos (
   completed boolean not null,
   priority text not null check (priority in ('low', 'medium', 'high')),
   due_date date,
-  reminder text check (reminder in ('at', '1h', '1d')),
   recurrence text check (recurrence in ('daily', 'weekly', 'monthly')),
-  completed_at timestamptz,
-  created_at timestamptz not null,
-  updated_at timestamptz not null,
-  deleted_at timestamptz,
+  completed_at public.utc_timestamp,
+  created_at public.utc_timestamp not null,
+  updated_at public.utc_timestamp not null,
+  deleted_at public.utc_timestamp,
   server_seq bigint not null,
   -- Scoped by user so one account's client-generated ids can never collide with another's.
   primary key (user_id, id)
@@ -108,11 +113,11 @@ begin
 
   -- The same id twice in one push: keep the version that would win.
   insert into public.todos (
-    id, user_id, title, notes, completed, priority, due_date, reminder, recurrence,
+    id, user_id, title, notes, completed, priority, due_date, recurrence,
     completed_at, created_at, updated_at, deleted_at
   )
   select distinct on (r.id)
-    r.id, uid, r.title, r.notes, r.completed, r.priority, r.due_date, r.reminder, r.recurrence,
+    r.id, uid, r.title, r.notes, r.completed, r.priority, r.due_date, r.recurrence,
     r.completed_at, r.created_at, r.updated_at, r.deleted_at
   from pg_catalog.jsonb_populate_recordset(null::public.todos, rows) as r
   order by r.id, (r.deleted_at is not null) desc, r.updated_at desc
@@ -122,7 +127,6 @@ begin
     completed = excluded.completed,
     priority = excluded.priority,
     due_date = excluded.due_date,
-    reminder = excluded.reminder,
     recurrence = excluded.recurrence,
     completed_at = excluded.completed_at,
     created_at = excluded.created_at,
@@ -156,7 +160,9 @@ security definer
 set search_path = ''
 as $$
   with purged as (
-    delete from public.todos where deleted_at < pg_catalog.now() - retention returning 1
+    delete from public.todos
+    where deleted_at is not null and deleted_at::timestamptz < pg_catalog.now() - retention
+    returning 1
   )
   select pg_catalog.count(*) from purged;
 $$;
