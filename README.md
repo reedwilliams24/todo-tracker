@@ -28,6 +28,7 @@ apps/ios        Swift / SwiftUI app (SwiftData)
 apps/android    Kotlin / Jetpack Compose app (Room)
 packages/spec   fixture recorder, TS fixture runner and parity matrix
 spec            language-neutral rules, fixtures, test IDs and UI scenarios
+supabase        backend: Postgres migrations, pgTAP tests, auth config and email template
 ```
 
 Storage is local-first: todos persist to `localStorage` on web, SwiftData on
@@ -77,6 +78,22 @@ See [`apps/android/README.md`](apps/android/README.md) (Gradle, emulator) and
 [`apps/ios/README.md`](apps/ios/README.md) (Xcode, Simulator). Voice input is
 web-only for now.
 
+### Backend (Supabase)
+
+Accounts and sync (REED-61) use Supabase. The schema, RLS and the `push_todos` RPC live in
+`supabase/migrations`; the contract clients code against is in
+[`spec/server.md`](spec/server.md). Running it locally needs Docker:
+
+```bash
+pnpm exec supabase start   # local stack; prints the API URL and anon key
+pnpm exec supabase db reset  # re-apply supabase/migrations from scratch
+pnpm exec supabase test db   # pgTAP tests in supabase/tests
+```
+
+Sign-in codes sent locally land in Mailpit at http://127.0.0.1:54324. Auth settings (6-digit email
+code, 10-minute expiry, 60 s resend) are in `supabase/config.toml`, and the code-only email template
+is `supabase/templates/otp-code.html`.
+
 ## Checks
 
 ```bash
@@ -103,6 +120,7 @@ flows, `test-ids`) are excluded from Prettier because `spec:check` compares them
 | Fast checks | `lint-web` (ESLint), `lint-android` (Android lint), `lint-ios` (SwiftLint), `typecheck`, `spec`                                        | every PR and push (`lint-android` / `lint-ios` when their files change) |
 | Formatting  | `format-web` (Prettier), `format-android` (ktfmt via Spotless), `format-ios` (swift-format, `swift:6.1.2` container)                   | every PR and push (android / ios only when their files change)          |
 | Unit tests  | `unit-tests-web` (vitest + TS fixture runner), `unit-tests-android` (`:core:test`), `unit-tests-ios` (`swift test`)                    | every PR, only for the platforms the PR touches                         |
+| DB tests    | `db-tests-supabase` (`supabase start` + `db reset` + `test db`: pgTAP tests of the schema, RLS and `push_todos`)                       | every PR that touches `supabase/` or shared files                       |
 | Builds      | `build-web` (`next build`), `build-android` (debug APK), `build-ios` (Simulator build of the SwiftUI app, when the app target changes) | every PR, only for the platforms the PR touches                         |
 | E2E tests   | `e2e-tests-web` (Playwright), `e2e-tests-android` (Maestro on an emulator), `e2e-tests-ios` (XCUITest + Maestro on the Simulator)      | push to `main` (or `workflow_dispatch` with `e2e: true`)                |
 

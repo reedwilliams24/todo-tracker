@@ -26,6 +26,7 @@ jobs:
       android: ${{ steps.filter.outputs.android }}
       ios: ${{ steps.filter.outputs.ios }}
       ios-app: ${{ steps.filter.outputs.ios-app }}
+      supabase: ${{ steps.filter.outputs.supabase }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -51,6 +52,9 @@ jobs:
               - 'apps/ios/TodoTracker/**'
               - 'apps/ios/TodoTrackerUITests/**'
               - 'apps/ios/project.yml'
+            supabase:
+              - *shared
+              - 'supabase/**'
 
   lint-web:
     runs-on: ubuntu-latest
@@ -175,6 +179,20 @@ jobs:
           restore-keys: swiftpm-${{ runner.os }}-
       - run: swift test # XCTest fixture runner, no Simulator
 
+  # pgTAP tests for the schema, RLS and push_todos (supabase/tests) against a local stack.
+  db-tests-supabase:
+    needs: changes
+    if: needs.changes.outputs.supabase == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup # installs the pinned supabase CLI
+      - run: pnpm exec supabase start -x studio,imgproxy,storage-api,edge-runtime,logflare,vector,supavisor,mailpit
+      - run: pnpm exec supabase db reset # applies supabase/migrations from scratch
+      - run: pnpm exec supabase test db
+      - if: always()
+        run: pnpm exec supabase stop --no-backup
+
   # Compiles the SwiftUI app (no tests) when the app target changes on a PR, so UI-code breakage
   # is caught before main. The XCUITest and Maestro flows run in e2e-tests-ios on main.
   # ---------------------------------------------------------------- builds (every PR, per touched platform)
@@ -237,6 +255,7 @@ jobs:
       - build-web
       - build-android
       - build-ios
+      - db-tests-supabase
     if: always()
     runs-on: ubuntu-latest
     steps:

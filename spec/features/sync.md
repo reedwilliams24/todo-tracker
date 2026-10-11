@@ -2,7 +2,7 @@
 
 Fixtures: [`../fixtures/sync.json`](../fixtures/sync.json). Ticket: REED-65 (parent plan REED-61).
 
-The pure rules every client uses to keep its local list in step with the backend `todos` table. No network or UI here: the clients (and the server contract in REED-62) call these functions. The persisted offline outbox (`enqueue`, `ackPush`) is REED-77.
+The pure rules every client uses to keep its local list in step with the backend `todos` table. No network or UI here: the clients call these functions on top of the [server contract](../server.md) (REED-62). The persisted offline outbox (`enqueue`, `ackPush`) is REED-77.
 
 ## Row
 
