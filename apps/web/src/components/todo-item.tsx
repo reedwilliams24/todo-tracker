@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { isOverdue, isValidTitle, TEST_IDS, type Todo } from "@/domain";
+import { isOverdue, isValidTitle, RECURRENCE_LABELS, TEST_IDS, type Todo } from "@/domain";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
   high: "bg-red-500/15 text-red-700 dark:text-red-400",
@@ -129,6 +129,17 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection }: Todo
         >
           {overdue && <span data-testid={TEST_IDS.itemOverdue(todo.title)}>Overdue · </span>}
           {todo.dueDate}
+        </span>
+      )}
+
+      {todo.recurrence && (
+        <span
+          data-testid={TEST_IDS.itemRecurrence(todo.title)}
+          className="text-xs opacity-70"
+          aria-label={`Repeats ${RECURRENCE_LABELS[todo.recurrence].toLowerCase()}`}
+          title={`Repeats ${RECURRENCE_LABELS[todo.recurrence].toLowerCase()}`}
+        >
+          ↻ {RECURRENCE_LABELS[todo.recurrence]}
         </span>
       )}
 

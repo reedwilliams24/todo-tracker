@@ -2,6 +2,7 @@ package com.reedwilliams24.todotracker.data
 
 import android.content.Context
 import androidx.room.AutoMigration
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -11,6 +12,7 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
+import com.reedwilliams24.todotracker.core.Recurrence
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoPriority
 
@@ -24,6 +26,7 @@ data class TodoEntity(
     val completed: Boolean,
     val priority: String,
     val dueDate: String?,
+    @ColumnInfo(defaultValue = "NULL") val recurrence: String?,
     val createdAt: String,
     val updatedAt: String,
     val completedAt: String? = null,
@@ -35,6 +38,7 @@ data class TodoEntity(
         completed = completed,
         priority = TodoPriority.entries.firstOrNull { it.key == priority } ?: TodoPriority.MEDIUM,
         dueDate = dueDate,
+        recurrence = recurrence?.let(Recurrence::fromKey),
         createdAt = createdAt,
         updatedAt = updatedAt,
         completedAt = completedAt,
@@ -49,6 +53,7 @@ data class TodoEntity(
             completed = todo.completed,
             priority = todo.priority.key,
             dueDate = todo.dueDate,
+            recurrence = todo.recurrence?.key,
             createdAt = todo.createdAt,
             updatedAt = todo.updatedAt,
             completedAt = todo.completedAt,
@@ -74,7 +79,7 @@ interface TodoDao {
     }
 }
 
-@Database(entities = [TodoEntity::class], version = 2, autoMigrations = [AutoMigration(from = 1, to = 2)])
+@Database(entities = [TodoEntity::class], version = 3, autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)])
 abstract class TodoDatabase : RoomDatabase() {
     abstract fun todos(): TodoDao
 

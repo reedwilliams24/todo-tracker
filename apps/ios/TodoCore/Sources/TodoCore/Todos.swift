@@ -2,23 +2,38 @@ import Foundation
 
 public let defaultPriority: TodoPriority = .medium
 
-/// Controlled-input state for the add-todo form; `dueDate` is "" when unset.
+/// Controlled-input state for the add-todo form; `dueDate` and `recurrence` are "" when unset.
 public struct TodoFormState: Codable, Equatable, Sendable {
     public var title: String
     public var priority: TodoPriority
     public var dueDate: String
+    public var recurrence: String
 
-    public init(title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "") {
+    public init(title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "", recurrence: String = "") {
         self.title = title
         self.priority = priority
         self.dueDate = dueDate
+        self.recurrence = recurrence
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        title = try c.decode(String.self, forKey: .title)
+        priority = try c.decode(TodoPriority.self, forKey: .priority)
+        dueDate = try c.decode(String.self, forKey: .dueDate)
+        recurrence = try c.decodeIfPresent(String.self, forKey: .recurrence) ?? ""
     }
 
     public static let empty = TodoFormState()
 }
 
 public func toTodoDraft(_ form: TodoFormState) -> TodoDraft {
-    TodoDraft(title: form.title, priority: form.priority, dueDate: form.dueDate.isEmpty ? nil : form.dueDate)
+    TodoDraft(
+        title: form.title,
+        priority: form.priority,
+        dueDate: form.dueDate.isEmpty ? nil : form.dueDate,
+        recurrence: Recurrence(rawValue: form.recurrence)
+    )
 }
 
 extension TodoPriority {
@@ -61,6 +76,7 @@ public func createTodo(_ draft: TodoDraft, now: Date = Date()) -> Todo {
         completed: false,
         priority: draft.priority ?? defaultPriority,
         dueDate: draft.dueDate,
+        recurrence: draft.recurrence,
         createdAt: timestamp,
         updatedAt: timestamp
     )

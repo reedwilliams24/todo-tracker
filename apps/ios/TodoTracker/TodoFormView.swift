@@ -37,6 +37,8 @@ struct TodoFormView: View {
                     .accessibilityLabel("Due date")
                     .accessibilityIdentifier(TestID.formDueDate)
             }
+            recurrencePicker
+                .frame(maxWidth: .infinity, alignment: .leading)
             let preview = parsed
             if hasQuickAddMeta(preview) {
                 QuickAddPreview(parse: preview)
@@ -83,9 +85,35 @@ struct TodoFormView: View {
         .accessibilityIdentifier(TestID.formPriority)
     }
 
+    private var recurrencePicker: some View {
+        HStack(spacing: 0) {
+            ForEach([nil] + Recurrence.allCases.map(Optional.some), id: \.self) { (option: Recurrence?) in
+                let selected = (option?.rawValue ?? "") == form.recurrence
+                Button { form.recurrence = option?.rawValue ?? "" } label: {
+                    Text(option?.label ?? "No repeat")
+                        .font(.system(size: 14))
+                        .foregroundStyle(selected ? Theme.card : Theme.foreground)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(selected ? Theme.foreground : .clear)
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier(TestID.formRecurrenceOption(option))
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Repeat")
+        .accessibilityIdentifier(TestID.formRecurrence)
+    }
+
     private func submit() {
         guard canAdd else { return }
-        onAdd(quickAddToDraft(parsed, fallbackPriority: form.priority, fallbackDueDate: form.dueDate))
+        var draft = quickAddToDraft(parsed, fallbackPriority: form.priority, fallbackDueDate: form.dueDate)
+        draft.recurrence = Recurrence(rawValue: form.recurrence)
+        onAdd(draft)
         form = .empty
     }
 }

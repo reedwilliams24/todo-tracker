@@ -1,5 +1,7 @@
 export type TodoPriority = "low" | "medium" | "high";
 
+export type Recurrence = "daily" | "weekly" | "monthly";
+
 export type Todo = {
   id: string;
   title: string;
@@ -7,6 +9,7 @@ export type Todo = {
   completed: boolean;
   priority: TodoPriority;
   dueDate?: string;
+  recurrence?: Recurrence;
   /** ISO timestamp of the most recent completion; cleared when reopened. */
   completedAt?: string;
   createdAt: string;
@@ -22,4 +25,5 @@ export type TodoDraft = {
   notes?: string;
   priority?: TodoPriority;
   dueDate?: string;
+  recurrence?: Recurrence;
 };
