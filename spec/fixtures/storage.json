@@ -150,6 +150,32 @@
           "dueDate": "2026-01-06"
         }
       ]
+    },
+    {
+      "name": "parse keeps completedAt",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": "[{\"id\":\"a\",\"title\":\"Todo a\",\"completed\":true,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T10:00:00.000Z\",\"completedAt\":\"2026-01-05T10:00:00.000Z\"},{\"id\":\"b\",\"title\":\"Todo b\",\"completed\":false,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\"}]"
+      },
+      "then": [
+        {
+          "id": "new-1",
+          "title": "Todo a",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "completedAt": "2026-01-05T10:00:00.000Z"
+        },
+        {
+          "id": "new-2",
+          "title": "Todo b",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      ]
     }
   ]
 }

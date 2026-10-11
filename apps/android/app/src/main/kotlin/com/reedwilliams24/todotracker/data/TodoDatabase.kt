@@ -1,6 +1,7 @@
 package com.reedwilliams24.todotracker.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -29,6 +30,7 @@ data class TodoEntity(
     val reminder: String?,
     val createdAt: String,
     val updatedAt: String,
+    val completedAt: String? = null,
 ) {
     fun toTodo() = Todo(
         id = id,
@@ -40,6 +42,7 @@ data class TodoEntity(
         reminder = ReminderOffset.fromKey(reminder),
         createdAt = createdAt,
         updatedAt = updatedAt,
+        completedAt = completedAt,
     )
 
     companion object {
@@ -54,6 +57,7 @@ data class TodoEntity(
             reminder = todo.reminder?.key,
             createdAt = todo.createdAt,
             updatedAt = todo.updatedAt,
+            completedAt = todo.completedAt,
         )
     }
 }
@@ -76,13 +80,13 @@ interface TodoDao {
     }
 }
 
-private val MIGRATION_1_2 = object : Migration(1, 2) {
+private val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE todos ADD COLUMN reminder TEXT")
     }
 }
 
-@Database(entities = [TodoEntity::class], version = 2)
+@Database(entities = [TodoEntity::class], version = 3, autoMigrations = [AutoMigration(from = 1, to = 2)])
 abstract class TodoDatabase : RoomDatabase() {
     abstract fun todos(): TodoDao
 
@@ -91,7 +95,7 @@ abstract class TodoDatabase : RoomDatabase() {
 
         fun get(context: Context): TodoDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, TodoDatabase::class.java, "todo-tracker.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_2_3)
                 .build()
                 .also { instance = it }
         }

@@ -35,6 +35,8 @@ data class Todo(
     val reminder: ReminderOffset? = null,
     val createdAt: String,
     val updatedAt: String,
+    /** When the todo was last completed; null while open and for data from before REED-19. */
+    val completedAt: String? = null,
 )
 
 enum class TodoFilter {

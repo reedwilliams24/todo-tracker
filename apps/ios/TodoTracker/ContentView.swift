@@ -29,6 +29,7 @@ struct ContentView: View {
                     .onChange(of: model.remainingText) { _, text in
                         UIAccessibility.post(notification: .announcement, argument: text)
                     }
+                StatsPanelView(stats: model.stats)
             }
             .padding(16)
             .padding(.bottom, 72)

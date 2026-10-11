@@ -8,7 +8,8 @@
     "storage": { "web": "pass", "ios": "pass", "android": "pass" },
     "voice": { "web": "pass", "ios": "pass", "android": "pass" },
     "reminders": { "web": "pass", "ios": "pass", "android": "pass" },
-    "quick-add": { "web": "pass", "ios": "pass", "android": "pass" }
+    "quick-add": { "web": "pass", "ios": "pass", "android": "pass" },
+    "stats": { "web": "pass", "ios": "pass", "android": "pass" }
   },
   "scenarios": {
     "add-todo": { "web": "pass", "ios": "pass", "android": "pass" },
@@ -21,6 +22,7 @@
     "quick-add-shorthand": { "web": "pass", "ios": "pass", "android": "pass" },
     "sort-by-due-date-and-overdue": { "web": "pass", "ios": "pass", "android": "pass" },
     "bulk-select": { "web": "pass", "ios": "pass", "android": "pass" },
-    "search": { "web": "pass", "ios": "n/a", "android": "n/a" }
+    "search": { "web": "pass", "ios": "n/a", "android": "n/a" },
+    "stats": { "web": "pass", "ios": "pass", "android": "pass" }
   }
 }

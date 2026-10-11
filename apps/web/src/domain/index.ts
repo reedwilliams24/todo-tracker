@@ -8,3 +8,4 @@ export * from "./store";
 export * from "./test-ids";
 export * from "./reminders";
 export * from "./quick-add";
+export * from "./stats";

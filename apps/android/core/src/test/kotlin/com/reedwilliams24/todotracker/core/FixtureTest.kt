@@ -23,6 +23,7 @@ import java.io.File
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.ZoneId
 
 /** Runs every case in spec/fixtures against the Kotlin implementation (see spec/README.md). */
 class FixtureTest {
@@ -100,6 +101,7 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
         put("reminderOffsets", JsonArray(REMINDER_OFFSETS.map { JsonPrimitive(it.key) }))
         put("reminderLabels", buildJsonObject { REMINDER_OFFSETS.forEach { put(it.key, it.label) } })
         put("dueHour", DUE_HOUR)
+        put("statsDays", STATS_DAYS)
     }
     "isValidTitle" -> JsonPrimitive(isValidTitle(g.str("title")))
     "isValidDueDate" -> JsonPrimitive(isValidDueDate(g.str("value")))
@@ -154,6 +156,15 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
             put("undoLabel", state.undoable?.label?.let(::JsonPrimitive) ?: JsonNull)
         }
     }
+    "computeStats" -> TodoJson.encodeToJsonElement(
+        TodoStats.serializer(),
+        computeStats(
+            g.todos(),
+            g.instant("now"),
+            g["days"]?.jsonPrimitive?.int ?: STATS_DAYS,
+            g["timeZone"]?.jsonPrimitive?.content?.let(ZoneId::of) ?: ZoneId.systemDefault(),
+        ),
+    )
     "parseStoredTodos" -> encode(parseStoredTodos((g["raw"] as? JsonPrimitive)?.takeIf { it.isString }?.content))
     "serializeTodos" -> Json.parseToJsonElement(serializeTodos(g.todos()))
     "parseTranscript" -> encodeDrafts(parseTranscript(g.str("transcript"), g.local("now")))

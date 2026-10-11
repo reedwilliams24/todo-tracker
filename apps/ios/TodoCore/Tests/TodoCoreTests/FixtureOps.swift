@@ -74,6 +74,17 @@ enum FixtureOps {
                 state = try step.apply(to: state)
             }
             return ApplyActionsResult(todos: state.todos, undoLabel: state.undoable?.label)
+        case "computeStats":
+            let zone: String? = try g.decode("timeZone")
+            guard let timeZone = zone.map({ TimeZone(identifier: $0) }) ?? .current else {
+                throw BadGiven(description: "given.timeZone is not a time zone: \(zone ?? "")")
+            }
+            return computeStats(
+                try g.decode("todos"),
+                now: try g.date("now"),
+                days: try g.decode("days", as: Int?.self) ?? statsDays,
+                timeZone: timeZone
+            )
         case "parseStoredTodos":
             return parseStoredTodos(try g.decode("raw", as: String?.self))
         case "serializeTodos":
@@ -147,6 +158,7 @@ enum FixtureOps {
             body = reminder.body
             at = FixtureOps.localTime(reminder.at)
         }
+        let statsDays = TodoCore.statsDays
     }
 
     /// `undoLabel` is always present, so a missing label encodes as `null` rather than being omitted.

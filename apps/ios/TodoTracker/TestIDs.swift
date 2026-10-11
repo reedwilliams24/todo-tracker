@@ -40,4 +40,9 @@ enum TestID {
     static let undoToast = "undo-toast"
     static let undoLabel = "undo-toast-label"
     static let undoAction = "undo-toast-action"
+    static let statsToggle = "stats-toggle"
+    static let statsTotal = "stat-total"
+    static let statsCurrent = "stat-current"
+    static let statsLongest = "stat-longest"
+    static let statsChart = "stats-chart"
 }

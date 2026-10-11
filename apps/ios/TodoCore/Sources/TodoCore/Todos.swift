@@ -95,10 +95,12 @@ public func updateTodoText(_ todos: [Todo], id: String, text: String, now: Date 
     }
 }
 
+/// Completing sets `completedAt`; reopening clears it.
 public func toggleTodo(_ todo: Todo, now: Date = Date()) -> Todo {
     var next = todo
     next.completed.toggle()
     next.updatedAt = Timestamp.iso(now)
+    next.completedAt = next.completed ? next.updatedAt : nil
     return next
 }
 

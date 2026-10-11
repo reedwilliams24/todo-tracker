@@ -53,6 +53,11 @@ class TestIdsTest {
             "undoToast" to TestIds.undoToast,
             "undoLabel" to TestIds.undoLabel,
             "undoAction" to TestIds.undoAction,
+            "statsToggle" to TestIds.statsToggle,
+            "statsTotal" to TestIds.statsTotal,
+            "statsCurrent" to TestIds.statsCurrent,
+            "statsLongest" to TestIds.statsLongest,
+            "statsChart" to TestIds.statsChart,
         )
         assertEquals(expected, actual)
     }

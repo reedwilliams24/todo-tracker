@@ -39,4 +39,9 @@ object TestIds {
     const val undoToast = "undo-toast"
     const val undoLabel = "undo-toast-label"
     const val undoAction = "undo-toast-action"
+    const val statsToggle = "stats-toggle"
+    const val statsTotal = "stat-total"
+    const val statsCurrent = "stat-current"
+    const val statsLongest = "stat-longest"
+    const val statsChart = "stats-chart"
 }

@@ -1,0 +1,625 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "stats",
+  "spec": "features/stats.md",
+  "cases": [
+    {
+      "name": "computeStats: no todos",
+      "op": "computeStats",
+      "given": {
+        "todos": [],
+        "now": "2026-03-10T15:00:00.000Z",
+        "days": 7,
+        "timeZone": "UTC"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2026-03-04",
+            "count": 0
+          },
+          {
+            "date": "2026-03-05",
+            "count": 0
+          },
+          {
+            "date": "2026-03-06",
+            "count": 0
+          },
+          {
+            "date": "2026-03-07",
+            "count": 0
+          },
+          {
+            "date": "2026-03-08",
+            "count": 0
+          },
+          {
+            "date": "2026-03-09",
+            "count": 0
+          },
+          {
+            "date": "2026-03-10",
+            "count": 0
+          }
+        ],
+        "totalCompleted": 0,
+        "currentStreak": 0,
+        "longestStreak": 0
+      }
+    },
+    {
+      "name": "computeStats: defaults to a 30-day window",
+      "op": "computeStats",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T09:00:00.000Z",
+            "completedAt": "2026-03-10T09:00:00.000Z"
+          }
+        ],
+        "now": "2026-03-10T15:00:00.000Z",
+        "timeZone": "UTC"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2026-02-09",
+            "count": 0
+          },
+          {
+            "date": "2026-02-10",
+            "count": 0
+          },
+          {
+            "date": "2026-02-11",
+            "count": 0
+          },
+          {
+            "date": "2026-02-12",
+            "count": 0
+          },
+          {
+            "date": "2026-02-13",
+            "count": 0
+          },
+          {
+            "date": "2026-02-14",
+            "count": 0
+          },
+          {
+            "date": "2026-02-15",
+            "count": 0
+          },
+          {
+            "date": "2026-02-16",
+            "count": 0
+          },
+          {
+            "date": "2026-02-17",
+            "count": 0
+          },
+          {
+            "date": "2026-02-18",
+            "count": 0
+          },
+          {
+            "date": "2026-02-19",
+            "count": 0
+          },
+          {
+            "date": "2026-02-20",
+            "count": 0
+          },
+          {
+            "date": "2026-02-21",
+            "count": 0
+          },
+          {
+            "date": "2026-02-22",
+            "count": 0
+          },
+          {
+            "date": "2026-02-23",
+            "count": 0
+          },
+          {
+            "date": "2026-02-24",
+            "count": 0
+          },
+          {
+            "date": "2026-02-25",
+            "count": 0
+          },
+          {
+            "date": "2026-02-26",
+            "count": 0
+          },
+          {
+            "date": "2026-02-27",
+            "count": 0
+          },
+          {
+            "date": "2026-02-28",
+            "count": 0
+          },
+          {
+            "date": "2026-03-01",
+            "count": 0
+          },
+          {
+            "date": "2026-03-02",
+            "count": 0
+          },
+          {
+            "date": "2026-03-03",
+            "count": 0
+          },
+          {
+            "date": "2026-03-04",
+            "count": 0
+          },
+          {
+            "date": "2026-03-05",
+            "count": 0
+          },
+          {
+            "date": "2026-03-06",
+            "count": 0
+          },
+          {
+            "date": "2026-03-07",
+            "count": 0
+          },
+          {
+            "date": "2026-03-08",
+            "count": 0
+          },
+          {
+            "date": "2026-03-09",
+            "count": 0
+          },
+          {
+            "date": "2026-03-10",
+            "count": 1
+          }
+        ],
+        "totalCompleted": 1,
+        "currentStreak": 1,
+        "longestStreak": 1
+      }
+    },
+    {
+      "name": "computeStats: buckets per day, ignores open, legacy and invalid completions",
+      "op": "computeStats",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T00:30:00.000Z",
+            "completedAt": "2026-03-10T00:30:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T23:30:00.000Z",
+            "completedAt": "2026-03-10T23:30:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-08T12:00:00.000Z",
+            "completedAt": "2026-03-08T12:00:00.000Z"
+          },
+          {
+            "id": "old",
+            "title": "Todo old",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-02-01T12:00:00.000Z",
+            "completedAt": "2026-02-01T12:00:00.000Z"
+          },
+          {
+            "id": "open",
+            "title": "Todo open",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "completedAt": "2026-03-10T10:00:00.000Z"
+          },
+          {
+            "id": "legacy",
+            "title": "Todo legacy",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "garbage",
+            "title": "Todo garbage",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "not a date",
+            "completedAt": "not a date"
+          }
+        ],
+        "now": "2026-03-10T15:00:00.000Z",
+        "days": 7,
+        "timeZone": "UTC"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2026-03-04",
+            "count": 0
+          },
+          {
+            "date": "2026-03-05",
+            "count": 0
+          },
+          {
+            "date": "2026-03-06",
+            "count": 0
+          },
+          {
+            "date": "2026-03-07",
+            "count": 0
+          },
+          {
+            "date": "2026-03-08",
+            "count": 1
+          },
+          {
+            "date": "2026-03-09",
+            "count": 0
+          },
+          {
+            "date": "2026-03-10",
+            "count": 2
+          }
+        ],
+        "totalCompleted": 4,
+        "currentStreak": 1,
+        "longestStreak": 1
+      }
+    },
+    {
+      "name": "computeStats: days follow the given time zone",
+      "op": "computeStats",
+      "given": {
+        "todos": [
+          {
+            "id": "late",
+            "title": "Todo late",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T03:30:00.000Z",
+            "completedAt": "2026-03-10T03:30:00.000Z"
+          },
+          {
+            "id": "day",
+            "title": "Todo day",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T15:00:00.000Z",
+            "completedAt": "2026-03-10T15:00:00.000Z"
+          }
+        ],
+        "now": "2026-03-10T16:00:00.000Z",
+        "days": 3,
+        "timeZone": "America/New_York"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2026-03-08",
+            "count": 0
+          },
+          {
+            "date": "2026-03-09",
+            "count": 1
+          },
+          {
+            "date": "2026-03-10",
+            "count": 1
+          }
+        ],
+        "totalCompleted": 2,
+        "currentStreak": 2,
+        "longestStreak": 2
+      }
+    },
+    {
+      "name": "computeStats: current streak survives an open today, longest is the best run",
+      "op": "computeStats",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-09T12:00:00.000Z",
+            "completedAt": "2026-03-09T12:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-08T12:00:00.000Z",
+            "completedAt": "2026-03-08T12:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-01T12:00:00.000Z",
+            "completedAt": "2026-03-01T12:00:00.000Z"
+          },
+          {
+            "id": "d",
+            "title": "Todo d",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-02T12:00:00.000Z",
+            "completedAt": "2026-03-02T12:00:00.000Z"
+          },
+          {
+            "id": "e",
+            "title": "Todo e",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-03T12:00:00.000Z",
+            "completedAt": "2026-03-03T12:00:00.000Z"
+          }
+        ],
+        "now": "2026-03-10T15:00:00.000Z",
+        "days": 3,
+        "timeZone": "UTC"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2026-03-08",
+            "count": 1
+          },
+          {
+            "date": "2026-03-09",
+            "count": 1
+          },
+          {
+            "date": "2026-03-10",
+            "count": 0
+          }
+        ],
+        "totalCompleted": 5,
+        "currentStreak": 2,
+        "longestStreak": 3
+      }
+    },
+    {
+      "name": "computeStats: completing today extends the streak",
+      "op": "computeStats",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T08:00:00.000Z",
+            "completedAt": "2026-03-10T08:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-09T12:00:00.000Z",
+            "completedAt": "2026-03-09T12:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-08T12:00:00.000Z",
+            "completedAt": "2026-03-08T12:00:00.000Z"
+          }
+        ],
+        "now": "2026-03-10T15:00:00.000Z",
+        "days": 3,
+        "timeZone": "UTC"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2026-03-08",
+            "count": 1
+          },
+          {
+            "date": "2026-03-09",
+            "count": 1
+          },
+          {
+            "date": "2026-03-10",
+            "count": 1
+          }
+        ],
+        "totalCompleted": 3,
+        "currentStreak": 3,
+        "longestStreak": 3
+      }
+    },
+    {
+      "name": "computeStats: a gap before yesterday resets the current streak",
+      "op": "computeStats",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-07T12:00:00.000Z",
+            "completedAt": "2026-03-07T12:00:00.000Z"
+          }
+        ],
+        "now": "2026-03-10T15:00:00.000Z",
+        "days": 3,
+        "timeZone": "UTC"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2026-03-08",
+            "count": 0
+          },
+          {
+            "date": "2026-03-09",
+            "count": 0
+          },
+          {
+            "date": "2026-03-10",
+            "count": 0
+          }
+        ],
+        "totalCompleted": 1,
+        "currentStreak": 0,
+        "longestStreak": 1
+      }
+    },
+    {
+      "name": "computeStats: DST start day chains with its neighbours",
+      "op": "computeStats",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-07T17:00:00.000Z",
+            "completedAt": "2026-03-07T17:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Todo b",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-08T16:00:00.000Z",
+            "completedAt": "2026-03-08T16:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Todo c",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-09T16:00:00.000Z",
+            "completedAt": "2026-03-09T16:00:00.000Z"
+          }
+        ],
+        "now": "2026-03-10T00:30:00.000Z",
+        "days": 4,
+        "timeZone": "America/New_York"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2026-03-06",
+            "count": 0
+          },
+          {
+            "date": "2026-03-07",
+            "count": 1
+          },
+          {
+            "date": "2026-03-08",
+            "count": 1
+          },
+          {
+            "date": "2026-03-09",
+            "count": 1
+          }
+        ],
+        "totalCompleted": 3,
+        "currentStreak": 3,
+        "longestStreak": 3
+      }
+    },
+    {
+      "name": "computeStats: window crosses a month and leap day",
+      "op": "computeStats",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2028-02-29T12:00:00.000Z",
+            "completedAt": "2028-02-29T12:00:00.000Z"
+          }
+        ],
+        "now": "2028-03-01T12:00:00.000Z",
+        "days": 3,
+        "timeZone": "UTC"
+      },
+      "then": {
+        "perDay": [
+          {
+            "date": "2028-02-28",
+            "count": 0
+          },
+          {
+            "date": "2028-02-29",
+            "count": 1
+          },
+          {
+            "date": "2028-03-01",
+            "count": 0
+          }
+        ],
+        "totalCompleted": 1,
+        "currentStreak": 1,
+        "longestStreak": 1
+      }
+    }
+  ]
+}

@@ -38,6 +38,8 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
     /// UTC ISO-8601 with milliseconds, e.g. `2026-01-05T09:00:00.000Z`.
     public var createdAt: String
     public var updatedAt: String
+    /// When the todo was last completed; nil while open and for data from before REED-19.
+    public var completedAt: String?
 
     public init(
         id: String,
@@ -48,7 +50,8 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
         dueDate: String? = nil,
         reminder: ReminderOffset? = nil,
         createdAt: String,
-        updatedAt: String
+        updatedAt: String,
+        completedAt: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -59,6 +62,7 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
         self.reminder = reminder
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.completedAt = completedAt
     }
 }
 

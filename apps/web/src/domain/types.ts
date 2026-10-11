@@ -10,6 +10,8 @@ export type Todo = {
   priority: TodoPriority;
   dueDate?: string;
   reminder?: ReminderOffset;
+  /** ISO timestamp of the most recent completion; cleared when reopened. */
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 };

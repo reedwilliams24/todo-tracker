@@ -20,6 +20,10 @@ function todo(id: string, overrides: Partial<Todo> = {}): Todo {
   };
 }
 
+function done(id: string, completedAt?: string): Todo {
+  return todo(id, { completed: true, completedAt, updatedAt: completedAt ?? T0 });
+}
+
 const sample = [
   todo("a", { title: "Buy milk", notes: "2% organic", priority: "high", createdAt: "2026-01-01T09:00:00.000Z" }),
   todo("b", { title: "Walk the dog", completed: true, createdAt: "2026-01-02T09:00:00.000Z" }),
@@ -113,6 +117,11 @@ export const FEATURES: Feature[] = [
       { name: "createTodo drops blank notes", op: "createTodo", given: { draft: { title: "Read", notes: "   " }, now: T0 } },
       { name: "toggleTodo completes", op: "toggleTodo", given: { todo: todo("a"), now: T1 } },
       { name: "toggleTodo reopens", op: "toggleTodo", given: { todo: todo("a", { completed: true }), now: T1 } },
+      {
+        name: "toggleTodo reopening clears completedAt",
+        op: "toggleTodo",
+        given: { todo: done("a", T1), now: T2 },
+      },
       {
         name: "updateTodoText renames and bumps updatedAt",
         op: "updateTodoText",
@@ -380,6 +389,96 @@ export const FEATURES: Feature[] = [
     ],
   },
   {
+    feature: "stats",
+    spec: "features/stats.md",
+    cases: [
+      { name: "computeStats: no todos", op: "computeStats", given: { todos: [], now: "2026-03-10T15:00:00.000Z", days: 7, timeZone: "UTC" } },
+      {
+        name: "computeStats: defaults to a 30-day window",
+        op: "computeStats",
+        given: { todos: [done("a", "2026-03-10T09:00:00.000Z")], now: "2026-03-10T15:00:00.000Z", timeZone: "UTC" },
+      },
+      {
+        name: "computeStats: buckets per day, ignores open, legacy and invalid completions",
+        op: "computeStats",
+        given: {
+          todos: [
+            done("a", "2026-03-10T00:30:00.000Z"),
+            done("b", "2026-03-10T23:30:00.000Z"),
+            done("c", "2026-03-08T12:00:00.000Z"),
+            done("old", "2026-02-01T12:00:00.000Z"),
+            todo("open", { completedAt: "2026-03-10T10:00:00.000Z" }),
+            done("legacy"),
+            done("garbage", "not a date"),
+          ],
+          now: "2026-03-10T15:00:00.000Z",
+          days: 7,
+          timeZone: "UTC",
+        },
+      },
+      {
+        name: "computeStats: days follow the given time zone",
+        op: "computeStats",
+        given: {
+          todos: [done("late", "2026-03-10T03:30:00.000Z"), done("day", "2026-03-10T15:00:00.000Z")],
+          now: "2026-03-10T16:00:00.000Z",
+          days: 3,
+          timeZone: "America/New_York",
+        },
+      },
+      {
+        name: "computeStats: current streak survives an open today, longest is the best run",
+        op: "computeStats",
+        given: {
+          todos: [
+            done("a", "2026-03-09T12:00:00.000Z"),
+            done("b", "2026-03-08T12:00:00.000Z"),
+            done("c", "2026-03-01T12:00:00.000Z"),
+            done("d", "2026-03-02T12:00:00.000Z"),
+            done("e", "2026-03-03T12:00:00.000Z"),
+          ],
+          now: "2026-03-10T15:00:00.000Z",
+          days: 3,
+          timeZone: "UTC",
+        },
+      },
+      {
+        name: "computeStats: completing today extends the streak",
+        op: "computeStats",
+        given: {
+          todos: [done("a", "2026-03-10T08:00:00.000Z"), done("b", "2026-03-09T12:00:00.000Z"), done("c", "2026-03-08T12:00:00.000Z")],
+          now: "2026-03-10T15:00:00.000Z",
+          days: 3,
+          timeZone: "UTC",
+        },
+      },
+      {
+        name: "computeStats: a gap before yesterday resets the current streak",
+        op: "computeStats",
+        given: { todos: [done("a", "2026-03-07T12:00:00.000Z")], now: "2026-03-10T15:00:00.000Z", days: 3, timeZone: "UTC" },
+      },
+      {
+        name: "computeStats: DST start day chains with its neighbours",
+        op: "computeStats",
+        given: {
+          todos: [
+            done("a", "2026-03-07T17:00:00.000Z"),
+            done("b", "2026-03-08T16:00:00.000Z"),
+            done("c", "2026-03-09T16:00:00.000Z"),
+          ],
+          now: "2026-03-10T00:30:00.000Z",
+          days: 4,
+          timeZone: "America/New_York",
+        },
+      },
+      {
+        name: "computeStats: window crosses a month and leap day",
+        op: "computeStats",
+        given: { todos: [done("a", "2028-02-29T12:00:00.000Z")], now: "2028-03-01T12:00:00.000Z", days: 3, timeZone: "UTC" },
+      },
+    ],
+  },
+  {
     feature: "storage",
     spec: "features/storage.md",
     cases: [
@@ -394,6 +493,11 @@ export const FEATURES: Feature[] = [
       { name: "parse corrupt JSON", op: "parseStoredTodos", given: { raw: "[{oops" } },
       { name: "parse non-array JSON", op: "parseStoredTodos", given: { raw: '{"id":"a"}' } },
       { name: "serialize round-trips", op: "serializeTodos", given: { todos: sample } },
+      {
+        name: "parse keeps completedAt",
+        op: "parseStoredTodos",
+        given: { raw: JSON.stringify([done("a", T1), todo("b")]) },
+      },
     ],
   },
   {

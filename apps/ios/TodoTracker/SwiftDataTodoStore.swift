@@ -22,6 +22,7 @@ final class StoredTodo {
     var reminder: String?
     var createdAt: String
     var updatedAt: String
+    var completedAt: String?
 
     init(_ todo: Todo, position: Int) {
         id = todo.id
@@ -34,6 +35,7 @@ final class StoredTodo {
         reminder = todo.reminder?.rawValue
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
+        completedAt = todo.completedAt
     }
 
     func update(_ todo: Todo, position: Int) {
@@ -46,6 +48,7 @@ final class StoredTodo {
         reminder = todo.reminder?.rawValue
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
+        completedAt = todo.completedAt
     }
 
     var todo: Todo? {
@@ -59,7 +62,8 @@ final class StoredTodo {
             dueDate: dueDate,
             reminder: reminder.flatMap(ReminderOffset.init(rawValue:)),
             createdAt: createdAt,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            completedAt: completedAt
         )
     }
 }

@@ -72,8 +72,11 @@ fun updateTodoText(todos: List<Todo>, id: String, text: String, now: Instant = I
     return todos.map { if (it.id == id && it.title != title) it.copy(title = title, updatedAt = timestamp(now)) else it }
 }
 
-fun toggleTodo(todo: Todo, now: Instant = Instant.now()): Todo =
-    todo.copy(completed = !todo.completed, updatedAt = timestamp(now))
+/** Completing sets `completedAt`; reopening clears it. */
+fun toggleTodo(todo: Todo, now: Instant = Instant.now()): Todo {
+    val completed = !todo.completed
+    return todo.copy(completed = completed, updatedAt = timestamp(now), completedAt = if (completed) timestamp(now) else null)
+}
 
 fun filterTodos(todos: List<Todo>, filter: TodoFilter): List<Todo> = when (filter) {
     TodoFilter.ACTIVE -> todos.filter { !it.completed }

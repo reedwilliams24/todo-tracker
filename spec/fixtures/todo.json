@@ -32,7 +32,8 @@
           "1h": "1 hour before",
           "1d": "1 day before"
         },
-        "dueHour": 9
+        "dueHour": 9,
+        "statsDays": 30
       }
     },
     {
@@ -358,7 +359,8 @@
         "completed": true,
         "priority": "medium",
         "createdAt": "2026-01-05T09:00:00.000Z",
-        "updatedAt": "2026-01-05T10:00:00.000Z"
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "completedAt": "2026-01-05T10:00:00.000Z"
       }
     },
     {
@@ -382,6 +384,30 @@
         "priority": "medium",
         "createdAt": "2026-01-05T09:00:00.000Z",
         "updatedAt": "2026-01-05T10:00:00.000Z"
+      }
+    },
+    {
+      "name": "toggleTodo reopening clears completedAt",
+      "op": "toggleTodo",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "completedAt": "2026-01-05T10:00:00.000Z"
+        },
+        "now": "2026-01-05T11:00:00.000Z"
+      },
+      "then": {
+        "id": "a",
+        "title": "Todo a",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T11:00:00.000Z"
       }
     },
     {

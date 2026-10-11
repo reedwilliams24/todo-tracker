@@ -40,4 +40,9 @@ export const TEST_IDS = {
   undoToast: "undo-toast",
   undoLabel: "undo-toast-label",
   undoAction: "undo-toast-action",
+  statsToggle: "stats-toggle",
+  statsTotal: "stat-total",
+  statsCurrent: "stat-current",
+  statsLongest: "stat-longest",
+  statsChart: "stats-chart",
 } as const;

@@ -147,6 +147,18 @@
         { "do": "search", "query": "milk" },
         { "expect": "titles", "titles": ["Buy milk"] }
       ]
+    },
+    {
+      "name": "stats",
+      "steps": [
+        { "do": "add", "title": "Stretch" },
+        { "do": "toggle", "title": "Stretch" },
+        { "do": "openStats" },
+        { "expect": "stats", "total": "1", "current": "1d", "longest": "1d" },
+        { "do": "relaunch" },
+        { "do": "openStats" },
+        { "expect": "stats", "total": "1", "current": "1d", "longest": "1d" }
+      ]
     }
   ]
 }
