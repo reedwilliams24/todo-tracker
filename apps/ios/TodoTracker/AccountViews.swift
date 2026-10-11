@@ -1,37 +1,18 @@
 import SwiftUI
 import TodoCore
 
-/// Guest / expired banner, plus the sign-in sheet and Move/Discard prompt when they're open.
+/// Guest / expired banner. Shows nothing while signed in.
 struct AuthBanner: View {
     @Bindable var auth: AuthViewModel
 
     var body: some View {
-        Group {
-            switch auth.state.status {
-            case .signedOut:
-                banner(t("auth.guest.banner"), id: TestID.authGuestBanner, action: t("auth.signIn"))
-            case .expired:
-                banner(t("auth.expired.banner"), id: TestID.authExpiredBanner, action: t("auth.expired.signIn"))
-            case .signedIn:
-                EmptyView()
-            }
-        }
-        .sheet(isPresented: Binding(get: { auth.isSheetPresented }, set: { if !$0 { auth.cancel() } })) {
-            SignInSheet(auth: auth)
-        }
-        .alert(
-            auth.movePromptText ?? "",
-            isPresented: Binding(get: { auth.movePromptText != nil }, set: { _ in })
-        ) {
-            Button(t("auth.move.move")) { auth.resolveGuestTodos(move: true) }
-                .accessibilityIdentifier(TestID.authMoveConfirm)
-            Button(t("auth.move.discard"), role: .destructive) { auth.resolveGuestTodos(move: false) }
-                .accessibilityIdentifier(TestID.authMoveDiscard)
-        } message: {
-            if auth.moveFailed {
-                Text(t("auth.move.failed"))
-                    .accessibilityIdentifier(TestID.authMoveError)
-            }
+        switch auth.state.status {
+        case .signedOut:
+            banner(t("auth.guest.banner"), id: TestID.authGuestBanner, action: t("auth.signIn"))
+        case .expired:
+            banner(t("auth.expired.banner"), id: TestID.authExpiredBanner, action: t("auth.expired.signIn"))
+        case .signedIn:
+            EmptyView()
         }
     }
 
@@ -51,6 +32,40 @@ struct AuthBanner: View {
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(id)
+    }
+}
+
+/// The sign-in sheet and Move/Discard prompt. Attached to the screen, not the banner: the banner is
+/// empty once signed in, and a modifier on an empty view never presents.
+private struct AuthPresentation: ViewModifier {
+    @Bindable var auth: AuthViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: Binding(get: { auth.isSheetPresented }, set: { if !$0 { auth.cancel() } })) {
+                SignInSheet(auth: auth)
+            }
+            .alert(
+                auth.movePromptText ?? "",
+                isPresented: Binding(get: { auth.movePromptText != nil }, set: { _ in })
+            ) {
+                Button(t("auth.move.move")) { auth.resolveGuestTodos(move: true) }
+                    .accessibilityIdentifier(TestID.authMoveConfirm)
+                Button(t("auth.move.discard")) { auth.resolveGuestTodos(move: false) }
+                    .accessibilityIdentifier(TestID.authMoveDiscard)
+            } message: {
+                if auth.moveFailed {
+                    Text(t("auth.move.failed"))
+                        .accessibilityIdentifier(TestID.authMoveError)
+                }
+            }
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func authPresentation(_ auth: AuthViewModel?) -> some View {
+        if let auth { modifier(AuthPresentation(auth: auth)) } else { self }
     }
 }
 
