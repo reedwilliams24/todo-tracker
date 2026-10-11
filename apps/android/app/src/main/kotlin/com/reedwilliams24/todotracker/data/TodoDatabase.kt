@@ -111,16 +111,20 @@ abstract class TodoDatabase : RoomDatabase() {
     abstract fun todos(): TodoDao
 
     companion object {
-        @Volatile private var instance: TodoDatabase? = null
+        /** The guest list (signed out). */
+        const val GUEST = "todo-tracker.db"
 
-        fun get(context: Context): TodoDatabase =
-            instance
-                ?: synchronized(this) {
-                    instance
-                        ?: Room.databaseBuilder(context.applicationContext, TodoDatabase::class.java, "todo-tracker.db")
-                            .build()
-                            .also { instance = it }
+        /** The signed-in account's local cache, wiped on sign out. */
+        const val ACCOUNT = "todo-tracker-account.db"
+
+        private val instances = mutableMapOf<String, TodoDatabase>()
+
+        fun get(context: Context, name: String = GUEST): TodoDatabase =
+            synchronized(this) {
+                instances.getOrPut(name) {
+                    Room.databaseBuilder(context.applicationContext, TodoDatabase::class.java, name).build()
                 }
+            }
     }
 }
 

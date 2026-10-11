@@ -3,3 +3,4 @@ TodoTracker.xcodeproj/
 build/
 .build/
 .swiftpm/
+Config/Supabase.override.xcconfig

@@ -10,7 +10,7 @@ import { localTodoStorage } from "@/lib/storage";
 export function useAuth(client: AuthClient | null, mover: GuestTodoMover) {
   const [state, dispatchState] = useReducer(reduceAuth, INITIAL_AUTH_STATE);
   const stateRef = useRef(state);
-  const [ready, setReady] = useState(client === null);
+  const [ready, setReady] = useState(false);
   const [session, setSession] = useState<AuthSession | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -21,7 +21,10 @@ export function useAuth(client: AuthClient | null, mover: GuestTodoMover) {
   }, []);
 
   useEffect(() => {
-    if (!client) return;
+    if (!client) {
+      setReady(true);
+      return;
+    }
     let cancelled = false;
     const unsubscribe = client.onChange(({ session: next, initiated }) => {
       setSession(next);

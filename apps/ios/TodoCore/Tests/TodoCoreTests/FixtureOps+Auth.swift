@@ -8,7 +8,8 @@ extension FixtureOps {
                 AuthConstants()
             },
             "authErrorKind": { g in
-                authErrorKind(status: try g.decode("status", as: Int?.self), code: try g.decode("code", as: String?.self))
+                authErrorKind(
+                    status: try g.decode("status", as: Int?.self), code: try g.decode("code", as: String?.self))
             },
             "isValidCode": { g in
                 isValidCode(try g.decode("code"))

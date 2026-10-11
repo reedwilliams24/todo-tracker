@@ -3,6 +3,7 @@ import TodoCore
 
 struct ContentView: View {
     @Bindable var model: TodoViewModel
+    var auth: AuthViewModel?
     @AppStorage(themeStorageKey) private var storedTheme = defaultTheme.rawValue
 
     private var theme: ThemePreference { parseThemePreference(storedTheme) }
@@ -21,8 +22,10 @@ struct ContentView: View {
                             .foregroundStyle(Theme.muted)
                     }
                     Spacer(minLength: 0)
+                    if let auth { AccountMenu(auth: auth) }
                     themePicker
                 }
+                if let auth { AuthBanner(auth: auth) }
                 TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
                 toolbar
                 sortControl

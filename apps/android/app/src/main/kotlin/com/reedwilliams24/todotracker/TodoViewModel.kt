@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.reedwilliams24.todotracker.auth.TodoScope
 import com.reedwilliams24.todotracker.core.SORT_STORAGE_KEY
 import com.reedwilliams24.todotracker.core.THEME_STORAGE_KEY
 import com.reedwilliams24.todotracker.core.ThemePreference
@@ -37,7 +38,8 @@ data class TodoUiState(
 
 /** Android counterpart of `useTodos`: drives the shared reducer and persists after hydration. */
 class TodoViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = TodoRepository(TodoDatabase.get(application).todos())
+    private var scope = TodoScope.GUEST
+    private var repository = TodoRepository(TodoDatabase.get(application).todos())
     private val reminders = ReminderScheduler(application)
     private val prefs = application.getSharedPreferences("todo-tracker", Context.MODE_PRIVATE)
     private val saveLock = Mutex()
@@ -55,12 +57,30 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         prefs.edit().putString(THEME_STORAGE_KEY, preference.key).apply()
     }
 
+    private var loadJob: Job? = null
+
     init {
-        viewModelScope.launch {
-            val stored = repository.load()
-            _ui.update { it.copy(state = reduceTodos(it.state, TodoAction.Load(stored)), hydrated = true) }
-            syncReminders()
-        }
+        load()
+    }
+
+    /** Switches between the guest list and the signed-in account's local cache. */
+    fun useScope(next: TodoScope) {
+        if (next == scope && loadJob != null) return
+        scope = next
+        val name = if (next == TodoScope.ACCOUNT) TodoDatabase.ACCOUNT else TodoDatabase.GUEST
+        repository = TodoRepository(TodoDatabase.get(getApplication(), name).todos())
+        load()
+    }
+
+    private fun load() {
+        loadJob?.cancel()
+        _ui.update { it.copy(hydrated = false) }
+        loadJob =
+            viewModelScope.launch {
+                val stored = saveLock.withLock { repository.load() }
+                _ui.update { it.copy(state = reduceTodos(TodoState(), TodoAction.Load(stored)), hydrated = true) }
+                syncReminders()
+            }
     }
 
     /** Re-plans notifications, e.g. after the user grants notification permission. */
@@ -115,9 +135,10 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun persist(state: TodoState) {
         viewModelScope.launch {
+            val target = repository
             saveLock.withLock {
                 // Save the latest list, not the one captured at launch, so writes never go backwards.
-                repository.save(_ui.value.state.todos)
+                if (target === repository) repository.save(_ui.value.state.todos)
             }
         }
     }

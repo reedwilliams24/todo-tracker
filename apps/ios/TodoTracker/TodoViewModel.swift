@@ -15,7 +15,7 @@ final class TodoViewModel {
     var selectedIds: Set<String> = []
     var confirmingDelete = false
 
-    private let store: TodoStore
+    private var store: TodoStore
     private let reminders: ReminderScheduling?
     private let defaults: UserDefaults
     private let now: () -> Date
@@ -31,6 +31,14 @@ final class TodoViewModel {
         self.now = now
         sort = parseStoredSort(defaults.string(forKey: sortStorageKey))
         state = reduceTodos(state, .load(store.load()), now: now())
+        reminders?.sync(state.todos)
+    }
+
+    /// Switches between the guest list and the signed-in account's local cache.
+    func useStore(_ next: TodoStore) {
+        store = next
+        exitSelectMode()
+        state = reduceTodos(TodoState.initial, .load(store.load()), now: now())
         reminders?.sync(state.todos)
     }
 

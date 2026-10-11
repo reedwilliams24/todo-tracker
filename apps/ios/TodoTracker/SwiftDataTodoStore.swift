@@ -90,9 +90,12 @@ final class SwiftDataTodoStore: TodoStore {
         self.context = context
     }
 
-    static func makeContainer(inMemory: Bool) -> ModelContainer {
+    /// `name` picks the store: the default is the guest list, `account` the signed-in account's local cache.
+    static func makeContainer(inMemory: Bool, name: String? = nil) -> ModelContainer {
         do {
-            let config = ModelConfiguration(isStoredInMemoryOnly: inMemory)
+            let config =
+                name.map { ModelConfiguration($0, isStoredInMemoryOnly: inMemory) }
+                ?? ModelConfiguration(isStoredInMemoryOnly: inMemory)
             return try ModelContainer(for: StoredTodo.self, configurations: config)
         } catch {
             fatalError("Could not open the todo store: \(error)")

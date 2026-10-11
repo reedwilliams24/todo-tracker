@@ -6,7 +6,7 @@
     "ios": "missing",
     "android": "missing"
   },
-  "note": "Needs a configured build + local `supabase start`; native follow-up: FOLLOWUP",
+  "note": "Needs a configured build + local `supabase start`; native follow-up: REED-80",
   "steps": [
     {
       "expect": "guestBanner",

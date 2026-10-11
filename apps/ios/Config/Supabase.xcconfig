@@ -1,0 +1,9 @@
+// Supabase config. Empty by default: a guest-only build, as CI uses.
+// To sign in, create Config/Supabase.override.xcconfig (gitignored), e.g. by copying
+// Supabase.dev.xcconfig / Supabase.prod.xcconfig, or for a local `supabase start`:
+//   SUPABASE_URL = http:/$()/127.0.0.1:54321
+//   SUPABASE_ANON_KEY = <PUBLISHABLE_KEY from `pnpm exec supabase status -o env`>
+SUPABASE_URL =
+SUPABASE_ANON_KEY =
+
+#include? "Supabase.override.xcconfig"

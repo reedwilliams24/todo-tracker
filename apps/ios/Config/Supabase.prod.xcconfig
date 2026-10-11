@@ -1,0 +1,5 @@
+// Public Supabase prod project config (publishable key, safe to commit).
+// Use it with: cp Config/Supabase.prod.xcconfig Config/Supabase.override.xcconfig
+// `$()` keeps xcconfig from reading `//` as a comment.
+SUPABASE_URL = https:/$()/fjadpegieslfreoynczd.supabase.co
+SUPABASE_ANON_KEY = sb_publishable_lMMLR4Mjhb735enDIvMoyg_jJfb2RUu

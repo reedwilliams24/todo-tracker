@@ -9,15 +9,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.reedwilliams24.todotracker.auth.AuthViewModel
 import com.reedwilliams24.todotracker.core.ResolvedTheme
 import com.reedwilliams24.todotracker.core.resolveTheme
+import com.reedwilliams24.todotracker.ui.AccountMenu
+import com.reedwilliams24.todotracker.ui.AuthActions
+import com.reedwilliams24.todotracker.ui.AuthBanner
 import com.reedwilliams24.todotracker.ui.TodoApp
 import com.reedwilliams24.todotracker.ui.TodoTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: TodoViewModel by viewModels()
+    private val auth: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +41,33 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
                 onDispose {}
             }
-            TodoTheme(dark) { TodoApp(viewModel) }
+            TodoTheme(dark) {
+                if (!auth.configured) {
+                    TodoApp(viewModel)
+                } else {
+                    val scope by auth.scope.collectAsStateWithLifecycle()
+                    val state by auth.state.collectAsStateWithLifecycle()
+                    val resendSeconds by auth.resendSeconds.collectAsStateWithLifecycle()
+                    LaunchedEffect(scope) { viewModel.useScope(scope) }
+                    val actions = remember {
+                        AuthActions(
+                            open = auth::open,
+                            cancel = auth::cancel,
+                            sendCode = auth::sendCode,
+                            resend = auth::resend,
+                            verify = auth::verify,
+                            changeEmail = auth::changeEmail,
+                            resolveGuestTodos = auth::resolveGuestTodos,
+                            signOut = auth::signOut,
+                        )
+                    }
+                    TodoApp(
+                        viewModel,
+                        account = { AccountMenu(state, actions) },
+                        banner = { AuthBanner(state, resendSeconds, actions) },
+                    )
+                }
+            }
         }
     }
 }

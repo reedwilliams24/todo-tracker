@@ -4,16 +4,32 @@ import SwiftUI
 @main
 struct TodoTrackerApp: App {
     private let container: ModelContainer
+    private let guestStore: TodoStore
+    private let accountStore: TodoStore
     @State private var model: TodoViewModel
+    @State private var auth: AuthViewModel?
 
     init() {
         let inMemory = ProcessInfo.processInfo.arguments.contains("-uiTesting")
         let container = SwiftDataTodoStore.makeContainer(inMemory: inMemory)
         self.container = container
         let store = SwiftDataTodoStore(context: container.mainContext)
+        let accountContainer = SwiftDataTodoStore.makeContainer(inMemory: inMemory, name: "account")
+        let accountStore = SwiftDataTodoStore(context: accountContainer.mainContext)
+        guestStore = store
+        self.accountStore = accountStore
         let reminders: ReminderScheduling? = inMemory ? nil : ReminderScheduler()
         let defaults = inMemory ? Self.uiTestingDefaults() : .standard
-        _model = State(initialValue: TodoViewModel(store: store, reminders: reminders, defaults: defaults))
+        // UI tests (and builds without Supabase config) stay guest-only.
+        let auth =
+            inMemory
+            ? nil
+            : SupabaseConfig.client().map {
+                AuthViewModel(client: $0, guest: store, account: accountStore, defaults: defaults)
+            }
+        _auth = State(initialValue: auth)
+        let initial: TodoStore = auth?.scope == .account ? accountStore : store
+        _model = State(initialValue: TodoViewModel(store: initial, reminders: reminders, defaults: defaults))
     }
 
     /// UI tests start from a clean sort preference, like the in-memory store.
@@ -26,7 +42,10 @@ struct TodoTrackerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(model: model)
+            ContentView(model: model, auth: auth)
+                .onChange(of: auth?.scope) { _, scope in
+                    model.useStore(scope == .account ? accountStore : guestStore)
+                }
         }
     }
 }
