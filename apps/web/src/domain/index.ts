@@ -6,5 +6,6 @@ export * from "./voice";
 export * from "./undo";
 export * from "./store";
 export * from "./test-ids";
+export * from "./recurrence";
 export * from "./quick-add";
 export * from "./stats";

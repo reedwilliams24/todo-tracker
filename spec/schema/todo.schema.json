@@ -13,12 +13,14 @@
     "completed": { "type": "boolean" },
     "priority": { "$ref": "#/$defs/priority" },
     "dueDate": { "$ref": "#/$defs/date" },
+    "recurrence": { "$ref": "#/$defs/recurrence" },
     "createdAt": { "$ref": "#/$defs/timestamp" },
     "updatedAt": { "$ref": "#/$defs/timestamp" },
     "completedAt": { "$ref": "#/$defs/timestamp", "description": "When the todo was last completed. Set by toggle on completion, removed on reopen. Older data may have completed todos without it." }
   },
   "$defs": {
     "priority": { "enum": ["low", "medium", "high"] },
+    "recurrence": { "enum": ["daily", "weekly", "monthly"], "description": "Repeat rule; see features/recurrence.md." },
     "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "Calendar date, YYYY-MM-DD, no time zone." },
     "timestamp": { "type": "string", "format": "date-time", "description": "UTC ISO-8601 with milliseconds, e.g. 2026-01-01T09:00:00.000Z." },
     "draft": {
@@ -29,7 +31,8 @@
         "title": { "type": "string" },
         "notes": { "type": "string" },
         "priority": { "$ref": "#/$defs/priority" },
-        "dueDate": { "$ref": "#/$defs/date" }
+        "dueDate": { "$ref": "#/$defs/date" },
+        "recurrence": { "$ref": "#/$defs/recurrence" }
       }
     }
   }

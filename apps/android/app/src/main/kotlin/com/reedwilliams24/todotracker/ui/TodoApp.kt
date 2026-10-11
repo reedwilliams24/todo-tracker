@@ -69,6 +69,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reedwilliams24.todotracker.TodoViewModel
 import com.reedwilliams24.todotracker.core.EMPTY_TODO_FORM
+import com.reedwilliams24.todotracker.core.RECURRENCES
+import com.reedwilliams24.todotracker.core.Recurrence
 import com.reedwilliams24.todotracker.core.TestIds
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoDraft
@@ -542,16 +544,18 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
+    var recurrence by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.recurrence) }
     val parsed = remember(title) { parseQuickAdd(title) }
     val dateOk = isValidDueDate(dueDate)
     val canAdd = isValidTitle(parsed.title) && dateOk
 
     fun submit() {
         if (!canAdd) return
-        onAdd(quickAddToDraft(parsed, priority, dueDate))
+        onAdd(quickAddToDraft(parsed, priority, dueDate).copy(recurrence = Recurrence.fromKey(recurrence)))
         title = EMPTY_TODO_FORM.title
         priority = EMPTY_TODO_FORM.priority
         dueDate = EMPTY_TODO_FORM.dueDate
+        recurrence = EMPTY_TODO_FORM.recurrence
     }
 
     Column(
@@ -611,6 +615,28 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
                     .testTag(TestIds.formDueDate)
                     .padding(horizontal = Spacing.s2, vertical = Spacing.s1_5),
             )
+        }
+        Row(
+            Modifier
+                .clip(RoundedCornerShape(Radius.md))
+                .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
+                .selectableGroup()
+                .semantics { contentDescription = "Repeat" }
+                .testTag(TestIds.formRecurrence),
+        ) {
+            (listOf("" to "No repeat") + RECURRENCES.map { it.key to it.label }).forEach { (key, label) ->
+                val selected = key == recurrence
+                Text(
+                    label,
+                    fontSize = FontSize.sm,
+                    color = if (selected) Palette.card else Palette.foreground,
+                    modifier = Modifier
+                        .background(if (selected) Palette.foreground else Palette.card)
+                        .selectable(selected = selected, role = Role.RadioButton) { recurrence = key }
+                        .testTag(TestIds.formRecurrenceOption(key.ifEmpty { "none" }))
+                        .padding(horizontal = Spacing.s2_5, vertical = Spacing.s1_5),
+                )
+            }
         }
         if (hasQuickAddMeta(parsed)) {
             Column(
@@ -770,6 +796,15 @@ private fun TodoItem(
                 }
                 Text(it, fontSize = FontSize.xs, color = color, modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)))
             }
+        }
+
+        todo.recurrence?.let {
+            Text(
+                "↻ ${it.label}",
+                fontSize = FontSize.xs,
+                color = Palette.muted,
+                modifier = Modifier.testTag(TestIds.itemRecurrence(todo.title)),
+            )
         }
 
         val (badgeBg, badgeText) = Palette.priority(todo.priority)

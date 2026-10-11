@@ -19,8 +19,14 @@
         "emptyForm": {
           "title": "",
           "priority": "medium",
-          "dueDate": ""
+          "dueDate": "",
+          "recurrence": ""
         },
+        "recurrences": [
+          "daily",
+          "weekly",
+          "monthly"
+        ],
         "statsDays": 30
       }
     },

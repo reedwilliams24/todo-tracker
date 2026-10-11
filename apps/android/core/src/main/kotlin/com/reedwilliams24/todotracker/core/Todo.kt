@@ -12,6 +12,20 @@ enum class TodoPriority {
     val key: String get() = name.lowercase()
 }
 
+/** Repeat rule; see spec/features/recurrence.md. */
+@Serializable
+enum class Recurrence(val label: String) {
+    @SerialName("daily") DAILY("Daily"),
+    @SerialName("weekly") WEEKLY("Weekly"),
+    @SerialName("monthly") MONTHLY("Monthly");
+
+    val key: String get() = name.lowercase()
+
+    companion object {
+        fun fromKey(key: String): Recurrence? = entries.firstOrNull { it.key == key }
+    }
+}
+
 @Serializable
 data class Todo(
     val id: String,
@@ -20,6 +34,7 @@ data class Todo(
     val completed: Boolean,
     val priority: TodoPriority,
     val dueDate: String? = null,
+    val recurrence: Recurrence? = null,
     val createdAt: String,
     val updatedAt: String,
     /** When the todo was last completed; null while open and for data from before REED-19. */
@@ -52,12 +67,14 @@ data class TodoDraft(
     val notes: String? = null,
     val priority: TodoPriority? = null,
     val dueDate: String? = null,
+    val recurrence: Recurrence? = null,
 )
 
-/** Controlled-input state for the add form; dueDate is "" when unset. */
+/** Controlled-input state for the add form; dueDate and recurrence are "" when unset. */
 @Serializable
 data class TodoFormState(
     val title: String = "",
     val priority: TodoPriority = DEFAULT_PRIORITY,
     val dueDate: String = "",
+    val recurrence: String = "",
 )

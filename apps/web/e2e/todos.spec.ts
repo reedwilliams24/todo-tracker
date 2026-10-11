@@ -193,6 +193,26 @@ test("undo restores deleted and completed todos in their original position", asy
   await expect(page.getByRole("listitem")).toHaveCount(3);
 });
 
+test("completing a recurring todo schedules the next occurrence", async ({ page }) => {
+  await page.getByLabel("Todo title").fill("Water plants");
+  await page.getByLabel("Due date").fill("2026-01-31");
+  await page.getByLabel("Repeat").selectOption("monthly");
+  await page.getByRole("button", { name: "Add" }).click();
+
+  const items = page.getByRole("listitem");
+  await expect(items).toHaveCount(1);
+  await expect(items.first()).toContainText("↻ Monthly");
+
+  await page.getByRole("checkbox", { name: 'Mark "Water plants" as complete' }).check();
+  await expect(items).toHaveCount(2);
+  await expect(items.first()).toContainText("2026-02-28");
+  await expect(page.getByRole("checkbox", { name: 'Mark "Water plants" as complete' })).not.toBeChecked();
+  await expect(page.getByRole("checkbox", { name: 'Mark "Water plants" as active' })).toBeChecked();
+
+  await page.reload();
+  await expect(page.getByRole("listitem")).toHaveCount(2);
+});
+
 test("quick-add shorthand previews and applies due date, priority", async ({ page }) => {
   const input = page.getByLabel("Todo title");
   await input.fill("call mom tomorrow #family !p1");

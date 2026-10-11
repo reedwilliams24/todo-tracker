@@ -9,8 +9,14 @@ fun addTodos(todos: List<Todo>, drafts: List<TodoDraft>, now: Instant = Instant.
     return AddResult(created + todos, created)
 }
 
+/** Toggles a todo; completing a recurring todo inserts its next occurrence right after it. */
 fun toggleInList(todos: List<Todo>, id: String, now: Instant = Instant.now()): List<Todo> =
-    todos.map { if (it.id == id) toggleTodo(it, now) else it }
+    todos.flatMap {
+        if (it.id != id) return@flatMap listOf(it)
+        val toggled = toggleTodo(it, now)
+        val next = if (toggled.completed) scheduleNext(toggled, now) else null
+        listOfNotNull(toggled, next)
+    }
 
 fun renameInList(todos: List<Todo>, id: String, title: String, now: Instant = Instant.now()): List<Todo> =
     updateTodoText(todos, id, title, now)

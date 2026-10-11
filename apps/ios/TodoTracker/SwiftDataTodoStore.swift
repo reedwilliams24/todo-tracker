@@ -18,6 +18,7 @@ final class StoredTodo {
     var completed: Bool
     var priority: String
     var dueDate: String?
+    var recurrence: String?
     var createdAt: String
     var updatedAt: String
     var completedAt: String?
@@ -30,6 +31,7 @@ final class StoredTodo {
         completed = todo.completed
         priority = todo.priority.rawValue
         dueDate = todo.dueDate
+        recurrence = todo.recurrence?.rawValue
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
         completedAt = todo.completedAt
@@ -42,6 +44,7 @@ final class StoredTodo {
         completed = todo.completed
         priority = todo.priority.rawValue
         dueDate = todo.dueDate
+        recurrence = todo.recurrence?.rawValue
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
         completedAt = todo.completedAt
@@ -56,6 +59,7 @@ final class StoredTodo {
             completed: completed,
             priority: priority,
             dueDate: dueDate,
+            recurrence: recurrence.flatMap(Recurrence.init(rawValue:)),
             createdAt: createdAt,
             updatedAt: updatedAt,
             completedAt: completedAt

@@ -11,8 +11,14 @@ public func addTodos(_ todos: [Todo], drafts: [TodoDraft], now: Date = Date()) -
     return AddTodosResult(todos: created + todos, created: created)
 }
 
+/// Toggles a todo; completing a recurring todo inserts its next occurrence right after it.
 public func toggleInList(_ todos: [Todo], id: String, now: Date = Date()) -> [Todo] {
-    todos.map { $0.id == id ? toggleTodo($0, now: now) : $0 }
+    todos.flatMap { todo -> [Todo] in
+        guard todo.id == id else { return [todo] }
+        let toggled = toggleTodo(todo, now: now)
+        guard toggled.completed, let next = scheduleNext(toggled, now: now) else { return [toggled] }
+        return [toggled, next]
+    }
 }
 
 public func renameInList(_ todos: [Todo], id: String, title: String, now: Date = Date()) -> [Todo] {

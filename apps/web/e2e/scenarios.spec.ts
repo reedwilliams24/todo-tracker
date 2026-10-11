@@ -43,6 +43,7 @@ async function run(page: Page, step: Step) {
       await page.getByTestId(id("formTitle")).fill(s.title!);
       if (s.priority) await page.getByTestId(id("formPriority")).selectOption(s.priority);
       if (s.dueDate) await page.getByTestId(id("formDueDate")).fill(s.dueDate);
+      if (s.recurrence) await page.getByTestId(id("formRecurrence")).selectOption(s.recurrence);
       await page.getByTestId(id("formSubmit")).click();
       await expect(page.getByTestId(id("item", s.title!))).toBeVisible();
       return;
@@ -96,7 +97,9 @@ async function run(page: Page, step: Step) {
     case "priority":
       return expect(page.getByTestId(id("itemPriority", s.title!))).toHaveText(new RegExp(`^${s.priority}$`, "i"));
     case "dueDate":
-      return expect(page.getByTestId(id("itemDueDate", s.title!))).toHaveText(s.dueDate!);
+      return expect(page.getByTestId(id("itemDueDate", s.title!)).filter({ hasText: s.dueDate! }).first()).toBeVisible();
+    case "recurrence":
+      return expect(page.getByTestId(id("itemRecurrence", s.title!)).filter({ hasText: s.text! }).first()).toBeVisible();
     case "overdue":
       if (s.value) return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeVisible();
       return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeHidden();

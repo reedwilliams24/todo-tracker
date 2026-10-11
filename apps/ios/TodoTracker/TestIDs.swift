@@ -6,6 +6,8 @@ enum TestID {
     static let formPriority = "todo-form-priority"
     static func formPriorityOption(_ priority: TodoPriority) -> String { "todo-form-priority-\(priority.rawValue)" }
     static let formDueDate = "todo-form-due-date"
+    static let formRecurrence = "todo-form-recurrence"
+    static func formRecurrenceOption(_ recurrence: Recurrence?) -> String { "todo-form-recurrence-\(recurrence?.rawValue ?? "none")" }
     static let formSubmit = "todo-form-submit"
     static let quickAddPreview = "todo-quick-add-preview"
     static let quickAddPreviewTitle = "todo-quick-add-preview-title"
@@ -32,6 +34,7 @@ enum TestID {
     static func itemDueDate(_ title: String) -> String { "todo-due-\(title)" }
     static func itemOverdue(_ title: String) -> String { "todo-overdue-\(title)" }
     static func itemPriority(_ title: String) -> String { "todo-priority-\(title)" }
+    static func itemRecurrence(_ title: String) -> String { "todo-recurrence-\(title)" }
     static func itemDelete(_ title: String) -> String { "todo-delete-\(title)" }
     static let undoToast = "undo-toast"
     static let undoLabel = "undo-toast-label"
