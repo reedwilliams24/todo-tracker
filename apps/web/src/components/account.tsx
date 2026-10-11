@@ -252,7 +252,7 @@ function DeleteAccountDialog({ auth, onCancel }: { auth: Auth; onCancel: () => v
         aria-modal="true"
         aria-labelledby="delete-account-title"
         data-testid={TEST_IDS.authDeleteDialog}
-        className={`${CARD} max-w-sm bg-background`}
+        className="flex max-w-sm flex-col gap-3 rounded-xl border border-black/10 bg-background p-4 shadow-lg dark:border-white/15"
       >
         <h2 id="delete-account-title" className="font-semibold">
           {t("auth.delete.title")}
