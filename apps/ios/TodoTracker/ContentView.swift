@@ -42,30 +42,53 @@ struct ContentView: View {
     }
 
     private var toolbar: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 4) {
-                ForEach(TodoFilter.allCases, id: \.self) { option in
-                    let selected = model.filter == option
-                    Button { model.filter = option } label: {
-                        Text(option.rawValue.capitalized)
-                            .font(.system(size: 14))
-                            .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(selected ? Theme.foreground : .clear, in: Capsule())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(selected ? .isSelected : [])
-                    .accessibilityIdentifier(TestID.filter(option))
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                filterButtons
+                Spacer(minLength: 0)
+                toolbarActions
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                filterButtons
+                HStack(spacing: 16) {
+                    Spacer(minLength: 0)
+                    toolbarActions
                 }
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityLabel("Filter todos")
-            Spacer()
+        }
+    }
+
+    private var filterButtons: some View {
+        HStack(spacing: 4) {
+            ForEach(TodoFilter.allCases, id: \.self) { option in
+                let selected = model.filter == option
+                Button { model.filter = option } label: {
+                    Text(option.rawValue.capitalized)
+                        .font(.system(size: 14))
+                        .lineLimit(1)
+                        .fixedSize()
+                        .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(selected ? Theme.foreground : .clear, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier(TestID.filter(option))
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Filter todos")
+    }
+
+    private var toolbarActions: some View {
+        HStack(spacing: 16) {
             if !model.state.todos.isEmpty {
                 Button(model.selecting ? "Done" : "Select", action: model.toggleSelectMode)
                     .buttonStyle(.plain)
                     .font(.system(size: 14))
+                    .lineLimit(1)
+                    .fixedSize()
                     .foregroundStyle(Theme.foreground.opacity(0.7))
                     .accessibilityIdentifier(TestID.selectMode)
             }
@@ -73,6 +96,8 @@ struct ContentView: View {
                 Button("Clear completed (\(model.completedCount))", action: model.clearCompleted)
                     .buttonStyle(.plain)
                     .font(.system(size: 14))
+                    .lineLimit(1)
+                    .fixedSize()
                     .foregroundStyle(Theme.foreground.opacity(0.7))
                     .accessibilityIdentifier(TestID.clearCompleted)
             }
@@ -107,27 +132,33 @@ struct ContentView: View {
 
     private var bulkBar: some View {
         let count = model.selected.count
-        return HStack(spacing: 12) {
+        return Group {
             if model.confirmingDelete {
-                Text("Delete \(count) \(count == 1 ? "todo" : "todos")?")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Theme.foreground)
-                Spacer()
-                actionButton("Cancel", id: TestID.bulkDeleteCancel) { model.confirmingDelete = false }
-                actionButton("Delete", id: TestID.bulkDeleteConfirm, danger: true, action: model.deleteSelected)
+                HStack(spacing: 12) {
+                    Text("Delete \(count) \(count == 1 ? "todo" : "todos")?")
+                        .font(.system(size: 14, weight: .medium))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .foregroundStyle(Theme.foreground)
+                    Spacer(minLength: 0)
+                    actionButton("Cancel", id: TestID.bulkDeleteCancel) { model.confirmingDelete = false }
+                    actionButton("Delete", id: TestID.bulkDeleteConfirm, danger: true, action: model.deleteSelected)
+                }
             } else {
-                Text("\(count) selected")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.muted)
-                    .accessibilityIdentifier(TestID.selectedCount)
-                Button(model.allVisibleSelected ? "Select none" : "Select all", action: model.toggleSelectAll)
-                    .buttonStyle(.plain)
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.foreground)
-                    .accessibilityIdentifier(TestID.selectAll)
-                Spacer()
-                actionButton("Toggle complete", id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
-                actionButton("Delete", id: TestID.bulkDelete, enabled: count > 0, danger: true) { model.confirmingDelete = true }
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        bulkSelectionControls(count)
+                        Spacer(minLength: 0)
+                        bulkActionButtons(count)
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        bulkSelectionControls(count)
+                        HStack(spacing: 12) {
+                            Spacer(minLength: 0)
+                            bulkActionButtons(count)
+                        }
+                    }
+                }
             }
         }
         .padding(.horizontal, 12)
@@ -138,12 +169,39 @@ struct ContentView: View {
         .accessibilityIdentifier(TestID.bulkBar)
     }
 
+    private func bulkSelectionControls(_ count: Int) -> some View {
+        HStack(spacing: 12) {
+            Text("\(count) selected")
+                .font(.system(size: 14))
+                .lineLimit(1)
+                .fixedSize()
+                .foregroundStyle(Theme.muted)
+                .accessibilityIdentifier(TestID.selectedCount)
+            Button(model.allVisibleSelected ? "Select none" : "Select all", action: model.toggleSelectAll)
+                .buttonStyle(.plain)
+                .font(.system(size: 14))
+                .lineLimit(1)
+                .fixedSize()
+                .foregroundStyle(Theme.foreground)
+                .accessibilityIdentifier(TestID.selectAll)
+        }
+    }
+
+    private func bulkActionButtons(_ count: Int) -> some View {
+        HStack(spacing: 12) {
+            actionButton("Toggle complete", id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
+            actionButton("Delete", id: TestID.bulkDelete, enabled: count > 0, danger: true) { model.confirmingDelete = true }
+        }
+    }
+
     private func actionButton(
         _ title: String, id: String, enabled: Bool = true, danger: Bool = false, action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 14, weight: .medium))
+                .lineLimit(1)
+                .fixedSize()
                 .foregroundStyle(danger ? Theme.card : Theme.foreground)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
