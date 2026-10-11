@@ -28,7 +28,7 @@ async function visibleTitles(page: Page): Promise<string[]> {
 }
 
 async function run(page: Page, step: Step) {
-  const s = step as Record<string, string> & { value?: boolean; titles?: string[]; label?: string | null };
+  const s = step as Record<string, string> & { value?: boolean; visible?: boolean; titles?: string[]; label?: string | null };
   switch (step.do) {
     case "add":
       await page.getByTestId(id("formTitle")).fill(s.title!);
@@ -69,6 +69,8 @@ async function run(page: Page, step: Step) {
     case "undo":
       if (s.label === null) return expect(page.getByTestId(id("undoToast"))).toBeHidden();
       return expect(page.getByTestId(id("undoLabel"))).toHaveText(s.label!);
+    case "authPanel":
+      return expect(page.getByTestId(id("authPanel"))).toHaveCount(s.visible ? 1 : 0);
   }
   throw new Error(`Unknown step ${JSON.stringify(step)}`);
 }

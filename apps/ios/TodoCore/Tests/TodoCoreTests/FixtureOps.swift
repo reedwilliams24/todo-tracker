@@ -77,6 +77,16 @@ enum FixtureOps {
             return coerceDrafts(g.raw["value"] ?? .null)
         case "reconcileDrafts":
             return reconcileDrafts(heuristic: try g.decode("heuristic"), llm: try g.decode("llm"))
+        case "cloudConfig":
+            return cloudConfig(url: try g.decode("url", as: String?.self), anonKey: try g.decode("anonKey", as: String?.self))
+        case "toRow":
+            return toRow(try g.decode("todo"), userId: try g.decode("userId"))
+        case "migrationKey":
+            return migrationKey(userId: try g.decode("userId"))
+        case "mergeLocalIntoAccount":
+            return mergeLocalIntoAccount(local: try g.decode("local"), remote: try g.decode("remote"))
+        case "planCloudSave":
+            return planCloudSave(known: try g.decode("known"), todos: try g.decode("todos"))
         default:
             throw UnknownOp(op: op)
         }

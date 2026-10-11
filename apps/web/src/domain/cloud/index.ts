@@ -54,26 +54,51 @@ export function mergeLocalIntoAccount(local: readonly Todo[], remote: readonly T
   return [...byId.values()];
 }
 
+/** Last-synced `updatedAt` per todo id, in list order. */
+export type CloudVersion = { id: string; updatedAt: string };
+
+export type CloudSavePlan = { changed: Todo[]; removed: string[] };
+
+export function cloudVersions(todos: readonly Todo[]): CloudVersion[] {
+  return todos.map((todo) => ({ id: todo.id, updatedAt: todo.updatedAt }));
+}
+
+/**
+ * What a save must send: todos that are new or whose `updatedAt` differs from
+ * the last-synced version (upsert), and known ids no longer in the list (delete).
+ */
+export function planCloudSave(known: readonly CloudVersion[], todos: readonly Todo[]): CloudSavePlan {
+  const versions = new Map(known.map((version) => [version.id, version.updatedAt]));
+  const ids = new Set(todos.map((todo) => todo.id));
+  return {
+    changed: todos.filter((todo) => versions.get(todo.id) !== todo.updatedAt),
+    removed: known.map((version) => version.id).filter((id) => !ids.has(id)),
+  };
+}
+
+/** Per-account flag key recording that the signed-out list was merged in on this device. */
+export function migrationKey(userId: string): string {
+  return `todo-tracker:migrated:${userId}`;
+}
+
 /**
  * TodoStorage backed by a per-user table. `save` diffs against the last
  * loaded/saved snapshot so deletes propagate without a full table rewrite.
  */
 export function createCloudTodoStorage(table: TodoTable, userId: string): TodoStorage {
-  let known = new Map<string, string>();
+  let known: CloudVersion[] = [];
 
   return {
     async load() {
-      const rows = await table.list(userId);
-      known = new Map(rows.map((row) => [row.id, row.updated_at]));
-      return rows.map(fromRow);
+      const todos = (await table.list(userId)).map(fromRow);
+      known = cloudVersions(todos);
+      return todos;
     },
     async save(todos) {
-      const changed = todos.filter((todo) => known.get(todo.id) !== todo.updatedAt);
-      const ids = new Set(todos.map((todo) => todo.id));
-      const removed = [...known.keys()].filter((id) => !ids.has(id));
+      const { changed, removed } = planCloudSave(known, todos);
       if (changed.length) await table.upsert(changed.map((todo) => toRow(todo, userId)));
       if (removed.length) await table.remove(userId, removed);
-      known = new Map(todos.map((todo) => [todo.id, todo.updatedAt]));
+      known = cloudVersions(todos);
     },
   };
 }

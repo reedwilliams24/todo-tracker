@@ -1,0 +1,20 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: local-only-by-default
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- assertNotVisible:
+    id: "auth-panel"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "todo-item-Buy milk"

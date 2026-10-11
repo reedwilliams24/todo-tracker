@@ -34,7 +34,7 @@ const visible = (testId: string, extra: string[] = []) => [`- assertVisible:`, `
 
 /** Maestro commands for one scenario step; mirrors apps/web/e2e/scenarios.spec.ts. */
 function maestroStep(step: Step): string[] {
-  const s = step as Record<string, string> & { value?: boolean; titles?: string[]; label?: string | null };
+  const s = step as Record<string, string> & { value?: boolean; visible?: boolean; titles?: string[]; label?: string | null };
   switch (step.do) {
     case "add":
       return [
@@ -81,6 +81,8 @@ function maestroStep(step: Step): string[] {
       return s.label === null
         ? [`- assertNotVisible:`, `    id: ${q(id("undoToast"))}`]
         : visible(id("undoLabel"), [`    text: ${q(s.label)}`]);
+    case "authPanel":
+      return s.visible ? visible(id("authPanel")) : [`- assertNotVisible:`, `    id: ${q(id("authPanel"))}`];
   }
   throw new Error(`Unknown step ${JSON.stringify(step)}`);
 }

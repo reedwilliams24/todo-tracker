@@ -51,6 +51,7 @@ private val todoList = ListSerializer(Todo.serializer())
 private val draftList = ListSerializer(TodoDraft.serializer())
 
 private fun JsonObject.str(key: String): String = getValue(key).jsonPrimitive.content
+private fun JsonObject.optStr(key: String): String? = (get(key) as? JsonPrimitive)?.takeIf { it.isString }?.content
 private fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 private fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
 private fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
@@ -135,6 +136,15 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "cleanTitle" -> JsonPrimitive(cleanTitle(g.str("text")))
     "coerceDrafts" -> encodeDrafts(coerceDrafts(g["value"]))
     "reconcileDrafts" -> encodeDrafts(reconcileDrafts(g.drafts("heuristic"), g.drafts("llm")))
+    "cloudConfig" -> cloudConfig(g.optStr("url"), g.optStr("anonKey"))
+        ?.let { TodoJson.encodeToJsonElement(CloudConfig.serializer(), it) } ?: JsonNull
+    "toRow" -> toRow(TodoJson.decodeFromJsonElement(Todo.serializer(), g.getValue("todo")), g.str("userId")).toJson()
+    "migrationKey" -> JsonPrimitive(migrationKey(g.str("userId")))
+    "mergeLocalIntoAccount" -> encode(mergeLocalIntoAccount(g.todos("local"), g.todos("remote")))
+    "planCloudSave" -> TodoJson.encodeToJsonElement(
+        CloudSavePlan.serializer(),
+        planCloudSave(TodoJson.decodeFromJsonElement(ListSerializer(CloudVersion.serializer()), g.getValue("known")), g.todos()),
+    )
     else -> error("Unknown op \"$op\"")
 }
 

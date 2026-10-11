@@ -19,8 +19,19 @@ targets:
     sources: [TodoTracker]
     dependencies:
       - package: TodoCore
+    info:
+      path: TodoTracker/Info.plist
+      properties:
+        # Accounts are optional (spec/features/account.md): empty values build a local-only app.
+        SupabaseURL: $(SUPABASE_URL)
+        SupabaseAnonKey: $(SUPABASE_ANON_KEY)
+        CFBundleURLTypes:
+          - CFBundleURLName: com.reedwilliams24.todotracker.auth
+            CFBundleURLSchemes: [todotracker]
     settings:
       base:
+        SUPABASE_URL: ""
+        SUPABASE_ANON_KEY: ""
         PRODUCT_BUNDLE_IDENTIFIER: com.reedwilliams24.todotracker
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Todo Tracker

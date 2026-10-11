@@ -36,6 +36,16 @@ class TestIdsTest {
             "undoToast" to TestIds.undoToast,
             "undoLabel" to TestIds.undoLabel,
             "undoAction" to TestIds.undoAction,
+            "authPanel" to TestIds.authPanel,
+            "authEmail" to TestIds.authEmail,
+            "authSendCode" to TestIds.authSendCode,
+            "authCode" to TestIds.authCode,
+            "authVerify" to TestIds.authVerify,
+            "authGoogle" to TestIds.authGoogle,
+            "authApple" to TestIds.authApple,
+            "authStatus" to TestIds.authStatus,
+            "authUser" to TestIds.authUser,
+            "authSignOut" to TestIds.authSignOut,
         )
         assertEquals(expected, actual)
     }

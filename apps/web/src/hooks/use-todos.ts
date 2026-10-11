@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useTodos as useSharedTodos } from "@/domain/react";
 import {
   createCloudTodoStorage,
+  migrationKey,
   withFirstSignInMigration,
   type TodoStorage,
 } from "@/domain";
@@ -13,7 +14,7 @@ import type { AuthUser } from "@/hooks/use-auth";
 
 function accountStorage(user: AuthUser): TodoStorage {
   if (!supabase) return localTodoStorage;
-  const key = `todo-tracker:migrated:${user.id}`;
+  const key = migrationKey(user.id);
   return withFirstSignInMigration(
     createCloudTodoStorage(todoTable(supabase), user.id),
     localTodoStorage,

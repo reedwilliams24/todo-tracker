@@ -21,5 +21,15 @@
   "itemDelete": "todo-delete-{title}",
   "undoToast": "undo-toast",
   "undoLabel": "undo-toast-label",
-  "undoAction": "undo-toast-action"
+  "undoAction": "undo-toast-action",
+  "authPanel": "auth-panel",
+  "authEmail": "auth-email",
+  "authSendCode": "auth-send",
+  "authCode": "auth-code",
+  "authVerify": "auth-verify",
+  "authGoogle": "auth-google",
+  "authApple": "auth-apple",
+  "authStatus": "auth-status",
+  "authUser": "auth-user",
+  "authSignOut": "auth-sign-out"
 }

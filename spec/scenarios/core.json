@@ -82,6 +82,15 @@
         { "do": "search", "query": "milk" },
         { "expect": "titles", "titles": ["Buy milk"] }
       ]
+    },
+    {
+      "name": "local-only-by-default",
+      "steps": [
+        { "expect": "authPanel", "visible": false },
+        { "do": "add", "title": "Buy milk" },
+        { "do": "relaunch" },
+        { "expect": "titles", "titles": ["Buy milk"] }
+      ]
     }
   ]
 }

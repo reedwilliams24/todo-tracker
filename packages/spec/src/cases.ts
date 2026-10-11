@@ -348,4 +348,51 @@ export const FEATURES: Feature[] = [
       { name: "reconcileDrafts falls back to heuristic", op: "reconcileDrafts", given: { heuristic: [{ title: "buy milk" }], llm: [] } },
     ],
   },
+  {
+    feature: "account",
+    spec: "features/account.md",
+    cases: [
+      { name: "cloudConfig with url and key", op: "cloudConfig", given: { url: "https://x.supabase.co", anonKey: "anon" } },
+      { name: "cloudConfig without url stays local-only", op: "cloudConfig", given: { anonKey: "anon" } },
+      { name: "cloudConfig with empty key stays local-only", op: "cloudConfig", given: { url: "https://x.supabase.co", anonKey: "" } },
+      { name: "toRow mirrors filter columns", op: "toRow", given: { todo: sample[2], userId: "u1" } },
+      { name: "toRow without due date", op: "toRow", given: { todo: sample[1], userId: "u1" } },
+      { name: "migrationKey is per account", op: "migrationKey", given: { userId: "u1" } },
+      {
+        name: "mergeLocalIntoAccount keeps remote order and appends local-only todos",
+        op: "mergeLocalIntoAccount",
+        given: { local: [todo("l1", { title: "Local" })], remote: [sample[0], sample[1]] },
+      },
+      {
+        name: "mergeLocalIntoAccount: newer local copy wins in place",
+        op: "mergeLocalIntoAccount",
+        given: { local: [todo("a", { title: "Buy oat milk", updatedAt: T1 })], remote: [sample[0], sample[1]] },
+      },
+      {
+        name: "mergeLocalIntoAccount: older or equal local copy loses",
+        op: "mergeLocalIntoAccount",
+        given: { local: [todo("b", { title: "Stale", updatedAt: "2025-12-31T09:00:00.000Z" }), todo("a", { title: "Same time" })], remote: [sample[0], sample[1]] },
+      },
+      { name: "mergeLocalIntoAccount with empty account", op: "mergeLocalIntoAccount", given: { local: sample, remote: [] } },
+      {
+        name: "planCloudSave: nothing changed",
+        op: "planCloudSave",
+        given: { known: sample.map(({ id, updatedAt }) => ({ id, updatedAt })), todos: sample },
+      },
+      {
+        name: "planCloudSave: new, edited and deleted todos",
+        op: "planCloudSave",
+        given: {
+          known: sample.map(({ id, updatedAt }) => ({ id, updatedAt })),
+          todos: [todo("d", { title: "New one", createdAt: T1, updatedAt: T1 }), { ...sample[0]!, completed: true, updatedAt: T1 }],
+        },
+      },
+      { name: "planCloudSave: first save uploads everything", op: "planCloudSave", given: { known: [], todos: sample } },
+      {
+        name: "planCloudSave: clearing the list deletes every known id",
+        op: "planCloudSave",
+        given: { known: sample.map(({ id, updatedAt }) => ({ id, updatedAt })), todos: [] },
+      },
+    ],
+  },
 ];

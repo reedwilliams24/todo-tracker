@@ -80,6 +80,7 @@ import com.reedwilliams24.todotracker.core.toTodoDraft
 @Composable
 fun TodoApp(viewModel: TodoViewModel) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
+    val auth by viewModel.auth.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(TodoFilter.ALL) }
     val todos = ui.state.todos
     val visible = remember(todos, filter) { sortTodos(filterTodos(todos, filter)) }
@@ -104,6 +105,8 @@ fun TodoApp(viewModel: TodoViewModel) {
                 Text("Todo Tracker", fontSize = FontSize.xl2, fontWeight = FontWeight.SemiBold, color = Palette.foreground)
                 Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
             }
+
+            AuthPanel(auth, viewModel)
 
             TodoForm(onAdd = viewModel::add)
 
@@ -214,7 +217,7 @@ private fun EmptyText(text: String, modifier: Modifier) {
 private val inputStyle = TextStyle(fontSize = FontSize.base, color = Palette.foreground)
 
 @Composable
-private fun Field(
+internal fun Field(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,

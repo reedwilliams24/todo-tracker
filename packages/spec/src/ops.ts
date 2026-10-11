@@ -1,6 +1,7 @@
 import {
   addTodos,
   cleanTitle,
+  cloudConfig,
   clearCompletedInList,
   coerceDrafts,
   countRemaining,
@@ -15,8 +16,11 @@ import {
   isUndoExpired,
   isValidDueDate,
   isValidTitle,
+  mergeLocalIntoAccount,
+  migrationKey,
   parseStoredTodos,
   parseTranscript,
+  planCloudSave,
   PRIORITY_ORDER,
   reconcileDrafts,
   reduceTodos,
@@ -26,6 +30,7 @@ import {
   sortByPriority,
   STORAGE_KEY,
   toggleTodo,
+  toRow,
   toTodoDraft,
   UNDO_TIMEOUT_MS,
   updateTodoText,
@@ -97,6 +102,11 @@ export const OPS: Record<string, (given: Given) => unknown> = {
   cleanTitle: (g) => cleanTitle(g.text),
   coerceDrafts: (g) => coerceDrafts(g.value),
   reconcileDrafts: (g) => reconcileDrafts(g.heuristic, g.llm),
+  cloudConfig: (g) => cloudConfig(g.url, g.anonKey),
+  toRow: (g) => toRow(g.todo, g.userId),
+  mergeLocalIntoAccount: (g) => mergeLocalIntoAccount(g.local, g.remote),
+  planCloudSave: (g) => planCloudSave(g.known, g.todos),
+  migrationKey: (g) => migrationKey(g.userId),
 };
 
 const NEW_ID = /^new-\d+$/;

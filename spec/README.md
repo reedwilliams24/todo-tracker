@@ -63,7 +63,7 @@ Swift and Kotlin load the same files; nothing is copied or regenerated per platf
 
 Actions (`do`): `add {title, priority?, dueDate?}`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `search {query}`, `clearCompleted`, `undo`, `relaunch`.
 
-Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maestro checks each is visible), `remaining {text}`, `completed {title, value}`, `undo {label | null}`.
+Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maestro checks each is visible), `remaining {text}`, `completed {title, value}`, `undo {label | null}`, `authPanel {visible}` (the sign-in panel; hidden when no backend is configured).
 
 A scenario may set `platforms` (`web`, `mobile`) when a feature isn't on every platform yet, e.g. mobile has no search today.
 

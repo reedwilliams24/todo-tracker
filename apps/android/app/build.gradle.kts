@@ -5,6 +5,12 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+/** `-PSUPABASE_URL=…` or the env var of the same name, as a Java string literal ("" when unset). */
+fun buildConfigString(name: String): String {
+    val value = (findProperty(name) as String?) ?: System.getenv(name) ?: ""
+    return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+}
+
 android {
     namespace = "com.reedwilliams24.todotracker"
     compileSdk = 35
@@ -15,6 +21,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+        // Accounts are optional: leave these unset for a local-only build (spec/features/account.md).
+        buildConfigField("String", "SUPABASE_URL", buildConfigString("SUPABASE_URL"))
+        buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString("SUPABASE_ANON_KEY"))
     }
 
     buildTypes {
@@ -30,7 +39,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
 }
 
 kotlin { jvmToolchain(17) }

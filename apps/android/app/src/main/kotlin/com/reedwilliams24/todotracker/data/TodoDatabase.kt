@@ -85,10 +85,10 @@ abstract class TodoDatabase : RoomDatabase() {
     }
 }
 
-class TodoRepository(private val dao: TodoDao) {
-    suspend fun load(): List<Todo> = runCatching { dao.getAll().map { it.toTodo() } }.getOrDefault(emptyList())
+class TodoRepository(private val dao: TodoDao) : TodoStore {
+    override suspend fun load(): List<Todo> = runCatching { dao.getAll().map { it.toTodo() } }.getOrDefault(emptyList())
 
-    suspend fun save(todos: List<Todo>) {
+    override suspend fun save(todos: List<Todo>) {
         runCatching { dao.replaceAll(todos.mapIndexed { index, todo -> TodoEntity.from(todo, index) }) }
     }
 }

@@ -15,6 +15,7 @@ struct ContentView: View {
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.muted)
                 }
+                AuthPanelView(model: model)
                 TodoFormView(onAdd: model.add)
                 toolbar
                 list

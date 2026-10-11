@@ -85,7 +85,7 @@ struct TodoFormView: View {
 }
 
 /// Keeps the label colors when disabled; the RN app dims the whole button with opacity instead.
-private struct UndimmedButtonStyle: ButtonStyle {
+struct UndimmedButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.opacity(configuration.isPressed ? 0.8 : 1)
     }

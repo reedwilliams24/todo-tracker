@@ -125,17 +125,21 @@ One-time setup (nothing is committed):
 
 ## Accounts and cloud storage (Supabase)
 
-Both apps are local-first and work with no backend. Setting the public Supabase env vars turns on the
-sign-in panel (email magic link / 6-digit code, Google, Apple) and stores todos in Postgres per user:
+All apps are local-first and work with no backend. Setting the public Supabase config turns on the
+sign-in panel (email magic link on web / 6-digit code on iOS and Android, Google, Apple) and stores todos
+in Postgres per user. Rules: [`spec/features/account.md`](spec/features/account.md).
 
 - web: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see `apps/web/.env.example`)
-- mobile: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (see `apps/mobile/.env.example`)
+- Android: `SUPABASE_URL`, `SUPABASE_ANON_KEY` as env vars or `-P` Gradle properties (BuildConfig);
+  debug builds allow cleartext so a local `supabase start` works at `http://10.0.2.2:54321`
+- iOS: the `SUPABASE_URL`, `SUPABASE_ANON_KEY` build settings (Info.plist), e.g.
+  `xcodebuild … SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_ANON_KEY=…`
 
 Only the anon key ships to clients; access is enforced by row-level security (users see their own rows).
 The service-role key must never be set in an app env. On first sign-in on a device, the signed-out local
-list is merged into the account (`withFirstSignInMigration` in `@todo/shared`).
+list is merged into the account once (`mergeLocalIntoAccount`).
 
 Schema lives in `supabase/migrations`. Apply with the Supabase CLI: `supabase link --project-ref <ref>`
 once, then `pnpm db:migrate`. Enable the Google/Apple providers and add `todotracker://auth` plus the web
 origin as redirect URLs in the project's Auth settings. Use one project per environment (`dev`, `prod`)
-and set the matching env in Vercel (web) and EAS (`eas secret:create` / `env` in `eas.json`).
+and set the matching env in Vercel (web) and in the native build config.
