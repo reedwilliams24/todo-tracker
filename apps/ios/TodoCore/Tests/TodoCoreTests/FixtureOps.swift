@@ -136,6 +136,7 @@ enum FixtureOps {
         let reminderOffsets = TodoCore.reminderOffsets
         let reminderLabels = Dictionary(uniqueKeysWithValues: ReminderOffset.allCases.map { ($0.rawValue, $0.label) })
         let dueHour = TodoCore.dueHour
+        let statsDays = TodoCore.statsDays
     }
 
     /// Local wall-clock `YYYY-MM-DDTHH:mm:ss`, the format reminder fixtures use.
@@ -158,7 +159,6 @@ enum FixtureOps {
             body = reminder.body
             at = FixtureOps.localTime(reminder.at)
         }
-        let statsDays = TodoCore.statsDays
     }
 
     /// `undoLabel` is always present, so a missing label encodes as `null` rather than being omitted.
