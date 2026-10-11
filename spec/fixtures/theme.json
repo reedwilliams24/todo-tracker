@@ -1,0 +1,165 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "theme",
+  "spec": "features/theme.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
+  "cases": [
+    {
+      "name": "constants",
+      "op": "themeConstants",
+      "given": {},
+      "then": {
+        "storageKey": "todo-tracker:theme:v1",
+        "defaultTheme": "system",
+        "preferences": [
+          "light",
+          "dark",
+          "system"
+        ],
+        "labels": {
+          "light": "Light",
+          "dark": "Dark",
+          "system": "System"
+        }
+      }
+    },
+    {
+      "name": "parseThemePreference light",
+      "op": "parseThemePreference",
+      "given": {
+        "raw": "light"
+      },
+      "then": "light"
+    },
+    {
+      "name": "parseThemePreference dark",
+      "op": "parseThemePreference",
+      "given": {
+        "raw": "dark"
+      },
+      "then": "dark"
+    },
+    {
+      "name": "parseThemePreference system",
+      "op": "parseThemePreference",
+      "given": {
+        "raw": "system"
+      },
+      "then": "system"
+    },
+    {
+      "name": "parseThemePreference null",
+      "op": "parseThemePreference",
+      "given": {
+        "raw": null
+      },
+      "then": "system"
+    },
+    {
+      "name": "parseThemePreference empty",
+      "op": "parseThemePreference",
+      "given": {
+        "raw": ""
+      },
+      "then": "system"
+    },
+    {
+      "name": "parseThemePreference unknown",
+      "op": "parseThemePreference",
+      "given": {
+        "raw": "sepia"
+      },
+      "then": "system"
+    },
+    {
+      "name": "parseThemePreference wrong case",
+      "op": "parseThemePreference",
+      "given": {
+        "raw": "Dark"
+      },
+      "then": "system"
+    },
+    {
+      "name": "resolveTheme light with dark OS",
+      "op": "resolveTheme",
+      "given": {
+        "preference": "light",
+        "systemDark": true
+      },
+      "then": "light"
+    },
+    {
+      "name": "resolveTheme light with light OS",
+      "op": "resolveTheme",
+      "given": {
+        "preference": "light",
+        "systemDark": false
+      },
+      "then": "light"
+    },
+    {
+      "name": "resolveTheme dark with dark OS",
+      "op": "resolveTheme",
+      "given": {
+        "preference": "dark",
+        "systemDark": true
+      },
+      "then": "dark"
+    },
+    {
+      "name": "resolveTheme dark with light OS",
+      "op": "resolveTheme",
+      "given": {
+        "preference": "dark",
+        "systemDark": false
+      },
+      "then": "dark"
+    },
+    {
+      "name": "resolveTheme system with dark OS",
+      "op": "resolveTheme",
+      "given": {
+        "preference": "system",
+        "systemDark": true
+      },
+      "then": "dark"
+    },
+    {
+      "name": "resolveTheme system with light OS",
+      "op": "resolveTheme",
+      "given": {
+        "preference": "system",
+        "systemDark": false
+      },
+      "then": "light"
+    },
+    {
+      "name": "nextThemePreference after light",
+      "op": "nextThemePreference",
+      "given": {
+        "preference": "light"
+      },
+      "then": "dark"
+    },
+    {
+      "name": "nextThemePreference after dark",
+      "op": "nextThemePreference",
+      "given": {
+        "preference": "dark"
+      },
+      "then": "system"
+    },
+    {
+      "name": "nextThemePreference after system",
+      "op": "nextThemePreference",
+      "given": {
+        "preference": "system"
+      },
+      "then": "light"
+    }
+  ]
+}
