@@ -76,7 +76,10 @@ export const feature: Feature = {
     {
       name: "pruneDelivered drops keys with no planned reminder",
       op: "pruneDelivered",
-      given: { todos: reminderList, delivered: ["later:2026-05-10:at", "rent:2026-05-09:1h", "done:2026-05-01:at", "gone:x:at"] },
+      given: {
+        todos: reminderList,
+        delivered: ["later:2026-05-10:at", "rent:2026-05-09:1h", "done:2026-05-01:at", "gone:x:at"],
+      },
     },
   ],
 };

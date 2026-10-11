@@ -25,11 +25,12 @@ class MainActivity : ComponentActivity() {
             val preference by viewModel.theme.collectAsStateWithLifecycle()
             val dark = resolveTheme(preference, isSystemInDarkTheme()) == ResolvedTheme.DARK
             DisposableEffect(dark) {
-                val bars = if (dark) {
-                    SystemBarStyle.dark(Color.TRANSPARENT)
-                } else {
-                    SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
-                }
+                val bars =
+                    if (dark) {
+                        SystemBarStyle.dark(Color.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                    }
                 enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
                 onDispose {}
             }

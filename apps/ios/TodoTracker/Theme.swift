@@ -6,7 +6,8 @@ import TodoCore
 enum Theme {
     static let background = Color(light: 0xF7F7F5, dark: 0x0B0C0F)
     static let card = Color(light: 0xFFFFFF, dark: 0x17181B)
-    static let border = Color(light: UIColor.black.withAlphaComponent(0.1), dark: UIColor.white.withAlphaComponent(0.15))
+    static let border = Color(
+        light: UIColor.black.withAlphaComponent(0.1), dark: UIColor.white.withAlphaComponent(0.15))
     static let foreground = Color(light: 0x171717, dark: 0xE9EAEE)
     static let muted = foreground.opacity(0.7)
     static let danger = Color(light: 0xDC2626, dark: 0xF87171)
@@ -20,17 +21,26 @@ enum Theme {
     static func priority(_ priority: TodoPriority) -> (bg: Color, text: Color) {
         switch priority {
         case .high:
-            (Color(red: 239 / 255, green: 68 / 255, blue: 68 / 255).opacity(0.15), Color(light: 0xB91C1C, dark: 0xF87171))
+            (
+                Color(red: 239 / 255, green: 68 / 255, blue: 68 / 255).opacity(0.15),
+                Color(light: 0xB91C1C, dark: 0xF87171)
+            )
         case .medium:
-            (Color(red: 245 / 255, green: 158 / 255, blue: 11 / 255).opacity(0.15), Color(light: 0x92400E, dark: 0xFBBF24))
+            (
+                Color(red: 245 / 255, green: 158 / 255, blue: 11 / 255).opacity(0.15),
+                Color(light: 0x92400E, dark: 0xFBBF24)
+            )
         case .low:
-            (Color(red: 16 / 255, green: 185 / 255, blue: 129 / 255).opacity(0.15), Color(light: 0x047857, dark: 0x34D399))
+            (
+                Color(red: 16 / 255, green: 185 / 255, blue: 129 / 255).opacity(0.15),
+                Color(light: 0x047857, dark: 0x34D399)
+            )
         }
     }
 }
 
-private extension UIColor {
-    convenience init(hex: UInt32) {
+extension UIColor {
+    fileprivate convenience init(hex: UInt32) {
         self.init(
             red: CGFloat((hex >> 16) & 0xFF) / 255,
             green: CGFloat((hex >> 8) & 0xFF) / 255,
@@ -40,12 +50,12 @@ private extension UIColor {
     }
 }
 
-private extension Color {
-    init(light: UIColor, dark: UIColor) {
+extension Color {
+    fileprivate init(light: UIColor, dark: UIColor) {
         self.init(uiColor: UIColor { $0.userInterfaceStyle == .dark ? dark : light })
     }
 
-    init(light: UInt32, dark: UInt32) {
+    fileprivate init(light: UInt32, dark: UInt32) {
         self.init(light: UIColor(hex: light), dark: UIColor(hex: dark))
     }
 }

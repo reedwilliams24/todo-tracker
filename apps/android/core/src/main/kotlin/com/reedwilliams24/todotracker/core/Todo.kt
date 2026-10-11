@@ -9,7 +9,8 @@ enum class TodoPriority {
     @SerialName("medium") MEDIUM,
     @SerialName("high") HIGH;
 
-    val key: String get() = name.lowercase()
+    val key: String
+        get() = name.lowercase()
 }
 
 /** Reminder offset from a todo's due date (spec/features/reminders.md). */
@@ -31,7 +32,8 @@ enum class Recurrence(val label: String) {
     @SerialName("weekly") WEEKLY("Weekly"),
     @SerialName("monthly") MONTHLY("Monthly");
 
-    val key: String get() = name.lowercase()
+    val key: String
+        get() = name.lowercase()
 
     companion object {
         fun fromKey(key: String): Recurrence? = entries.firstOrNull { it.key == key }
@@ -55,9 +57,12 @@ data class Todo(
 )
 
 enum class TodoFilter {
-    ALL, ACTIVE, COMPLETED;
+    ALL,
+    ACTIVE,
+    COMPLETED;
 
-    val key: String get() = name.lowercase()
+    val key: String
+        get() = name.lowercase()
 
     companion object {
         fun fromKey(key: String): TodoFilter = entries.firstOrNull { it.key == key } ?: ALL
@@ -65,9 +70,12 @@ enum class TodoFilter {
 }
 
 enum class TodoSort {
-    PRIORITY, DUE, MANUAL;
+    PRIORITY,
+    DUE,
+    MANUAL;
 
-    val key: String get() = name.lowercase()
+    val key: String
+        get() = name.lowercase()
 
     companion object {
         fun fromKey(key: String?): TodoSort = entries.firstOrNull { it.key == key } ?: PRIORITY

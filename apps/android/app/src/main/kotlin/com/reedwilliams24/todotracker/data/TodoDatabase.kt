@@ -12,8 +12,8 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
-import com.reedwilliams24.todotracker.core.ReminderOffset
 import com.reedwilliams24.todotracker.core.Recurrence
+import com.reedwilliams24.todotracker.core.ReminderOffset
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoPriority
 
@@ -33,48 +33,47 @@ data class TodoEntity(
     val updatedAt: String,
     val completedAt: String? = null,
 ) {
-    fun toTodo() = Todo(
-        id = id,
-        title = title,
-        notes = notes,
-        completed = completed,
-        priority = TodoPriority.entries.firstOrNull { it.key == priority } ?: TodoPriority.MEDIUM,
-        dueDate = dueDate,
-        reminder = ReminderOffset.fromKey(reminder),
-        recurrence = recurrence?.let(Recurrence::fromKey),
-        createdAt = createdAt,
-        updatedAt = updatedAt,
-        completedAt = completedAt,
-    )
+    fun toTodo() =
+        Todo(
+            id = id,
+            title = title,
+            notes = notes,
+            completed = completed,
+            priority = TodoPriority.entries.firstOrNull { it.key == priority } ?: TodoPriority.MEDIUM,
+            dueDate = dueDate,
+            reminder = ReminderOffset.fromKey(reminder),
+            recurrence = recurrence?.let(Recurrence::fromKey),
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            completedAt = completedAt,
+        )
 
     companion object {
-        fun from(todo: Todo, position: Int) = TodoEntity(
-            id = todo.id,
-            position = position,
-            title = todo.title,
-            notes = todo.notes,
-            completed = todo.completed,
-            priority = todo.priority.key,
-            dueDate = todo.dueDate,
-            reminder = todo.reminder?.key,
-            recurrence = todo.recurrence?.key,
-            createdAt = todo.createdAt,
-            updatedAt = todo.updatedAt,
-            completedAt = todo.completedAt,
-        )
+        fun from(todo: Todo, position: Int) =
+            TodoEntity(
+                id = todo.id,
+                position = position,
+                title = todo.title,
+                notes = todo.notes,
+                completed = todo.completed,
+                priority = todo.priority.key,
+                dueDate = todo.dueDate,
+                reminder = todo.reminder?.key,
+                recurrence = todo.recurrence?.key,
+                createdAt = todo.createdAt,
+                updatedAt = todo.updatedAt,
+                completedAt = todo.completedAt,
+            )
     }
 }
 
 @Dao
 interface TodoDao {
-    @Query("SELECT * FROM todos ORDER BY position")
-    suspend fun getAll(): List<TodoEntity>
+    @Query("SELECT * FROM todos ORDER BY position") suspend fun getAll(): List<TodoEntity>
 
-    @Insert
-    suspend fun insertAll(todos: List<TodoEntity>)
+    @Insert suspend fun insertAll(todos: List<TodoEntity>)
 
-    @Query("DELETE FROM todos")
-    suspend fun deleteAll()
+    @Query("DELETE FROM todos") suspend fun deleteAll()
 
     @Transaction
     suspend fun replaceAll(todos: List<TodoEntity>) {
@@ -83,18 +82,25 @@ interface TodoDao {
     }
 }
 
-@Database(entities = [TodoEntity::class], version = 4, autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)])
+@Database(
+    entities = [TodoEntity::class],
+    version = 4,
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
+)
 abstract class TodoDatabase : RoomDatabase() {
     abstract fun todos(): TodoDao
 
     companion object {
         @Volatile private var instance: TodoDatabase? = null
 
-        fun get(context: Context): TodoDatabase = instance ?: synchronized(this) {
-            instance ?: Room.databaseBuilder(context.applicationContext, TodoDatabase::class.java, "todo-tracker.db")
-                .build()
-                .also { instance = it }
-        }
+        fun get(context: Context): TodoDatabase =
+            instance
+                ?: synchronized(this) {
+                    instance
+                        ?: Room.databaseBuilder(context.applicationContext, TodoDatabase::class.java, "todo-tracker.db")
+                            .build()
+                            .also { instance = it }
+                }
     }
 }
 

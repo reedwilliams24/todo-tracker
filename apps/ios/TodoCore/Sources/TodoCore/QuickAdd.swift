@@ -70,7 +70,9 @@ public func hasQuickAddMeta(_ parse: QuickAddParse) -> Bool {
     parse.priority != nil || parse.dueDate != nil || !parse.tags.isEmpty
 }
 
-public func quickAddToDraft(_ parse: QuickAddParse, fallbackPriority: TodoPriority, fallbackDueDate: String? = nil) -> TodoDraft {
+public func quickAddToDraft(_ parse: QuickAddParse, fallbackPriority: TodoPriority, fallbackDueDate: String? = nil)
+    -> TodoDraft
+{
     TodoDraft(
         title: parse.title,
         priority: parse.priority ?? fallbackPriority,

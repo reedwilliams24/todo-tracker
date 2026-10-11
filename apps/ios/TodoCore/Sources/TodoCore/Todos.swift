@@ -11,7 +11,10 @@ public struct TodoFormState: Codable, Equatable, Sendable {
     public var reminder: String
     public var recurrence: String
 
-    public init(title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "", reminder: String = "", recurrence: String = "") {
+    public init(
+        title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "", reminder: String = "",
+        recurrence: String = ""
+    ) {
         self.title = title
         self.priority = priority
         self.dueDate = dueDate

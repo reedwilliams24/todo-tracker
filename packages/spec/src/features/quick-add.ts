@@ -1,10 +1,4 @@
-import {
-  hasQuickAddMeta,
-  parseQuickAdd,
-  quickAddToDraft,
-  type QuickAddParse,
-  type TodoPriority,
-} from "web/domain";
+import { hasQuickAddMeta, parseQuickAdd, quickAddToDraft, type QuickAddParse, type TodoPriority } from "web/domain";
 import type { Feature, Ops } from "../types";
 
 export const feature: Feature = {
@@ -43,7 +37,11 @@ export const feature: Feature = {
     })),
     { name: "hasQuickAddMeta: plain", op: "hasQuickAddMeta", given: { parse: { title: "plain text", tags: [] } } },
     { name: "hasQuickAddMeta: tag only", op: "hasQuickAddMeta", given: { parse: { title: "plain", tags: ["tag"] } } },
-    { name: "hasQuickAddMeta: priority only", op: "hasQuickAddMeta", given: { parse: { title: "x", priority: "low", tags: [] } } },
+    {
+      name: "hasQuickAddMeta: priority only",
+      op: "hasQuickAddMeta",
+      given: { parse: { title: "x", priority: "low", tags: [] } },
+    },
     {
       name: "quickAddToDraft prefers parsed values",
       op: "quickAddToDraft",

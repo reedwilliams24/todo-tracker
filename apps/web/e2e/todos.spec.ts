@@ -79,9 +79,7 @@ test("edits a todo inline and persists the change", async ({ page }) => {
   await expect(page.getByRole("listitem")).toHaveCount(1);
 
   await expect
-    .poll(async () =>
-      page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY),
-    )
+    .poll(async () => page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY))
     .toContain("New title");
 
   await page.reload();
@@ -153,9 +151,7 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
   await page.getByRole("checkbox", { name: 'Mark "Persist me" as complete' }).check();
 
   await expect
-    .poll(async () =>
-      page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY),
-    )
+    .poll(async () => page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY))
     .toContain("Persist me");
 
   await page.reload();
@@ -267,7 +263,11 @@ test("highlights overdue todos and sorts by due date", async ({ page }) => {
     page.getByRole("listitem").filter({ hasText: "Far future high" }).getByLabel("Due 2999-12-31"),
   ).toBeVisible();
 
-  const titles = () => page.getByRole("listitem").getByRole("button", { name: /^Edit / }).allInnerTexts();
+  const titles = () =>
+    page
+      .getByRole("listitem")
+      .getByRole("button", { name: /^Edit / })
+      .allInnerTexts();
   await expect.poll(titles).toEqual(["Far future high", "Undated high", "Yesterday low"]);
 
   await page.getByLabel("Sort todos").selectOption("due");

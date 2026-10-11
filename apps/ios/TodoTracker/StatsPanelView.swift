@@ -8,7 +8,9 @@ struct StatsPanelView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Button { open.toggle() } label: {
+            Button {
+                open.toggle()
+            } label: {
                 HStack {
                     Text("Stats")
                         .font(.system(size: 14, weight: .medium))

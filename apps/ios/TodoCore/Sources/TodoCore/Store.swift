@@ -39,7 +39,8 @@ public func reduceTodos(_ state: TodoState, _ action: TodoAction, now: Date = Da
         return TodoState(todos: added + todos, undoable: state.undoable)
     case .toggle(let id):
         let target = todos.first { $0.id == id }
-        let undoable = target.map { !$0.completed } == true
+        let undoable =
+            target.map { !$0.completed } == true
             ? snapshot(describeUndo(.complete, count: 1))
             : state.undoable
         return TodoState(todos: toggleInList(todos, id: id, now: now), undoable: undoable)

@@ -13,14 +13,17 @@ struct TodoFormView: View {
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
-            TextField("What needs doing?", text: $form.title, prompt: Text("What needs doing? e.g. tomorrow !p1 #tag").foregroundStyle(Theme.muted))
-                .font(.system(size: 16))
-                .foregroundStyle(Theme.foreground)
-                .padding(8)
-                .submitLabel(.done)
-                .onSubmit(submit)
-                .accessibilityLabel("Todo title")
-                .accessibilityIdentifier(TestID.formTitle)
+            TextField(
+                "What needs doing?", text: $form.title,
+                prompt: Text("What needs doing? e.g. tomorrow !p1 #tag").foregroundStyle(Theme.muted)
+            )
+            .font(.system(size: 16))
+            .foregroundStyle(Theme.foreground)
+            .padding(8)
+            .submitLabel(.done)
+            .onSubmit(submit)
+            .accessibilityLabel("Todo title")
+            .accessibilityIdentifier(TestID.formTitle)
             HStack(spacing: 8) {
                 priorityPicker
                 TextField("YYYY-MM-DD", text: $form.dueDate, prompt: Text("YYYY-MM-DD").foregroundStyle(Theme.muted))
@@ -67,7 +70,9 @@ struct TodoFormView: View {
         HStack(spacing: 0) {
             ForEach([TodoPriority.low, .medium, .high], id: \.self) { option in
                 let selected = option == form.priority
-                Button { form.priority = option } label: {
+                Button {
+                    form.priority = option
+                } label: {
                     Text(option.rawValue.capitalized)
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground)
@@ -125,7 +130,9 @@ struct TodoFormView: View {
         HStack(spacing: 0) {
             ForEach([nil] + Recurrence.allCases.map(Optional.some), id: \.self) { (option: Recurrence?) in
                 let selected = (option?.rawValue ?? "") == form.recurrence
-                Button { form.recurrence = option?.rawValue ?? "" } label: {
+                Button {
+                    form.recurrence = option?.rawValue ?? ""
+                } label: {
                     Text(option?.label ?? "No repeat")
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground)

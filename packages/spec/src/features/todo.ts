@@ -56,7 +56,10 @@ export const feature: Feature = {
     {
       name: "createTodo with every field",
       op: "createTodo",
-      given: { draft: { title: "Pay rent", notes: "  by transfer ", priority: "high", dueDate: "2026-02-01" }, now: T0 },
+      given: {
+        draft: { title: "Pay rent", notes: "  by transfer ", priority: "high", dueDate: "2026-02-01" },
+        now: T0,
+      },
     },
     {
       name: "toTodoDraft keeps reminder with a due date",
@@ -83,7 +86,11 @@ export const feature: Feature = {
       op: "createTodo",
       given: { draft: { title: "Pay rent", reminder: "1d" }, now: T0 },
     },
-    { name: "createTodo drops blank notes", op: "createTodo", given: { draft: { title: "Read", notes: "   " }, now: T0 } },
+    {
+      name: "createTodo drops blank notes",
+      op: "createTodo",
+      given: { draft: { title: "Read", notes: "   " }, now: T0 },
+    },
     { name: "toggleTodo completes", op: "toggleTodo", given: { todo: todo("a"), now: T1 } },
     { name: "toggleTodo reopens", op: "toggleTodo", given: { todo: todo("a", { completed: true }), now: T1 } },
     {
@@ -96,28 +103,38 @@ export const feature: Feature = {
       op: "updateTodoText",
       given: { todos: sample, id: "a", text: "  Buy oat milk ", now: T1 },
     },
-    { name: "updateTodoText ignores blank text", op: "updateTodoText", given: { todos: sample, id: "a", text: "  ", now: T1 } },
+    {
+      name: "updateTodoText ignores blank text",
+      op: "updateTodoText",
+      given: { todos: sample, id: "a", text: "  ", now: T1 },
+    },
     {
       name: "updateTodoText ignores unchanged text",
       op: "updateTodoText",
       given: { todos: sample, id: "a", text: " Buy milk ", now: T1 },
     },
-    { name: "updateTodoText ignores unknown id", op: "updateTodoText", given: { todos: sample, id: "zzz", text: "New", now: T1 } },
+    {
+      name: "updateTodoText ignores unknown id",
+      op: "updateTodoText",
+      given: { todos: sample, id: "zzz", text: "New", now: T1 },
+    },
     {
       name: "updateTodoText rejects titles over 200 chars",
       op: "updateTodoText",
       given: { todos: sample, id: "a", text: "x".repeat(201), now: T1 },
     },
     // Overdue uses the local calendar date of `now` (local time, no Z).
-    ...([
-      ["due yesterday", { dueDate: "2026-01-04" }, "2026-01-05T09:00:00"],
-      ["due today", { dueDate: "2026-01-05" }, "2026-01-05T09:00:00"],
-      ["due tomorrow", { dueDate: "2026-01-06" }, "2026-01-05T09:00:00"],
-      ["undated", {}, "2026-01-05T09:00:00"],
-      ["completed and past due", { dueDate: "2026-01-04", completed: true }, "2026-01-05T09:00:00"],
-      ["due today, just before midnight", { dueDate: "2026-01-05" }, "2026-01-05T23:59:00"],
-      ["due yesterday, just after midnight", { dueDate: "2026-01-04" }, "2026-01-05T00:01:00"],
-    ] as const).map(([label, overrides, now]) => ({
+    ...(
+      [
+        ["due yesterday", { dueDate: "2026-01-04" }, "2026-01-05T09:00:00"],
+        ["due today", { dueDate: "2026-01-05" }, "2026-01-05T09:00:00"],
+        ["due tomorrow", { dueDate: "2026-01-06" }, "2026-01-05T09:00:00"],
+        ["undated", {}, "2026-01-05T09:00:00"],
+        ["completed and past due", { dueDate: "2026-01-04", completed: true }, "2026-01-05T09:00:00"],
+        ["due today, just before midnight", { dueDate: "2026-01-05" }, "2026-01-05T23:59:00"],
+        ["due yesterday, just after midnight", { dueDate: "2026-01-04" }, "2026-01-05T00:01:00"],
+      ] as const
+    ).map(([label, overrides, now]) => ({
       name: `isOverdue: ${label}`,
       op: "isOverdue",
       given: { todo: todo("a", overrides), now },

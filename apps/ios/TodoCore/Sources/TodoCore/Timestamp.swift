@@ -28,6 +28,7 @@ public enum Timestamp {
         )
     }
 
+    // swiftlint:disable:next force_try - constant pattern, covered by the fixture tests.
     private static let pattern = try! NSRegularExpression(
         pattern: #"^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2})(?::([0-9]{2})(?:\.([0-9]{1,3}))?)?(Z)?$"#
     )

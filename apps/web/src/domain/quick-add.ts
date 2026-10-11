@@ -82,7 +82,11 @@ export function hasQuickAddMeta(parse: QuickAddParse): boolean {
   return parse.priority !== undefined || parse.dueDate !== undefined || parse.tags.length > 0;
 }
 
-export function quickAddToDraft(parse: QuickAddParse, fallbackPriority: TodoPriority, fallbackDueDate?: string): TodoDraft {
+export function quickAddToDraft(
+  parse: QuickAddParse,
+  fallbackPriority: TodoPriority,
+  fallbackDueDate?: string,
+): TodoDraft {
   return {
     title: parse.title,
     priority: parse.priority ?? fallbackPriority,

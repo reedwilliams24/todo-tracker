@@ -56,6 +56,6 @@ extension JSONValue: CustomStringConvertible {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         guard let data = try? encoder.encode(self) else { return "<invalid JSON>" }
-        return String(decoding: data, as: UTF8.self)
+        return String(bytes: data, encoding: .utf8) ?? "<invalid JSON>"
     }
 }

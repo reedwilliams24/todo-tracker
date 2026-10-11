@@ -50,9 +50,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         />
         <select
           value={priority}
-          onChange={(event) =>
-            setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))
-          }
+          onChange={(event) => setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))}
           aria-label="Priority"
           data-testid={TEST_IDS.formPriority}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm capitalize dark:border-white/15"
@@ -79,9 +77,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         <select
           value={reminder}
           disabled={!dueDate}
-          onChange={(event) =>
-            setForm((f) => ({ ...f, reminder: event.target.value as ReminderOffset | "" }))
-          }
+          onChange={(event) => setForm((f) => ({ ...f, reminder: event.target.value as ReminderOffset | "" }))}
           aria-label="Reminder"
           data-testid={TEST_IDS.formReminder}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm disabled:opacity-40 dark:border-white/15"
@@ -100,9 +96,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         </select>
         <select
           value={recurrence}
-          onChange={(event) =>
-            setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))
-          }
+          onChange={(event) => setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))}
           aria-label="Repeat"
           data-testid={TEST_IDS.formRecurrence}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"

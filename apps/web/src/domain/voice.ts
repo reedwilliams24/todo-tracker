@@ -9,15 +9,7 @@ const PRIORITY_PATTERNS: ReadonlyArray<readonly [RegExp, TodoPriority]> = [
   [/\b(medium priority|normal priority)\b/i, "medium"],
 ];
 
-const WEEKDAYS = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-] as const;
+const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
 
 const LEADING_FILLER =
   /^(?:(?:um|uh|ok|okay|so|hey|please|remind me to|i need to|i have to|i want to|remember to|add (?:a )?(?:todo|task|item)(?: to| for)?|create (?:a )?(?:todo|task)(?: to| for)?|make (?:a )?note to|let's|lets)(?:[\s,.!?]+|$))+/i;
@@ -100,18 +92,7 @@ export function parseTranscript(transcript: string, now: Date = new Date()): Tod
     .filter((draft) => isValidTitle(draft.title));
 }
 
-const STOPWORDS = new Set([
-  "a",
-  "an",
-  "and",
-  "for",
-  "my",
-  "me",
-  "the",
-  "to",
-  "up",
-  "with",
-]);
+const STOPWORDS = new Set(["a", "an", "and", "for", "my", "me", "the", "to", "up", "with"]);
 
 function contentWords(title: string): Set<string> {
   return new Set(

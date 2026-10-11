@@ -17,7 +17,12 @@ type TodoItemProps = {
   /** When provided the row is in multi-select mode: the checkbox selects instead of completing. */
   selection?: { selected: boolean; onSelect: (id: string) => void };
   /** Present when the list is manually sortable: drag this row onto another to move it there. */
-  drag?: { dragging: boolean; onDragStart: (id: string) => void; onDrop: (targetId: string) => void; onDragEnd: () => void };
+  drag?: {
+    dragging: boolean;
+    onDragStart: (id: string) => void;
+    onDrop: (targetId: string) => void;
+    onDragEnd: () => void;
+  };
 };
 
 export function TodoItem({ todo, onToggle, onRename, onRemove, selection, drag }: TodoItemProps) {
@@ -97,12 +102,10 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection, drag }
       onDragEnd={drag?.onDragEnd}
       className={`flex items-center gap-3 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
         overdue ? "border-red-500/40" : "border-black/10 dark:border-white/15"
-      } ${
-        drag?.dragging ? "opacity-40" : ""
-      }`}
+      } ${drag?.dragging ? "opacity-40" : ""}`}
     >
       {drag && (
-        <span aria-label="Drag to reorder" title="Drag to reorder" className="cursor-grab select-none opacity-40">
+        <span aria-label="Drag to reorder" title="Drag to reorder" className="cursor-grab opacity-40 select-none">
           ⋮⋮
         </span>
       )}
@@ -176,7 +179,8 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection, drag }
 
       <span
         data-testid={TEST_IDS.itemPriority(todo.title)}
-        className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
+        className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}
+      >
         {todo.priority}
       </span>
 

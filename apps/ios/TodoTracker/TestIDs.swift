@@ -14,7 +14,9 @@ enum TestID {
     static let formPriority = "todo-form-priority"
     static func formPriorityOption(_ priority: TodoPriority) -> String { "todo-form-priority-\(priority.rawValue)" }
     static let formRecurrence = "todo-form-recurrence"
-    static func formRecurrenceOption(_ recurrence: Recurrence?) -> String { "todo-form-recurrence-\(recurrence?.rawValue ?? "none")" }
+    static func formRecurrenceOption(_ recurrence: Recurrence?) -> String {
+        "todo-form-recurrence-\(recurrence?.rawValue ?? "none")"
+    }
     static let formReminder = "todo-form-reminder"
     static func formReminderOption(_ reminder: String) -> String { "todo-form-reminder-\(reminder)" }
     static let formSubmit = "todo-form-submit"

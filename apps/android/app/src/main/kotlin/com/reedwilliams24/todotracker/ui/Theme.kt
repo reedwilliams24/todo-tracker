@@ -10,7 +10,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reedwilliams24.todotracker.core.TodoPriority
 
-/** Tailwind scale tokens, matching apps/web; dark values mirror the web `.dark` palette. Text meets WCAG AA (spec/features/accessibility.md). */
+/**
+ * Tailwind scale tokens, matching apps/web; dark values mirror the web `.dark` palette. Text meets WCAG AA
+ * (spec/features/accessibility.md).
+ */
 @Immutable
 data class Colors(
     val background: Color,
@@ -23,27 +26,29 @@ data class Colors(
     val low: Color,
 )
 
-val LightColors = Colors(
-    background = Color(0xFFF7F7F5),
-    card = Color.White,
-    border = Color(0x1A000000),
-    foreground = Color(0xFF171717),
-    danger = Color(0xFFDC2626),
-    high = Color(0xFFB91C1C),
-    medium = Color(0xFF92400E),
-    low = Color(0xFF047857),
-)
+val LightColors =
+    Colors(
+        background = Color(0xFFF7F7F5),
+        card = Color.White,
+        border = Color(0x1A000000),
+        foreground = Color(0xFF171717),
+        danger = Color(0xFFDC2626),
+        high = Color(0xFFB91C1C),
+        medium = Color(0xFF92400E),
+        low = Color(0xFF047857),
+    )
 
-val DarkColors = Colors(
-    background = Color(0xFF0B0C0F),
-    card = Color(0xFF17181B),
-    border = Color(0x26FFFFFF),
-    foreground = Color(0xFFE9EAEE),
-    danger = Color(0xFFF87171),
-    high = Color(0xFFF87171),
-    medium = Color(0xFFFBBF24),
-    low = Color(0xFF34D399),
-)
+val DarkColors =
+    Colors(
+        background = Color(0xFF0B0C0F),
+        card = Color(0xFF17181B),
+        border = Color(0x26FFFFFF),
+        foreground = Color(0xFFE9EAEE),
+        danger = Color(0xFFF87171),
+        high = Color(0xFFF87171),
+        medium = Color(0xFFFBBF24),
+        low = Color(0xFF34D399),
+    )
 
 val LocalColors = staticCompositionLocalOf { LightColors }
 
@@ -53,20 +58,32 @@ fun TodoTheme(dark: Boolean, content: @Composable () -> Unit) {
 }
 
 object Palette {
-    val background: Color @Composable @ReadOnlyComposable get() = LocalColors.current.background
-    val card: Color @Composable @ReadOnlyComposable get() = LocalColors.current.card
-    val border: Color @Composable @ReadOnlyComposable get() = LocalColors.current.border
-    val foreground: Color @Composable @ReadOnlyComposable get() = LocalColors.current.foreground
-    val muted: Color @Composable @ReadOnlyComposable get() = foreground.copy(alpha = 0.7f)
-    val danger: Color @Composable @ReadOnlyComposable get() = LocalColors.current.danger
+    val background: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.background
+
+    val card: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.card
+
+    val border: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.border
+
+    val foreground: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.foreground
+
+    val muted: Color
+        @Composable @ReadOnlyComposable get() = foreground.copy(alpha = 0.7f)
+
+    val danger: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.danger
 
     @Composable
     @ReadOnlyComposable
-    fun priority(priority: TodoPriority): Pair<Color, Color> = when (priority) {
-        TodoPriority.HIGH -> Color(0x26EF4444) to LocalColors.current.high
-        TodoPriority.MEDIUM -> Color(0x26F59E0B) to LocalColors.current.medium
-        TodoPriority.LOW -> Color(0x2610B981) to LocalColors.current.low
-    }
+    fun priority(priority: TodoPriority): Pair<Color, Color> =
+        when (priority) {
+            TodoPriority.HIGH -> Color(0x26EF4444) to LocalColors.current.high
+            TodoPriority.MEDIUM -> Color(0x26F59E0B) to LocalColors.current.medium
+            TodoPriority.LOW -> Color(0x2610B981) to LocalColors.current.low
+        }
 }
 
 object Spacing {

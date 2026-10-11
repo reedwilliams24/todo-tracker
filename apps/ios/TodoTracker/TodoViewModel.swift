@@ -21,7 +21,10 @@ final class TodoViewModel {
     private let now: () -> Date
     private var expiry: Task<Void, Never>?
 
-    init(store: TodoStore, reminders: ReminderScheduling? = nil, defaults: UserDefaults = .standard, now: @escaping () -> Date = Date.init) {
+    init(
+        store: TodoStore, reminders: ReminderScheduling? = nil, defaults: UserDefaults = .standard,
+        now: @escaping () -> Date = Date.init
+    ) {
         self.store = store
         self.reminders = reminders
         self.defaults = defaults

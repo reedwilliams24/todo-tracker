@@ -50,7 +50,11 @@ describe("stats", () => {
 
   it("handles DST transition days as consecutive", () => {
     // 2026-03-08 is the US DST start; consecutive local days must still chain.
-    const todos = [done("a", new Date(2026, 2, 7, 12)), done("b", new Date(2026, 2, 8, 12)), done("c", new Date(2026, 2, 9, 12))];
+    const todos = [
+      done("a", new Date(2026, 2, 7, 12)),
+      done("b", new Date(2026, 2, 8, 12)),
+      done("c", new Date(2026, 2, 9, 12)),
+    ];
     expect(computeStats(todos, new Date(2026, 2, 9, 20)).longestStreak).toBe(3);
     expect(localDateKey(new Date(2026, 2, 8, 0, 30))).toBe("2026-03-08");
   });

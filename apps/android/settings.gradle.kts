@@ -15,4 +15,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "todo-tracker"
+
 include(":core", ":app")

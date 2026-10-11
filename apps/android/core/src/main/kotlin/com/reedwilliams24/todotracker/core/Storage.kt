@@ -20,11 +20,12 @@ fun serializeTodos(todos: List<Todo>): String = TodoJson.encodeToString(ListSeri
 /** Missing, empty, corrupt or non-array values load as an empty list. */
 fun parseStoredTodos(raw: String?): List<Todo> {
     if (raw.isNullOrEmpty()) return emptyList()
-    val parsed: JsonElement = try {
-        TodoJson.parseToJsonElement(raw)
-    } catch (_: Exception) {
-        return emptyList()
-    }
+    val parsed: JsonElement =
+        try {
+            TodoJson.parseToJsonElement(raw)
+        } catch (_: Exception) {
+            return emptyList()
+        }
     if (parsed !is JsonArray) return emptyList()
     return parsed.mapNotNull { runCatching { TodoJson.decodeFromJsonElement(Todo.serializer(), it) }.getOrNull() }
 }

@@ -43,7 +43,8 @@ public func describeReminder(_ todo: Todo) -> String {
 public func planReminders(_ todos: [Todo], calendar: Calendar = .current) -> [Reminder] {
     todos.compactMap { todo in
         guard !todo.completed, let offset = todo.reminder, let due = todo.dueDate,
-              let at = reminderAt(todo, calendar: calendar) else { return nil }
+            let at = reminderAt(todo, calendar: calendar)
+        else { return nil }
         return Reminder(
             key: "\(todo.id):\(due):\(offset.rawValue)",
             todoId: todo.id,
@@ -55,7 +56,9 @@ public func planReminders(_ todos: [Todo], calendar: Calendar = .current) -> [Re
 }
 
 /// Planned reminders whose time is at or before `now` and that have not been delivered.
-public func dueReminders(_ todos: [Todo], delivered: Set<String>, now: Date, calendar: Calendar = .current) -> [Reminder] {
+public func dueReminders(_ todos: [Todo], delivered: Set<String>, now: Date, calendar: Calendar = .current)
+    -> [Reminder]
+{
     planReminders(todos, calendar: calendar).filter { $0.at <= now && !delivered.contains($0.key) }
 }
 

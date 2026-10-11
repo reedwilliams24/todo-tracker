@@ -16,7 +16,11 @@ export function toJson(value: unknown): string {
 }
 
 export type ScenarioStatus = { web: string; ios: string; android: string };
-export type Scenario = { name: string; status: ScenarioStatus; steps: (Record<string, unknown> & { do?: string; expect?: string })[] };
+export type Scenario = {
+  name: string;
+  status: ScenarioStatus;
+  steps: (Record<string, unknown> & { do?: string; expect?: string })[];
+};
 
 /** spec/scenarios/core/<name>.json, one file per scenario, in file-name order. */
 export function loadScenarios(): (Scenario & { file: string })[] {

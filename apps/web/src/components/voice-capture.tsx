@@ -92,9 +92,7 @@ export function VoiceCapture({ todos, onAddMany, onUndo }: Props) {
           disabled={!speech.supported || parsing}
           aria-pressed={speech.listening}
           className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-            speech.listening
-              ? "bg-red-500 text-white"
-              : "bg-foreground text-background disabled:opacity-40"
+            speech.listening ? "bg-red-500 text-white" : "bg-foreground text-background disabled:opacity-40"
           }`}
         >
           {speech.listening ? "Stop and add" : "Speak your todos"}

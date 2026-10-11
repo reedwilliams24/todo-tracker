@@ -9,11 +9,24 @@
     "dev": "pnpm --filter web dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
+    "lint:ios": "cd apps/ios && swiftlint lint --strict --quiet",
+    "format": "pnpm format:web && pnpm format:android && pnpm format:ios",
+    "format:check": "pnpm format:web:check && pnpm format:android:check && pnpm format:ios:check",
+    "format:web": "prettier --write .",
+    "format:web:check": "prettier --check .",
+    "format:android": "cd apps/android && ./gradlew spotlessApply --console=plain",
+    "format:android:check": "cd apps/android && ./gradlew spotlessCheck --console=plain",
+    "format:ios": "./scripts/swift-format.sh format --in-place",
+    "format:ios:check": "./scripts/swift-format.sh lint --strict",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "spec:record": "pnpm --filter @todo/spec record",
     "spec:generate": "pnpm --filter @todo/spec generate",
     "spec:check": "pnpm --filter @todo/spec record --check && pnpm --filter @todo/spec generate --check",
     "spec:parity": "pnpm --filter @todo/spec parity"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10",
+    "prettier-plugin-tailwindcss": "0.8.1"
   }
 }

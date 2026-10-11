@@ -18,8 +18,8 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 /**
- * Delivers the core's planned reminders (spec/features/reminders.md): due ones are posted now,
- * future ones get an inexact alarm. A key counts as handled once it is posted or scheduled.
+ * Delivers the core's planned reminders (spec/features/reminders.md): due ones are posted now, future ones get an
+ * inexact alarm. A key counts as handled once it is posted or scheduled.
  */
 class ReminderScheduler(context: Context) {
     private val context = context.applicationContext
@@ -30,7 +30,9 @@ class ReminderScheduler(context: Context) {
     fun sync(todos: List<Todo>, now: LocalDateTime = LocalDateTime.now()) {
         val stored = prefs.getStringSet(DELIVERED_KEY, emptySet()).orEmpty()
         val handled = pruneDelivered(stored, todos).toMutableSet()
-        (stored - handled).forEach { key -> pendingIntent(key, null, PendingIntent.FLAG_NO_CREATE)?.let(alarms::cancel) }
+        (stored - handled).forEach { key ->
+            pendingIntent(key, null, PendingIntent.FLAG_NO_CREATE)?.let(alarms::cancel)
+        }
 
         if (notifications.areNotificationsEnabled()) {
             ensureChannel(context)
@@ -49,11 +51,12 @@ class ReminderScheduler(context: Context) {
     }
 
     private fun pendingIntent(key: String, reminder: Reminder?, flags: Int): PendingIntent? {
-        val intent = Intent(context, ReminderReceiver::class.java)
-            .setData(Uri.parse("todo-reminder:$key"))
-            .putExtra(EXTRA_KEY, key)
-            .putExtra(EXTRA_TITLE, reminder?.title)
-            .putExtra(EXTRA_BODY, reminder?.body)
+        val intent =
+            Intent(context, ReminderReceiver::class.java)
+                .setData(Uri.parse("todo-reminder:$key"))
+                .putExtra(EXTRA_KEY, key)
+                .putExtra(EXTRA_TITLE, reminder?.title)
+                .putExtra(EXTRA_BODY, reminder?.body)
         return PendingIntent.getBroadcast(
             context,
             0,
@@ -78,25 +81,33 @@ class ReminderScheduler(context: Context) {
             val manager = context.getSystemService(NotificationManager::class.java)
             if (!manager.areNotificationsEnabled()) return
             ensureChannel(context)
-            val open = PendingIntent.getActivity(
-                context,
-                0,
-                Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
-                PendingIntent.FLAG_IMMUTABLE,
-            )
-            val notification = Notification.Builder(context, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_popup_reminder)
-                .setContentTitle(title)
-                .setContentText(body)
-                .setContentIntent(open)
-                .setAutoCancel(true)
-                .build()
+            val open =
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    Intent(context, MainActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
+            val notification =
+                Notification.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                    .setContentTitle(title)
+                    .setContentText(body)
+                    .setContentIntent(open)
+                    .setAutoCancel(true)
+                    .build()
             manager.notify(key, 0, notification)
         }
 
         internal fun fromIntent(context: Context, intent: Intent) {
             val key = intent.getStringExtra(EXTRA_KEY) ?: return
-            post(context, key, intent.getStringExtra(EXTRA_TITLE) ?: return, intent.getStringExtra(EXTRA_BODY) ?: return)
+            post(
+                context,
+                key,
+                intent.getStringExtra(EXTRA_TITLE) ?: return,
+                intent.getStringExtra(EXTRA_BODY) ?: return,
+            )
         }
     }
 }
