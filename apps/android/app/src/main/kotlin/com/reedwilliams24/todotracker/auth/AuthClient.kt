@@ -17,6 +17,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.postgrest.postgrest
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -61,7 +62,6 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
             install(Auth) { sessionManager = EncryptedSessionManager(context) }
             install(Postgrest)
         }
-    override val sync: SyncServer = SupabaseSyncServer(client)
     private var signingOut = false
 
     override val changes: Flow<AuthChange> =
@@ -73,6 +73,8 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
                     else -> AuthChange(null, initiated = signingOut).also { signingOut = false }
                 }
             }
+
+    override val sync: SyncServer = SupabaseSyncServer(client.postgrest)
 
     override suspend fun sendCode(email: String) = mapErrors {
         client.auth.signInWith(OTP) {
