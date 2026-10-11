@@ -59,6 +59,18 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm lint
 
+  lint-android:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/android
+      - run: ./gradlew :app:lintDebug --console=plain
+
   typecheck:
     runs-on: ubuntu-latest
     steps:
@@ -142,7 +154,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/android
-      - run: ./gradlew :app:assembleDebug :app:lintDebug --console=plain
+      - run: ./gradlew :app:assembleDebug --console=plain
       - uses: actions/upload-artifact@v4
         with:
           name: android-debug-apk
@@ -167,7 +179,7 @@ jobs:
   # skipped by the path filter, so jobs can be added/renamed here without touching the ruleset.
   ci:
     name: Required CI Checks
-    needs: [lint, typecheck, spec, unit-tests-web, unit-tests-android, unit-tests-ios, build-web, build-android, build-ios]
+    needs: [lint, lint-android, typecheck, spec, unit-tests-web, unit-tests-android, unit-tests-ios, build-web, build-android, build-ios]
     if: always()
     runs-on: ubuntu-latest
     steps:
