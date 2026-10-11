@@ -95,24 +95,6 @@ Sign-in codes sent locally land in Mailpit at http://127.0.0.1:54324. Auth setti
 code, 10-minute expiry, 60 s resend) are in `supabase/config.toml`, and the code-only email template
 is `supabase/templates/otp-code.html`.
 
-#### Building the apps against Supabase
-
-Sign-in (REED-66) only appears when a build has a Supabase URL and publishable (anon) key. Default and
-CI builds have none, so they stay guest-only. The URL and key are public; never use a service-role key.
-
-| Target                   | Web                                                                                                                                | iOS                                                                                                                                        | Android                                                                                    |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| Local (`supabase start`) | `apps/web/.env.local` with `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321` and `NEXT_PUBLIC_SUPABASE_ANON_KEY=<PUBLISHABLE_KEY>` | `apps/ios/Config/Supabase.override.xcconfig` (git-ignored) with `SUPABASE_URL = http:/$()/127.0.0.1:54321` and `SUPABASE_ANON_KEY = <key>` | `./gradlew :app:assembleDebug -PsupabaseUrl=http://10.0.2.2:54321 -PsupabaseAnonKey=<key>` |
-| Dev                      | Vercel Preview env                                                                                                                 | `Supabase.override.xcconfig` containing `#include "Supabase.dev.xcconfig"`                                                                 | `-PsupabaseEnv=dev`                                                                        |
-| Prod                     | Vercel Production env                                                                                                              | `#include "Supabase.prod.xcconfig"`                                                                                                        | `-PsupabaseEnv=prod`                                                                       |
-
-`<PUBLISHABLE_KEY>` comes from `pnpm exec supabase status -o env`. Dev/prod values are committed in
-`apps/ios/Config/Supabase.{dev,prod}.xcconfig` and `apps/android/config/supabase-{dev,prod}.properties`;
-they come from the Management API (`GET /v1/projects/{ref}/api-keys`, the `sb_publishable_` key).
-Android debug builds allow cleartext HTTP to `10.0.2.2`/`localhost` only, for the local stack. Web e2e
-against the local stack: `pnpm --filter web e2e:auth` (reads codes from Mailpit). It includes the two-device
-sync suite (`apps/web/e2e/two-device.spec.ts`) and runs on PRs as the `e2e-sync-web` CI job.
-
 #### Local, dev and prod
 
 | Backend | Project                                | Used by                                                  |
@@ -130,8 +112,25 @@ Production gets prod. To run the web app against a backend locally, put that bac
 - dev / prod: the Project URL and publishable key from
   https://supabase.com/dashboard/project/_/settings/api-keys
 
-With neither variable set the app stays guest-only (local storage). Native app config is
-[REED-66](https://linear.app/reed-williams/issue/REED-66).
+With neither variable set the app stays guest-only (local storage). Native app config is below.
+
+#### Building the apps against Supabase
+
+Sign-in (REED-66) only appears when a build has a Supabase URL and publishable (anon) key. Default and
+CI builds have none, so they stay guest-only. The URL and key are public; never use a service-role key.
+
+| Target                   | Web                                                                                                                                | iOS                                                                                                                                        | Android                                                                                    |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| Local (`supabase start`) | `apps/web/.env.local` with `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321` and `NEXT_PUBLIC_SUPABASE_ANON_KEY=<PUBLISHABLE_KEY>` | `apps/ios/Config/Supabase.override.xcconfig` (git-ignored) with `SUPABASE_URL = http:/$()/127.0.0.1:54321` and `SUPABASE_ANON_KEY = <key>` | `./gradlew :app:assembleDebug -PsupabaseUrl=http://10.0.2.2:54321 -PsupabaseAnonKey=<key>` |
+| Dev                      | Vercel Preview env                                                                                                                 | `Supabase.override.xcconfig` containing `#include "Supabase.dev.xcconfig"`                                                                 | `-PsupabaseEnv=dev`                                                                        |
+| Prod                     | Vercel Production env                                                                                                              | `#include "Supabase.prod.xcconfig"`                                                                                                        | `-PsupabaseEnv=prod`                                                                       |
+
+`<PUBLISHABLE_KEY>` comes from `pnpm exec supabase status -o env`. Dev/prod values are committed in
+`apps/ios/Config/Supabase.{dev,prod}.xcconfig` and `apps/android/config/supabase-{dev,prod}.properties`;
+they come from the Management API (`GET /v1/projects/{ref}/api-keys`, the `sb_publishable_` key).
+Android debug builds allow cleartext HTTP to `10.0.2.2`/`localhost` only, for the local stack. Web e2e
+against the local stack: `pnpm --filter web e2e:auth` (reads codes from Mailpit). It includes the two-device
+sync suite (`apps/web/e2e/two-device.spec.ts`) and runs on PRs as the `e2e-sync-web` CI job.
 
 #### Migrations on hosted projects
 
