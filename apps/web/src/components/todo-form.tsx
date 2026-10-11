@@ -46,9 +46,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         />
         <select
           value={priority}
-          onChange={(event) =>
-            setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))
-          }
+          onChange={(event) => setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))}
           aria-label="Priority"
           data-testid={TEST_IDS.formPriority}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm capitalize dark:border-white/15"
@@ -74,9 +72,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         />
         <select
           value={recurrence}
-          onChange={(event) =>
-            setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))
-          }
+          onChange={(event) => setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))}
           aria-label="Repeat"
           data-testid={TEST_IDS.formRecurrence}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"

@@ -145,7 +145,8 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection }: Todo
 
       <span
         data-testid={TEST_IDS.itemPriority(todo.title)}
-        className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
+        className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}
+      >
         {todo.priority}
       </span>
 

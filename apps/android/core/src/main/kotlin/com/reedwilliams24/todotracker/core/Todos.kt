@@ -13,11 +13,8 @@ val DEFAULT_PRIORITY = TodoPriority.MEDIUM
 
 val EMPTY_TODO_FORM = TodoFormState()
 
-val PRIORITY_ORDER: Map<TodoPriority, Int> = mapOf(
-    TodoPriority.HIGH to 0,
-    TodoPriority.MEDIUM to 1,
-    TodoPriority.LOW to 2,
-)
+val PRIORITY_ORDER: Map<TodoPriority, Int> =
+    mapOf(TodoPriority.HIGH to 0, TodoPriority.MEDIUM to 1, TodoPriority.LOW to 2)
 
 private val ISO_DATE = Regex("""^\d{4}-\d{2}-\d{2}$""")
 private val STRICT_DATE = DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT)
@@ -69,20 +66,27 @@ fun createTodo(draft: TodoDraft, now: Instant = Instant.now()): Todo {
 fun updateTodoText(todos: List<Todo>, id: String, text: String, now: Instant = Instant.now()): List<Todo> {
     if (!isValidTitle(text)) return todos.toList()
     val title = text.trim()
-    return todos.map { if (it.id == id && it.title != title) it.copy(title = title, updatedAt = timestamp(now)) else it }
+    return todos.map {
+        if (it.id == id && it.title != title) it.copy(title = title, updatedAt = timestamp(now)) else it
+    }
 }
 
 /** Completing sets `completedAt`; reopening clears it. */
 fun toggleTodo(todo: Todo, now: Instant = Instant.now()): Todo {
     val completed = !todo.completed
-    return todo.copy(completed = completed, updatedAt = timestamp(now), completedAt = if (completed) timestamp(now) else null)
+    return todo.copy(
+        completed = completed,
+        updatedAt = timestamp(now),
+        completedAt = if (completed) timestamp(now) else null,
+    )
 }
 
-fun filterTodos(todos: List<Todo>, filter: TodoFilter): List<Todo> = when (filter) {
-    TodoFilter.ACTIVE -> todos.filter { !it.completed }
-    TodoFilter.COMPLETED -> todos.filter { it.completed }
-    TodoFilter.ALL -> todos.toList()
-}
+fun filterTodos(todos: List<Todo>, filter: TodoFilter): List<Todo> =
+    when (filter) {
+        TodoFilter.ACTIVE -> todos.filter { !it.completed }
+        TodoFilter.COMPLETED -> todos.filter { it.completed }
+        TodoFilter.ALL -> todos.toList()
+    }
 
 fun searchTodos(todos: List<Todo>, query: String): List<Todo> {
     val needle = query.trim().lowercase()
@@ -130,10 +134,11 @@ fun sortByPriority(todos: List<Todo>): List<Todo> = todos.sortedWith(::compareBy
 
 fun sortByDue(todos: List<Todo>): List<Todo> = todos.sortedWith(::compareByDue)
 
-fun sortTodos(todos: List<Todo>, sort: TodoSort = TodoSort.PRIORITY): List<Todo> = when (sort) {
-    TodoSort.DUE -> sortByDue(todos)
-    TodoSort.PRIORITY -> sortByPriority(todos)
-}
+fun sortTodos(todos: List<Todo>, sort: TodoSort = TodoSort.PRIORITY): List<Todo> =
+    when (sort) {
+        TodoSort.DUE -> sortByDue(todos)
+        TodoSort.PRIORITY -> sortByPriority(todos)
+    }
 
 fun countRemaining(todos: List<Todo>): Int = todos.count { !it.completed }
 

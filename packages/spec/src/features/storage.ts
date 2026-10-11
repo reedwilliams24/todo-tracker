@@ -1,7 +1,4 @@
-import {
-  parseStoredTodos,
-  serializeTodos,
-} from "web/domain";
+import { parseStoredTodos, serializeTodos } from "web/domain";
 import { T1, todo, done, sample } from "../helpers";
 import type { Feature, Ops } from "../types";
 

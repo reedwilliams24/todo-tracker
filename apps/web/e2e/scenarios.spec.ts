@@ -89,7 +89,9 @@ async function run(page: Page, step: Step) {
     case "completed":
       return expect(page.getByTestId(id("itemToggle", s.title!))).toBeChecked({ checked: s.value });
     case "dueDate":
-      return expect(page.getByTestId(id("itemDueDate", s.title!)).filter({ hasText: s.dueDate! }).first()).toBeVisible();
+      return expect(
+        page.getByTestId(id("itemDueDate", s.title!)).filter({ hasText: s.dueDate! }).first(),
+      ).toBeVisible();
     case "empty":
       return expect(page.getByTestId(id("empty"))).toBeVisible();
     case "overdue":
@@ -101,7 +103,9 @@ async function run(page: Page, step: Step) {
       if (s.title === null) return expect(page.getByTestId(id("quickAddPreview"))).toBeHidden();
       return expect(page.getByTestId(id("quickAddPreviewTitle"))).toHaveText(s.title!);
     case "recurrence":
-      return expect(page.getByTestId(id("itemRecurrence", s.title!)).filter({ hasText: s.text! }).first()).toBeVisible();
+      return expect(
+        page.getByTestId(id("itemRecurrence", s.title!)).filter({ hasText: s.text! }).first(),
+      ).toBeVisible();
     case "remaining":
       return expect(page.getByTestId(id("remaining"))).toHaveText(s.text!);
     case "selected":

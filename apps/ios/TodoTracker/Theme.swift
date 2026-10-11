@@ -19,14 +19,20 @@ enum Theme {
     static func priority(_ priority: TodoPriority) -> (bg: Color, text: Color) {
         switch priority {
         case .high:
-            (Color(red: 239 / 255, green: 68 / 255, blue: 68 / 255).opacity(0.15),
-             Color(red: 0xB9 / 255, green: 0x1C / 255, blue: 0x1C / 255))
+            (
+                Color(red: 239 / 255, green: 68 / 255, blue: 68 / 255).opacity(0.15),
+                Color(red: 0xB9 / 255, green: 0x1C / 255, blue: 0x1C / 255)
+            )
         case .medium:
-            (Color(red: 245 / 255, green: 158 / 255, blue: 11 / 255).opacity(0.15),
-             Color(red: 0x92 / 255, green: 0x40 / 255, blue: 0x0E / 255))
+            (
+                Color(red: 245 / 255, green: 158 / 255, blue: 11 / 255).opacity(0.15),
+                Color(red: 0x92 / 255, green: 0x40 / 255, blue: 0x0E / 255)
+            )
         case .low:
-            (Color(red: 16 / 255, green: 185 / 255, blue: 129 / 255).opacity(0.15),
-             Color(red: 0x04 / 255, green: 0x78 / 255, blue: 0x57 / 255))
+            (
+                Color(red: 16 / 255, green: 185 / 255, blue: 129 / 255).opacity(0.15),
+                Color(red: 0x04 / 255, green: 0x78 / 255, blue: 0x57 / 255)
+            )
         }
     }
 }

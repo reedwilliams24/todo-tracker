@@ -9,24 +9,41 @@ object TestIds {
     const val bulkToggle = "todo-bulk-toggle"
     const val clearCompleted = "todo-clear-completed"
     const val empty = "todo-empty"
+
     fun filter(filter: String) = "todo-filter-$filter"
+
     const val formDueDate = "todo-form-due-date"
     const val formPriority = "todo-form-priority"
+
     fun formPriorityOption(priority: String) = "todo-form-priority-$priority"
+
     const val formRecurrence = "todo-form-recurrence"
+
     fun formRecurrenceOption(recurrence: String) = "todo-form-recurrence-$recurrence"
+
     const val formSubmit = "todo-form-submit"
     const val formTitle = "todo-form-title"
+
     fun item(title: String) = "todo-item-$title"
+
     fun itemDelete(title: String) = "todo-delete-$title"
+
     fun itemDueDate(title: String) = "todo-due-$title"
+
     const val itemEditInput = "todo-edit-input"
+
     fun itemOverdue(title: String) = "todo-overdue-$title"
+
     fun itemPriority(title: String) = "todo-priority-$title"
+
     fun itemRecurrence(title: String) = "todo-recurrence-$title"
+
     fun itemSelect(title: String) = "todo-select-item-$title"
+
     fun itemTitle(title: String) = "todo-title-$title"
+
     fun itemToggle(title: String) = "todo-toggle-$title"
+
     const val list = "todo-list"
     const val quickAddPreview = "todo-quick-add-preview"
     const val quickAddPreviewTitle = "todo-quick-add-preview-title"
@@ -35,7 +52,9 @@ object TestIds {
     const val selectMode = "todo-select-mode"
     const val selectedCount = "todo-selected-count"
     const val sort = "todo-sort"
+
     fun sortOption(sort: String) = "todo-sort-$sort"
+
     const val statsChart = "stats-chart"
     const val statsCurrent = "stat-current"
     const val statsLongest = "stat-longest"

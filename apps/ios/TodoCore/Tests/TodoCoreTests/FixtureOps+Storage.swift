@@ -6,10 +6,10 @@ extension FixtureOps {
     static var storageOps: [String: Op] {
         [
             "parseStoredTodos": { g in
-                    return parseStoredTodos(try g.decode("raw", as: String?.self))
+                return parseStoredTodos(try g.decode("raw", as: String?.self))
             },
             "serializeTodos": { g in
-                    return try JSONDecoder().decode(JSONValue.self, from: Data(serializeTodos(try g.decode("todos")).utf8))
+                return try JSONDecoder().decode(JSONValue.self, from: Data(serializeTodos(try g.decode("todos")).utf8))
             },
         ]
     }

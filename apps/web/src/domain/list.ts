@@ -21,12 +21,7 @@ export function toggleInList(todos: readonly Todo[], id: string, now: Date = new
   });
 }
 
-export function renameInList(
-  todos: readonly Todo[],
-  id: string,
-  title: string,
-  now: Date = new Date(),
-): Todo[] {
+export function renameInList(todos: readonly Todo[], id: string, title: string, now: Date = new Date()): Todo[] {
   return updateTodoText(todos, id, title, now);
 }
 

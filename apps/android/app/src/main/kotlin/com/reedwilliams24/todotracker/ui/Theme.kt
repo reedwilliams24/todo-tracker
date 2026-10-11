@@ -14,11 +14,12 @@ object Palette {
     val muted = Color(0xB3171717)
     val danger = Color(0xFFDC2626)
 
-    fun priority(priority: TodoPriority): Pair<Color, Color> = when (priority) {
-        TodoPriority.HIGH -> Color(0x26EF4444) to Color(0xFFB91C1C)
-        TodoPriority.MEDIUM -> Color(0x26F59E0B) to Color(0xFF92400E)
-        TodoPriority.LOW -> Color(0x2610B981) to Color(0xFF047857)
-    }
+    fun priority(priority: TodoPriority): Pair<Color, Color> =
+        when (priority) {
+            TodoPriority.HIGH -> Color(0x26EF4444) to Color(0xFFB91C1C)
+            TodoPriority.MEDIUM -> Color(0x26F59E0B) to Color(0xFF92400E)
+            TodoPriority.LOW -> Color(0x2610B981) to Color(0xFF047857)
+        }
 }
 
 object Spacing {

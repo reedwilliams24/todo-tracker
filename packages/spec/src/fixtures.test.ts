@@ -7,7 +7,10 @@ import { OPS, runOp } from "./ops";
 import { FIXTURES_DIR, readJson, SPEC_DIR } from "./paths";
 import { renderFixtures } from "./record";
 
-type FixtureFile = { feature: string; cases: { name: string; op: string; given: Record<string, unknown>; then: unknown }[] };
+type FixtureFile = {
+  feature: string;
+  cases: { name: string; op: string; given: Record<string, unknown>; then: unknown }[];
+};
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 addFormats(ajv);

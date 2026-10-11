@@ -11,7 +11,13 @@ export function renderFixtures(): Map<string, string> {
     const cases = feature.cases.map(({ name, op, given }) => ({ name, op, given, then: runOp(op, given) }));
     files.set(
       join(FIXTURES_DIR, `${feature.feature}.json`),
-      toJson({ $schema: "../schema/fixture.schema.json", feature: feature.feature, spec: feature.spec, status: feature.status, cases }),
+      toJson({
+        $schema: "../schema/fixture.schema.json",
+        feature: feature.feature,
+        spec: feature.spec,
+        status: feature.status,
+        cases,
+      }),
     );
   }
   return files;

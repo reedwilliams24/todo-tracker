@@ -62,7 +62,9 @@ enum FixtureOps {
         /// UTC when the value ends in Z, local time otherwise (voice ops).
         func date(_ key: String) throws -> Date {
             let value: String = try decode(key)
-            guard let date = Timestamp.parse(value) else { throw BadGiven(description: "given.\(key) is not a date: \(value)") }
+            guard let date = Timestamp.parse(value) else {
+                throw BadGiven(description: "given.\(key) is not a date: \(value)")
+            }
             return date
         }
     }
@@ -117,10 +119,14 @@ enum FixtureOps {
     private static func collectIds(_ value: JSONValue, into known: inout Set<String>) {
         switch value {
         case .array(let items):
-            items.forEach { collectIds($0, into: &known) }
+            for item in items { collectIds(item, into: &known) }
         case .object(let fields):
             for (key, child) in fields {
-                if key == "id", case .string(let id) = child { known.insert(id) } else { collectIds(child, into: &known) }
+                if key == "id", case .string(let id) = child {
+                    known.insert(id)
+                } else {
+                    collectIds(child, into: &known)
+                }
             }
         default:
             break
@@ -128,6 +134,6 @@ enum FixtureOps {
     }
 }
 
-private extension Character {
-    var isASCIIDigit: Bool { isASCII && isNumber }
+extension Character {
+    fileprivate var isASCIIDigit: Bool { isASCII && isNumber }
 }

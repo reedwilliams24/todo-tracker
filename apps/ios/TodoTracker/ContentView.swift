@@ -68,7 +68,9 @@ struct ContentView: View {
         HStack(spacing: 4) {
             ForEach(TodoFilter.allCases, id: \.self) { option in
                 let selected = model.filter == option
-                Button { model.filter = option } label: {
+                Button {
+                    model.filter = option
+                } label: {
                     Text(option.rawValue.capitalized)
                         .font(.system(size: 14))
                         .lineLimit(1)
@@ -118,7 +120,9 @@ struct ContentView: View {
                 .padding(.trailing, 4)
             ForEach(TodoSort.allCases, id: \.self) { option in
                 let selected = model.sort == option
-                Button { model.sort = option } label: {
+                Button {
+                    model.sort = option
+                } label: {
                     Text(option == .due ? "Due date" : "Priority")
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
@@ -195,8 +199,11 @@ struct ContentView: View {
 
     private func bulkActionButtons(_ count: Int) -> some View {
         HStack(spacing: 12) {
-            actionButton("Toggle complete", id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
-            actionButton("Delete", id: TestID.bulkDelete, enabled: count > 0, danger: true) { model.confirmingDelete = true }
+            actionButton(
+                "Toggle complete", id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
+            actionButton("Delete", id: TestID.bulkDelete, enabled: count > 0, danger: true) {
+                model.confirmingDelete = true
+            }
         }
     }
 
@@ -212,7 +219,8 @@ struct ContentView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
                 .background(danger ? Theme.danger : Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
-                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).strokeBorder(danger ? Theme.danger : Theme.border))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.Radius.md).strokeBorder(danger ? Theme.danger : Theme.border))
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
@@ -240,7 +248,9 @@ struct ContentView: View {
                         onRename: { model.rename(todo.id, title: $0) },
                         onRemove: { model.remove(todo.id) },
                         selection: model.selecting
-                            ? TodoRowView.Selection(selected: model.selectedIds.contains(todo.id), onSelect: { model.toggleSelected(todo.id) })
+                            ? TodoRowView.Selection(
+                                selected: model.selectedIds.contains(todo.id),
+                                onSelect: { model.toggleSelected(todo.id) })
                             : nil
                     )
                 }

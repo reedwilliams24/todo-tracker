@@ -8,7 +8,10 @@ const entries = Object.entries(ids)
   .filter(([key]) => !key.startsWith("$"))
   .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 /** test-ids.json is kept in key order so selectors added by parallel PRs land in different places. */
-const sortedIds = toJson({ ...Object.fromEntries(Object.entries(ids).filter(([key]) => key.startsWith("$"))), ...Object.fromEntries(entries) });
+const sortedIds = toJson({
+  ...Object.fromEntries(Object.entries(ids).filter(([key]) => key.startsWith("$"))),
+  ...Object.fromEntries(entries),
+});
 const HEADER = "Generated from spec/test-ids.json by `pnpm spec:generate`. Do not edit.";
 
 function placeholders(pattern: string): string[] {
@@ -21,7 +24,6 @@ function tsEntry([key, pattern]: [string, string]): string {
   const body = pattern.replace(/\{(\w+)\}/g, "${$1}");
   return `  ${key}: (${params.map((p) => `${p}: string`).join(", ")}) => \`${body}\`,`;
 }
-
 
 type Step = Record<string, unknown> & { do?: string; expect?: string };
 
@@ -71,12 +73,7 @@ function maestroStep(step: Step): string[] {
     case "relaunch":
       return ["- runFlow: relaunch.yaml"];
     case "rename":
-      return [
-        ...tap(id("itemTitle", s.from)),
-        "- eraseText: 200",
-        `- inputText: ${q(s.to)}`,
-        "- pressKey: Enter",
-      ];
+      return [...tap(id("itemTitle", s.from)), "- eraseText: 200", `- inputText: ${q(s.to)}`, "- pressKey: Enter"];
     case "search":
       return [...tap(id("search")), `- inputText: ${q(s.query)}`, "- hideKeyboard"];
     case "select":

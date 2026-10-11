@@ -5,13 +5,13 @@ extension FixtureOps {
     static var recurrenceOps: [String: Op] {
         [
             "recurrenceConstants": { g in
-                    return RecurrenceConstants()
+                return RecurrenceConstants()
             },
             "nextOccurrence": { g in
-                    return nextOccurrence(try g.decode("dueDate"), try g.decode("recurrence"))
+                return nextOccurrence(try g.decode("dueDate"), try g.decode("recurrence"))
             },
             "scheduleNext": { g in
-                    return scheduleNext(try g.decode("todo"), now: try g.date("now"))
+                return scheduleNext(try g.decode("todo"), now: try g.date("now"))
             },
         ]
     }

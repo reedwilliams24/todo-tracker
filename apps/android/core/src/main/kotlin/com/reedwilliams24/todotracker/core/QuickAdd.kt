@@ -1,7 +1,7 @@
 package com.reedwilliams24.todotracker.core
 
-import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
+import kotlinx.serialization.Serializable
 
 // Port of apps/web/src/domain/quick-add.ts (spec/features/quick-add.md).
 
@@ -18,27 +18,29 @@ private val BANG_PRIORITY = Regex("""(^|\s)!(p[123]|high|med(?:ium)?|low)\b""", 
 private val ISO_DATE = Regex("""(^|\s)(?:on |by |due )?(\d{4}-\d{2}-\d{2})\b""", RegexOption.IGNORE_CASE)
 private val IN_DAYS = Regex("""\bin (\d{1,3}) days?\b""", RegexOption.IGNORE_CASE)
 
-private val BANG_MAP = mapOf(
-    "p1" to TodoPriority.HIGH,
-    "p2" to TodoPriority.MEDIUM,
-    "p3" to TodoPriority.LOW,
-    "high" to TodoPriority.HIGH,
-    "med" to TodoPriority.MEDIUM,
-    "medium" to TodoPriority.MEDIUM,
-    "low" to TodoPriority.LOW,
-)
+private val BANG_MAP =
+    mapOf(
+        "p1" to TodoPriority.HIGH,
+        "p2" to TodoPriority.MEDIUM,
+        "p3" to TodoPriority.LOW,
+        "high" to TodoPriority.HIGH,
+        "med" to TodoPriority.MEDIUM,
+        "medium" to TodoPriority.MEDIUM,
+        "low" to TodoPriority.LOW,
+    )
 
 /**
- * Parses quick-add shorthand such as `call mom tomorrow 5pm #family !p1`: `#tag` -> tags,
- * `!p1`/`!high` -> priority, natural dates -> dueDate. `now` is device-local time.
+ * Parses quick-add shorthand such as `call mom tomorrow 5pm #family !p1`: `#tag` -> tags, `!p1`/`!high` -> priority,
+ * natural dates -> dueDate. `now` is device-local time.
  */
 fun parseQuickAdd(input: String, now: LocalDateTime = LocalDateTime.now()): QuickAddParse {
     val tags = mutableListOf<String>()
-    var rest = TAG.replace(input) { match ->
-        val tag = match.groupValues[2].lowercase()
-        if (tag !in tags) tags.add(tag)
-        match.groupValues[1]
-    }
+    var rest =
+        TAG.replace(input) { match ->
+            val tag = match.groupValues[2].lowercase()
+            if (tag !in tags) tags.add(tag)
+            match.groupValues[1]
+        }
 
     val priority: TodoPriority?
     val bang = BANG_PRIORITY.find(rest)

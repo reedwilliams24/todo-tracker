@@ -17,12 +17,14 @@ export const feature: Feature = {
   spec: "features/undo.md",
   status: { web: "pass", ios: "pass", android: "pass" },
   cases: [
-    ...([
-      ["complete", 1],
-      ["complete", 3],
-      ["delete", 1],
-      ["delete", 2],
-    ] as const).map(([action, count]) => ({
+    ...(
+      [
+        ["complete", 1],
+        ["complete", 3],
+        ["delete", 1],
+        ["delete", 2],
+      ] as const
+    ).map(([action, count]) => ({
       name: `describeUndo: ${action} ${count}`,
       op: "describeUndo",
       given: { action, count },
@@ -36,7 +38,13 @@ export const feature: Feature = {
     {
       name: "completing offers undo that restores the list",
       op: "applyActions",
-      given: { todos: sample, steps: [{ action: "toggle", id: "a", now: T1 }, { action: "undo", now: T2 }] },
+      given: {
+        todos: sample,
+        steps: [
+          { action: "toggle", id: "a", now: T1 },
+          { action: "undo", now: T2 },
+        ],
+      },
     },
     {
       name: "completing sets undo label",
@@ -82,7 +90,13 @@ export const feature: Feature = {
     {
       name: "undo restores deleted todo at its original position",
       op: "applyActions",
-      given: { todos: sample, steps: [{ action: "remove", ids: ["a"], now: T1 }, { action: "undo", now: T2 }] },
+      given: {
+        todos: sample,
+        steps: [
+          { action: "remove", ids: ["a"], now: T1 },
+          { action: "undo", now: T2 },
+        ],
+      },
     },
     {
       name: "deleting several",
@@ -97,7 +111,13 @@ export const feature: Feature = {
     {
       name: "clear completed offers undo",
       op: "applyActions",
-      given: { todos: sample, steps: [{ action: "clearCompleted", now: T1 }, { action: "undo", now: T2 }] },
+      given: {
+        todos: sample,
+        steps: [
+          { action: "clearCompleted", now: T1 },
+          { action: "undo", now: T2 },
+        ],
+      },
     },
     {
       name: "clear completed with nothing completed leaves no undo",
@@ -198,8 +218,7 @@ function applyStep(state: TodoState, step: Step): TodoState {
 
 export const ops: Ops = {
   describeUndo: (g) => describeUndo(g.action, g.count),
-  isUndoExpired: (g) =>
-    isUndoExpired({ label: "", before: [], at: Date.parse(g.at) }, Date.parse(g.now), g.timeoutMs),
+  isUndoExpired: (g) => isUndoExpired({ label: "", before: [], at: Date.parse(g.at) }, Date.parse(g.now), g.timeoutMs),
   applyActions: (g) => {
     let state: TodoState = { ...INITIAL_TODO_STATE, todos: g.todos as Todo[] };
     for (const step of g.steps as Step[]) state = applyStep(state, step);

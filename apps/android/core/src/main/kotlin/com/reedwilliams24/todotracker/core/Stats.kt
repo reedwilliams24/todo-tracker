@@ -1,14 +1,13 @@
 package com.reedwilliams24.todotracker.core
 
-import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import kotlinx.serialization.Serializable
 
 const val STATS_DAYS = 30
 
-@Serializable
-data class DayCount(val date: String, val count: Int)
+@Serializable data class DayCount(val date: String, val count: Int)
 
 @Serializable
 data class TodoStats(
@@ -63,10 +62,11 @@ fun computeStats(
     val counts = completionsByDay(todos, zone)
     val today = now.atZone(zone).toLocalDate()
     return TodoStats(
-        perDay = (days - 1 downTo 0).map { offset ->
-            val day = today.minusDays(offset.toLong())
-            DayCount(day.toString(), counts[day] ?: 0)
-        },
+        perDay =
+            (days - 1 downTo 0).map { offset ->
+                val day = today.minusDays(offset.toLong())
+                DayCount(day.toString(), counts[day] ?: 0)
+            },
         totalCompleted = counts.values.sum(),
         currentStreak = currentStreak(counts, today),
         longestStreak = longestStreak(counts),

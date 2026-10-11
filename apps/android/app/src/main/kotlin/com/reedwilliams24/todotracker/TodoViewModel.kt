@@ -40,12 +40,19 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun add(draft: TodoDraft) = dispatch(TodoAction.Prepend(addTodos(emptyList(), listOf(draft)).created))
+
     fun toggle(id: String) = dispatch(TodoAction.Toggle(id))
+
     fun rename(id: String, title: String) = dispatch(TodoAction.Rename(id, title))
+
     fun toggleMany(ids: List<String>) = dispatch(TodoAction.ToggleMany(ids))
+
     fun remove(id: String) = dispatch(TodoAction.Remove(listOf(id)))
+
     fun removeMany(ids: List<String>) = dispatch(TodoAction.Remove(ids))
+
     fun clearCompleted() = dispatch(TodoAction.ClearCompleted)
+
     fun undo() = dispatch(TodoAction.Undo)
 
     private fun dispatch(action: TodoAction) {
@@ -69,10 +76,11 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     private fun scheduleUndoExpiry(state: TodoState) {
         undoTimer?.cancel()
         val entry = state.undoable ?: return
-        undoTimer = viewModelScope.launch {
-            delay(entry.at + UNDO_TIMEOUT_MS - System.currentTimeMillis())
-            val current = _ui.value
-            _ui.value = current.copy(state = reduceTodos(current.state, TodoAction.ExpireUndo))
-        }
+        undoTimer =
+            viewModelScope.launch {
+                delay(entry.at + UNDO_TIMEOUT_MS - System.currentTimeMillis())
+                val current = _ui.value
+                _ui.value = current.copy(state = reduceTodos(current.state, TodoAction.ExpireUndo))
+            }
     }
 }
