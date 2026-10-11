@@ -1,0 +1,1195 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "subtasks",
+  "spec": "features/subtasks.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
+  "cases": [
+    {
+      "name": "subtaskProgress: none",
+      "op": "subtaskProgress",
+      "given": {
+        "todo": {
+          "id": "r",
+          "title": "Plain",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      },
+      "then": {
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "subtaskProgress: some done",
+      "op": "subtaskProgress",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        }
+      },
+      "then": {
+        "done": 1,
+        "total": 2
+      }
+    },
+    {
+      "name": "subtaskProgress: all done",
+      "op": "subtaskProgress",
+      "given": {
+        "todo": {
+          "id": "q",
+          "title": "Pack",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s3",
+              "title": "Clothes",
+              "completed": true
+            },
+            {
+              "id": "s4",
+              "title": "Charger",
+              "completed": true
+            }
+          ]
+        }
+      },
+      "then": {
+        "done": 2,
+        "total": 2
+      }
+    },
+    {
+      "name": "addSubtask: first trims title",
+      "op": "addSubtask",
+      "given": {
+        "todo": {
+          "id": "r",
+          "title": "Plain",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        "title": "  Book flight ",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "r",
+        "title": "Plain",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "new-1",
+            "title": "Book flight",
+            "completed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "addSubtask: appends after existing",
+      "op": "addSubtask",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        "title": "Rent car",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "p",
+        "title": "Plan trip",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Book flight",
+            "completed": true
+          },
+          {
+            "id": "s2",
+            "title": "Book hotel",
+            "completed": false
+          },
+          {
+            "id": "new-1",
+            "title": "Rent car",
+            "completed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "addSubtask: to completed parent keeps it completed",
+      "op": "addSubtask",
+      "given": {
+        "todo": {
+          "id": "q",
+          "title": "Pack",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s3",
+              "title": "Clothes",
+              "completed": true
+            },
+            {
+              "id": "s4",
+              "title": "Charger",
+              "completed": true
+            }
+          ]
+        },
+        "title": "Passport",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "q",
+        "title": "Pack",
+        "completed": true,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s3",
+            "title": "Clothes",
+            "completed": true
+          },
+          {
+            "id": "s4",
+            "title": "Charger",
+            "completed": true
+          },
+          {
+            "id": "new-1",
+            "title": "Passport",
+            "completed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "addSubtask: blank title is ignored",
+      "op": "addSubtask",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        "title": "   ",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "p",
+        "title": "Plan trip",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Book flight",
+            "completed": true
+          },
+          {
+            "id": "s2",
+            "title": "Book hotel",
+            "completed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "addSubtask: 201 chars is ignored",
+      "op": "addSubtask",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "p",
+        "title": "Plan trip",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Book flight",
+            "completed": true
+          },
+          {
+            "id": "s2",
+            "title": "Book hotel",
+            "completed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "toggleSubtask: completing the last open one completes the parent",
+      "op": "toggleSubtask",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        "subtaskId": "s2",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "p",
+        "title": "Plan trip",
+        "completed": true,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Book flight",
+            "completed": true
+          },
+          {
+            "id": "s2",
+            "title": "Book hotel",
+            "completed": true
+          }
+        ],
+        "completedAt": "2026-01-05T10:00:00.000Z"
+      }
+    },
+    {
+      "name": "toggleSubtask: unchecking one keeps parent open",
+      "op": "toggleSubtask",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        "subtaskId": "s1",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "p",
+        "title": "Plan trip",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Book flight",
+            "completed": false
+          },
+          {
+            "id": "s2",
+            "title": "Book hotel",
+            "completed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "toggleSubtask: unchecking one reopens a completed parent",
+      "op": "toggleSubtask",
+      "given": {
+        "todo": {
+          "id": "q",
+          "title": "Pack",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s3",
+              "title": "Clothes",
+              "completed": true
+            },
+            {
+              "id": "s4",
+              "title": "Charger",
+              "completed": true
+            }
+          ]
+        },
+        "subtaskId": "s3",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "q",
+        "title": "Pack",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s3",
+            "title": "Clothes",
+            "completed": false
+          },
+          {
+            "id": "s4",
+            "title": "Charger",
+            "completed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "toggleSubtask: unknown id is ignored",
+      "op": "toggleSubtask",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        "subtaskId": "nope",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "p",
+        "title": "Plan trip",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Book flight",
+            "completed": true
+          },
+          {
+            "id": "s2",
+            "title": "Book hotel",
+            "completed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "removeSubtask: keeps parent completion",
+      "op": "removeSubtask",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        "subtaskId": "s2",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "p",
+        "title": "Plan trip",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Book flight",
+            "completed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "removeSubtask: removing the last drops the list",
+      "op": "removeSubtask",
+      "given": {
+        "todo": {
+          "id": "t",
+          "title": "Todo t",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s5",
+              "title": "Only",
+              "completed": false
+            }
+          ]
+        },
+        "subtaskId": "s5",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "t",
+        "title": "Todo t",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z"
+      }
+    },
+    {
+      "name": "removeSubtask: unknown id is ignored",
+      "op": "removeSubtask",
+      "given": {
+        "todo": {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        "subtaskId": "nope",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "p",
+        "title": "Plan trip",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Book flight",
+            "completed": true
+          },
+          {
+            "id": "s2",
+            "title": "Book hotel",
+            "completed": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "list: add, toggle and remove through the reducer",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Plain",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Book hotel",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "action": "addSubtask",
+            "id": "r",
+            "title": "Step one",
+            "now": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "action": "toggleSubtask",
+            "id": "p",
+            "subtaskId": "s1",
+            "now": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "action": "removeSubtask",
+            "id": "p",
+            "subtaskId": "s2",
+            "now": "2026-01-05T11:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Plain",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "new-1",
+                "title": "Step one",
+                "completed": false
+              }
+            ]
+          },
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "undoLabel": null
+      }
+    },
+    {
+      "name": "list: completing the parent via its last subtask offers undo",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Plain",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Book hotel",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "action": "toggleSubtask",
+            "id": "p",
+            "subtaskId": "s2",
+            "now": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Plain",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Book hotel",
+                "completed": true
+              }
+            ],
+            "completedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "undoLabel": "Completed todo"
+      }
+    },
+    {
+      "name": "list: undo restores the parent and its subtasks",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Plain",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Book hotel",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "action": "toggleSubtask",
+            "id": "p",
+            "subtaskId": "s2",
+            "now": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "action": "undo",
+            "now": "2026-01-05T11:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Plain",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Book hotel",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "undoLabel": null
+      }
+    },
+    {
+      "name": "list: reopening via a subtask does not offer undo",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "q",
+            "title": "Pack",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s3",
+                "title": "Clothes",
+                "completed": true
+              },
+              {
+                "id": "s4",
+                "title": "Charger",
+                "completed": true
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "action": "toggleSubtask",
+            "id": "q",
+            "subtaskId": "s3",
+            "now": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "q",
+            "title": "Pack",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s3",
+                "title": "Clothes",
+                "completed": false
+              },
+              {
+                "id": "s4",
+                "title": "Charger",
+                "completed": true
+              }
+            ]
+          }
+        ],
+        "undoLabel": null
+      }
+    },
+    {
+      "name": "list: unknown todo id is ignored",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Book hotel",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "action": "addSubtask",
+            "id": "zzz",
+            "title": "x",
+            "now": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Book hotel",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "undoLabel": null
+      }
+    },
+    {
+      "name": "list: completing a recurring parent via its last subtask schedules the next occurrence",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "w",
+            "title": "Water plants",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "recurrence": "weekly",
+            "dueDate": "2026-01-05",
+            "subtasks": [
+              {
+                "id": "s6",
+                "title": "Fill can",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "steps": [
+          {
+            "action": "toggleSubtask",
+            "id": "w",
+            "subtaskId": "s6",
+            "now": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "w",
+            "title": "Water plants",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "recurrence": "weekly",
+            "dueDate": "2026-01-05",
+            "subtasks": [
+              {
+                "id": "s6",
+                "title": "Fill can",
+                "completed": true
+              }
+            ],
+            "completedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "new-1",
+            "title": "Water plants",
+            "completed": false,
+            "priority": "medium",
+            "dueDate": "2026-01-12",
+            "recurrence": "weekly",
+            "createdAt": "2026-01-05T10:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "undoLabel": "Completed todo"
+      }
+    },
+    {
+      "name": "storage: subtasks round-trip",
+      "op": "serializeTodos",
+      "given": {
+        "todos": [
+          {
+            "id": "p",
+            "title": "Plan trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Book flight",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Book hotel",
+                "completed": false
+              }
+            ]
+          },
+          {
+            "id": "q",
+            "title": "Pack",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s3",
+                "title": "Clothes",
+                "completed": true
+              },
+              {
+                "id": "s4",
+                "title": "Charger",
+                "completed": true
+              }
+            ]
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "p",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "q",
+          "title": "Pack",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s3",
+              "title": "Clothes",
+              "completed": true
+            },
+            {
+              "id": "s4",
+              "title": "Charger",
+              "completed": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "storage: parse keeps subtasks",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": "[{\"id\":\"p\",\"title\":\"Plan trip\",\"completed\":false,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\",\"subtasks\":[{\"id\":\"s1\",\"title\":\"Book flight\",\"completed\":true},{\"id\":\"s2\",\"title\":\"Book hotel\",\"completed\":false}]}]"
+      },
+      "then": [
+        {
+          "id": "new-1",
+          "title": "Plan trip",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "new-2",
+              "title": "Book flight",
+              "completed": true
+            },
+            {
+              "id": "new-3",
+              "title": "Book hotel",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

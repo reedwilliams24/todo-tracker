@@ -45,6 +45,7 @@ extension FixtureOps {
         let ids: [String]?
         let visibleIds: [String]?
         let targetId: String?
+        let subtaskId: String?
 
         func apply(to state: TodoState) throws -> TodoState {
             guard let date = Timestamp.parse(now) else { throw BadGiven(description: "bad step now \(now)") }
@@ -61,6 +62,9 @@ extension FixtureOps {
                 action = .reorder(
                     visibleIds: try require(visibleIds), id: try require(id), targetId: try require(targetId))
             case "clearCompleted": action = .clearCompleted
+            case "addSubtask": action = .addSubtask(id: try require(id), title: try require(title))
+            case "toggleSubtask": action = .toggleSubtask(id: try require(id), subtaskId: try require(subtaskId))
+            case "removeSubtask": action = .removeSubtask(id: try require(id), subtaskId: try require(subtaskId))
             case "undo": action = .undo
             case "expireUndo": action = .expireUndo
             default: throw BadGiven(description: "unknown step action \(self.action)")

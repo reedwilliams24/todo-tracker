@@ -46,6 +46,10 @@ object TestIds {
 
     fun itemSelect(title: String) = "todo-select-item-$title"
 
+    fun itemSubtaskProgress(title: String) = "todo-subtasks-progress-$title"
+
+    fun itemSubtasksToggle(title: String) = "todo-subtasks-toggle-$title"
+
     fun itemTitle(title: String) = "todo-title-$title"
 
     fun itemToggle(title: String) = "todo-toggle-$title"
@@ -66,6 +70,14 @@ object TestIds {
     const val statsLongest = "stat-longest"
     const val statsToggle = "stats-toggle"
     const val statsTotal = "stat-total"
+
+    fun subtask(title: String) = "todo-subtask-$title"
+
+    fun subtaskDelete(title: String) = "todo-subtask-delete-$title"
+
+    fun subtaskInput(title: String) = "todo-subtask-input-$title"
+
+    fun subtaskToggle(title: String) = "todo-subtask-toggle-$title"
 
     fun themeOption(theme: String) = "theme-option-$theme"
 

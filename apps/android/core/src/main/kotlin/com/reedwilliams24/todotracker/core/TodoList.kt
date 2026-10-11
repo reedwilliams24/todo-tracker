@@ -21,6 +21,16 @@ fun toggleInList(todos: List<Todo>, id: String, now: Instant = Instant.now()): L
 fun renameInList(todos: List<Todo>, id: String, title: String, now: Instant = Instant.now()): List<Todo> =
     updateTodoText(todos, id, title, now)
 
+fun updateInList(todos: List<Todo>, id: String, update: (Todo) -> Todo): List<Todo> {
+    var changed = false
+    val next =
+        todos.map { todo ->
+            if (todo.id != id) return@map todo
+            update(todo).also { if (it !== todo) changed = true }
+        }
+    return if (changed) next else todos
+}
+
 fun removeFromList(todos: List<Todo>, ids: Collection<String>): List<Todo> {
     val doomed = ids.toSet()
     return todos.filter { it.id !in doomed }

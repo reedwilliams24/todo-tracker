@@ -84,6 +84,12 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
 
     fun undo() = dispatch(TodoAction.Undo)
 
+    fun addSubtask(id: String, title: String) = dispatch(TodoAction.AddSubtask(id, title))
+
+    fun toggleSubtask(id: String, subtaskId: String) = dispatch(TodoAction.ToggleSubtask(id, subtaskId))
+
+    fun removeSubtask(id: String, subtaskId: String) = dispatch(TodoAction.RemoveSubtask(id, subtaskId))
+
     /** Drops `id` onto `targetId` within the shown rows and switches to manual sort so the new order shows. */
     fun reorder(visibleIds: List<String>, id: String, targetId: String) {
         dispatch(TodoAction.Reorder(visibleIds, id, targetId))

@@ -48,6 +48,8 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
     public var updatedAt: String
     /// When the todo was last completed; nil while open and for data from before REED-19.
     public var completedAt: String?
+    /// Checklist in insertion order; `nil` (omitted) when empty.
+    public var subtasks: [Subtask]?
 
     public init(
         id: String,
@@ -60,7 +62,8 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
         recurrence: Recurrence? = nil,
         createdAt: String,
         updatedAt: String,
-        completedAt: String? = nil
+        completedAt: String? = nil,
+        subtasks: [Subtask]? = nil
     ) {
         self.id = id
         self.title = title
@@ -73,6 +76,19 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.completedAt = completedAt
+        self.subtasks = subtasks
+    }
+}
+
+public struct Subtask: Codable, Equatable, Hashable, Identifiable, Sendable {
+    public var id: String
+    public var title: String
+    public var completed: Bool
+
+    public init(id: String, title: String, completed: Bool = false) {
+        self.id = id
+        self.title = title
+        self.completed = completed
     }
 }
 

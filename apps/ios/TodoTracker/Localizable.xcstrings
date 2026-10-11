@@ -1024,6 +1024,83 @@
         }
       }
     },
+    "subtask.delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete subtask \"%1$@\""
+          }
+        }
+      }
+    },
+    "subtask.markActive" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark subtask \"%1$@\" as active"
+          }
+        }
+      }
+    },
+    "subtask.markComplete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark subtask \"%1$@\" as complete"
+          }
+        }
+      }
+    },
+    "subtasks.add.label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New subtask for \"%1$@\""
+          }
+        }
+      }
+    },
+    "subtasks.add.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a subtask and press Enter"
+          }
+        }
+      }
+    },
+    "subtasks.collapse" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapse subtasks of \"%1$@\""
+          }
+        }
+      }
+    },
+    "subtasks.expand" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expand subtasks of \"%1$@\""
+          }
+        }
+      }
+    },
     "theme.dark" : {
       "extractionState" : "manual",
       "localizations" : {

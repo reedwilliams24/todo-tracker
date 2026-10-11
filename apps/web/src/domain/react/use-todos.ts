@@ -58,6 +58,15 @@ export function useTodos(storage: TodoStorage) {
       dispatch({ type: "reorder", visibleIds: [...visibleIds], id, targetId }),
     [],
   );
+  const addSubtask = useCallback((id: string, title: string) => dispatch({ type: "addSubtask", id, title }), []);
+  const toggleSubtask = useCallback(
+    (id: string, subtaskId: string) => dispatch({ type: "toggleSubtask", id, subtaskId }),
+    [],
+  );
+  const removeSubtask = useCallback(
+    (id: string, subtaskId: string) => dispatch({ type: "removeSubtask", id, subtaskId }),
+    [],
+  );
 
   return {
     todos,
@@ -73,5 +82,8 @@ export function useTodos(storage: TodoStorage) {
     undoable,
     undo,
     reorder,
+    addSubtask,
+    toggleSubtask,
+    removeSubtask,
   };
 }

@@ -6,6 +6,9 @@ struct TodoRowView: View {
     let onToggle: () -> Void
     let onRename: (String) -> Void
     let onRemove: () -> Void
+    let onAddSubtask: (String) -> Void
+    let onToggleSubtask: (String) -> Void
+    let onRemoveSubtask: (String) -> Void
     var selection: Selection?
 
     struct Selection {
@@ -13,6 +16,8 @@ struct TodoRowView: View {
         let onSelect: () -> Void
     }
 
+    @State private var expanded = false
+    @State private var subtaskTitle = ""
     @State private var editing = false
     @State private var draftTitle = ""
     @FocusState private var editFocused: Bool
@@ -74,6 +79,23 @@ struct TodoRowView: View {
     }
 
     private var row: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            header
+            if expanded { subtaskPanel }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .cardStyle()
+        .overlay {
+            if overdue {
+                RoundedRectangle(cornerRadius: Theme.Radius.lg).stroke(Theme.danger, lineWidth: 1)
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(TestID.item(todo.title))
+    }
+
+    private var header: some View {
         HStack(spacing: 10) {
             let toggleLabel = t(todo.completed ? "item.markActive" : "item.markComplete", ["title": todo.title])
             Toggle(
@@ -161,6 +183,30 @@ struct TodoRowView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
+            let progress = subtaskProgress(todo)
+            Button {
+                expanded.toggle()
+            } label: {
+                HStack(spacing: 4) {
+                    Text(progress.total > 0 ? progress.label : "+")
+                        .font(.system(size: 12).monospacedDigit())
+                        .foregroundStyle(Theme.foreground)
+                        .accessibilityIdentifier(TestID.itemSubtaskProgress(todo.title))
+                    Text(expanded ? "▾" : "▸")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.muted)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(Theme.border, in: Capsule())
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .fixedSize()
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(t(expanded ? "subtasks.collapse" : "subtasks.expand", ["title": todo.title]))
+            .accessibilityIdentifier(TestID.itemSubtasksToggle(todo.title))
+
             let colors = Theme.priority(todo.priority)
             Text(t("priority.\(todo.priority.rawValue)"))
                 .font(.system(size: 12))
@@ -183,16 +229,63 @@ struct TodoRowView: View {
             .accessibilityLabel(t("item.delete", ["title": todo.title]))
             .accessibilityIdentifier(TestID.itemDelete(todo.title))
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .cardStyle()
-        .overlay {
-            if overdue {
-                RoundedRectangle(cornerRadius: Theme.Radius.lg).stroke(Theme.danger, lineWidth: 1)
+    }
+
+    private var subtaskPanel: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(todo.subtasks ?? []) { subtask in
+                HStack(spacing: 8) {
+                    let toggleLabel = t(
+                        subtask.completed ? "subtask.markActive" : "subtask.markComplete", ["title": subtask.title])
+                    Toggle(
+                        toggleLabel,
+                        isOn: Binding(get: { subtask.completed }, set: { _ in onToggleSubtask(subtask.id) })
+                    )
+                    .toggleStyle(CheckboxToggleStyle(size: 16))
+                    .accessibilityLabel(toggleLabel)
+                    .accessibilityIdentifier(TestID.subtaskToggle(subtask.title))
+
+                    Text(subtask.title)
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.foreground)
+                        .strikethrough(subtask.completed)
+                        .opacity(subtask.completed ? 0.5 : 1)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Button {
+                        onRemoveSubtask(subtask.id)
+                    } label: {
+                        Text("×")
+                            .font(.system(size: 16))
+                            .foregroundStyle(Theme.muted)
+                            .padding(.horizontal, 6)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(t("subtask.delete", ["title": subtask.title]))
+                    .accessibilityIdentifier(TestID.subtaskDelete(subtask.title))
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier(TestID.subtask(subtask.title))
             }
+
+            TextField(t("subtasks.add.placeholder"), text: $subtaskTitle)
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.foreground)
+                .padding(.vertical, 4)
+                .submitLabel(.done)
+                .onSubmit(submitSubtask)
+                .accessibilityLabel(t("subtasks.add.label", ["title": todo.title]))
+                .accessibilityIdentifier(TestID.subtaskInput(todo.title))
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(TestID.item(todo.title))
+        .padding(.leading, 30)
+    }
+
+    private func submitSubtask() {
+        guard isValidTitle(subtaskTitle) else { return }
+        onAddSubtask(subtaskTitle)
+        subtaskTitle = ""
     }
 
     private func commit() {
@@ -206,6 +299,8 @@ struct TodoRowView: View {
 
 /// The RN app's square checkbox; keeps Toggle semantics (value 0/1) for accessibility.
 private struct CheckboxToggleStyle: ToggleStyle {
+    var size: CGFloat = 20
+
     func makeBody(configuration: Configuration) -> some View {
         Button {
             configuration.isOn.toggle()
@@ -221,7 +316,7 @@ private struct CheckboxToggleStyle: ToggleStyle {
                         Text("✓").font(.system(size: 12)).foregroundStyle(Theme.card)
                     }
                 }
-                .frame(width: 20, height: 20)
+                .frame(width: size, height: size)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

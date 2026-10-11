@@ -1,0 +1,65 @@
+# Generated from spec/scenarios/core/subtasks.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: subtasks
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Plan trip"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Plan trip"
+- tapOn:
+    id: "todo-subtasks-toggle-Plan trip"
+- tapOn:
+    id: "todo-subtask-input-Plan trip"
+- inputText: "Book flight"
+- pressKey: Enter
+- assertVisible:
+    id: "todo-subtask-Book flight"
+- tapOn:
+    id: "todo-subtask-input-Plan trip"
+- inputText: "Book hotel"
+- pressKey: Enter
+- assertVisible:
+    id: "todo-subtask-Book hotel"
+- assertVisible:
+    id: "todo-subtasks-progress-Plan trip"
+    text: "0/2"
+- tapOn:
+    id: "todo-subtask-toggle-Book flight"
+- assertVisible:
+    id: "todo-subtasks-progress-Plan trip"
+    text: "1/2"
+- assertVisible:
+    id: "todo-toggle-Plan trip"
+    checked: false
+- tapOn:
+    id: "todo-subtask-toggle-Book hotel"
+- assertVisible:
+    id: "todo-subtasks-progress-Plan trip"
+    text: "2/2"
+- assertVisible:
+    id: "todo-toggle-Plan trip"
+    checked: true
+- assertVisible:
+    id: "undo-toast-label"
+    text: "Completed todo"
+- tapOn:
+    id: "todo-subtask-toggle-Book hotel"
+- assertVisible:
+    id: "todo-toggle-Plan trip"
+    checked: false
+- tapOn:
+    id: "todo-subtask-delete-Book hotel"
+- assertVisible:
+    id: "todo-subtasks-progress-Plan trip"
+    text: "1/1"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "todo-subtasks-progress-Plan trip"
+    text: "1/1"

@@ -60,6 +60,13 @@ function maestroStep(step: Step): string[] {
         ...tap(id("formSubmit")),
         ...visible(id("item", s.title!)),
       ];
+    case "addSubtask":
+      return [
+        ...tap(id("subtaskInput", s.title!)),
+        `- inputText: ${q(s.subtask)}`,
+        "- pressKey: Enter",
+        ...visible(id("subtask", s.subtask!)),
+      ];
     case "bulkDelete":
       return [...tap(id("bulkDelete")), ...tap(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel"))];
     case "bulkToggle":
@@ -68,6 +75,10 @@ function maestroStep(step: Step): string[] {
       return tap(id("clearCompleted"));
     case "delete":
       return tap(id("itemDelete", s.title!));
+    case "deleteSubtask":
+      return tap(id("subtaskDelete", s.subtask!));
+    case "expandSubtasks":
+      return tap(id("itemSubtasksToggle", s.title!));
     case "filter":
       return tap(id("filter", s.filter));
     case "openStats":
@@ -92,6 +103,8 @@ function maestroStep(step: Step): string[] {
       return tap(id("themeOption", s.theme));
     case "toggle":
       return tap(id("itemToggle", s.title!));
+    case "toggleSubtask":
+      return tap(id("subtaskToggle", s.subtask!));
     case "type":
       return [...tap(id("formTitle")), `- inputText: ${q(s.text)}`];
     case "undo":
@@ -130,6 +143,8 @@ function maestroStep(step: Step): string[] {
         ...visible(id("statsCurrent"), [`    text: ${q(s.current)}`]),
         ...visible(id("statsLongest"), [`    text: ${q(s.longest)}`]),
       ];
+    case "subtaskProgress":
+      return visible(id("itemSubtaskProgress", s.title!), [`    text: ${q(s.text)}`]);
     case "theme":
       return visible(id("themeOption", s.theme), ["    selected: true"]);
     case "titles":

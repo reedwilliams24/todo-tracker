@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useT } from "@/hooks/use-t";
-import { isOverdue, isValidTitle, TEST_IDS, type Todo } from "@/domain";
+import { isOverdue, isValidTitle, subtaskProgress, TEST_IDS, type Todo } from "@/domain";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
   high: "bg-red-500/15 text-red-700 dark:text-red-400",
@@ -24,11 +24,28 @@ type TodoItemProps = {
     onDrop: (targetId: string) => void;
     onDragEnd: () => void;
   };
+  onAddSubtask: (id: string, title: string) => void;
+  onToggleSubtask: (id: string, subtaskId: string) => void;
+  onRemoveSubtask: (id: string, subtaskId: string) => void;
 };
 
-export function TodoItem({ todo, onToggle, onRename, onRemove, selection, drag }: TodoItemProps) {
+export function TodoItem({
+  todo,
+  onToggle,
+  onRename,
+  onRemove,
+  onAddSubtask,
+  onToggleSubtask,
+  onRemoveSubtask,
+  selection,
+  drag,
+}: TodoItemProps) {
   const t = useT();
   const [editing, setEditing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [subtaskTitle, setSubtaskTitle] = useState("");
+  const progress = subtaskProgress(todo);
+  const panelId = `subtasks-${todo.id}`;
   const [draftTitle, setDraftTitle] = useState(todo.title);
   const cancelled = useRef(false);
 
@@ -87,6 +104,12 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection, drag }
     );
   }
 
+  function submitSubtask() {
+    if (!isValidTitle(subtaskTitle)) return;
+    onAddSubtask(todo.id, subtaskTitle);
+    setSubtaskTitle("");
+  }
+
   return (
     <li
       data-testid={TEST_IDS.item(todo.title)}
@@ -102,99 +125,163 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection, drag }
           : undefined
       }
       onDragEnd={drag?.onDragEnd}
-      className={`flex items-center gap-3 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
+      className={`flex flex-col gap-2 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
         overdue ? "border-red-500/40" : "border-black/10 dark:border-white/15"
       } ${drag?.dragging ? "opacity-40" : ""}`}
     >
-      {drag && (
-        <span aria-label="Drag to reorder" title="Drag to reorder" className="cursor-grab opacity-40 select-none">
-          ⋮⋮
-        </span>
-      )}
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={() => onToggle(todo.id)}
-        data-testid={TEST_IDS.itemToggle(todo.title)}
-        aria-label={t(todo.completed ? "item.markActive" : "item.markComplete", { title: todo.title })}
-        className="size-4 accent-current"
-      />
-
-      {editing ? (
+      <div className="flex items-center gap-3">
+        {drag && (
+          <span aria-label="Drag to reorder" title="Drag to reorder" className="cursor-grab opacity-40 select-none">
+            ⋮⋮
+          </span>
+        )}
         <input
-          autoFocus
-          value={draftTitle}
-          onChange={(event) => setDraftTitle(event.target.value)}
-          onBlur={commit}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") commit();
-            if (event.key === "Escape") cancel();
-          }}
-          data-testid={TEST_IDS.itemEditInput}
-          aria-label={t("item.editTitle")}
-          className="flex-1 rounded-lg bg-transparent px-1 py-1 outline-none"
+          type="checkbox"
+          checked={todo.completed}
+          onChange={() => onToggle(todo.id)}
+          data-testid={TEST_IDS.itemToggle(todo.title)}
+          aria-label={t(todo.completed ? "item.markActive" : "item.markComplete", { title: todo.title })}
+          className="size-4 accent-current"
         />
-      ) : (
+
+        {editing ? (
+          <input
+            autoFocus
+            value={draftTitle}
+            onChange={(event) => setDraftTitle(event.target.value)}
+            onBlur={commit}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") commit();
+              if (event.key === "Escape") cancel();
+            }}
+            data-testid={TEST_IDS.itemEditInput}
+            aria-label={t("item.editTitle")}
+            className="flex-1 rounded-lg bg-transparent px-1 py-1 outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            onDoubleClick={startEditing}
+            data-testid={TEST_IDS.itemTitle(todo.title)}
+            aria-label={t("item.edit", { title: todo.title })}
+            title={t("item.editHint")}
+            className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-70" : ""}`}
+          >
+            {todo.title}
+          </button>
+        )}
+
+        {todo.dueDate && (
+          <span
+            data-testid={TEST_IDS.itemDueDate(todo.title)}
+            className={`text-xs ${overdue ? "font-medium text-red-700 dark:text-red-400" : "opacity-70"}`}
+            aria-label={t(overdue ? "item.overdue" : "item.due", { date: todo.dueDate })}
+          >
+            {overdue && <span data-testid={TEST_IDS.itemOverdue(todo.title)}>{t("item.overdueBadge")}</span>}
+            {todo.dueDate}
+          </span>
+        )}
+        {todo.reminder && (
+          <span
+            data-testid={TEST_IDS.itemReminder(todo.title)}
+            className="text-xs opacity-60"
+            aria-label={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
+            title={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
+          >
+            {t(`reminder.${todo.reminder}`)}
+          </span>
+        )}
+
+        {todo.recurrence && (
+          <span
+            data-testid={TEST_IDS.itemRecurrence(todo.title)}
+            className="text-xs opacity-70"
+            aria-label={t(`item.repeats.${todo.recurrence}`)}
+            title={t(`item.repeats.${todo.recurrence}`)}
+          >
+            {t("item.recurrence", { label: t(`recurrence.${todo.recurrence}`) })}
+          </span>
+        )}
+
         <button
           type="button"
-          onDoubleClick={startEditing}
-          data-testid={TEST_IDS.itemTitle(todo.title)}
-          aria-label={t("item.edit", { title: todo.title })}
-          title={t("item.editHint")}
-          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-70" : ""}`}
+          onClick={() => setExpanded((open) => !open)}
+          aria-expanded={expanded}
+          aria-controls={panelId}
+          aria-label={t(expanded ? "subtasks.collapse" : "subtasks.expand", { title: todo.title })}
+          data-testid={TEST_IDS.itemSubtasksToggle(todo.title)}
+          className="rounded-full bg-black/5 px-2 py-0.5 text-xs tabular-nums opacity-70 transition hover:opacity-100 dark:bg-white/10"
         >
-          {todo.title}
+          <span data-testid={TEST_IDS.itemSubtaskProgress(todo.title)}>
+            {progress.total > 0 ? `${progress.done}/${progress.total}` : "+"}
+          </span>
+          <span aria-hidden className="ml-1">
+            {expanded ? "▾" : "▸"}
+          </span>
         </button>
-      )}
 
-      {todo.dueDate && (
         <span
-          data-testid={TEST_IDS.itemDueDate(todo.title)}
-          className={`text-xs ${overdue ? "font-medium text-red-700 dark:text-red-400" : "opacity-70"}`}
-          aria-label={t(overdue ? "item.overdue" : "item.due", { date: todo.dueDate })}
+          data-testid={TEST_IDS.itemPriority(todo.title)}
+          className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[todo.priority]}`}
         >
-          {overdue && <span data-testid={TEST_IDS.itemOverdue(todo.title)}>{t("item.overdueBadge")}</span>}
-          {todo.dueDate}
+          {t(`priority.${todo.priority}`)}
         </span>
-      )}
-      {todo.reminder && (
-        <span
-          data-testid={TEST_IDS.itemReminder(todo.title)}
-          className="text-xs opacity-60"
-          aria-label={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
-          title={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
+
+        <button
+          type="button"
+          onClick={() => onRemove(todo.id)}
+          data-testid={TEST_IDS.itemDelete(todo.title)}
+          aria-label={t("item.delete", { title: todo.title })}
+          className="rounded-lg px-2 py-1 text-sm opacity-70 transition hover:opacity-100"
         >
-          {t(`reminder.${todo.reminder}`)}
-        </span>
+          ×
+        </button>
+      </div>
+
+      {expanded && (
+        <div id={panelId} className="ml-7 flex flex-col gap-1 text-sm">
+          {todo.subtasks?.map((subtask) => (
+            <div key={subtask.id} data-testid={TEST_IDS.subtask(subtask.title)} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={subtask.completed}
+                onChange={() => onToggleSubtask(todo.id, subtask.id)}
+                data-testid={TEST_IDS.subtaskToggle(subtask.title)}
+                aria-label={t(subtask.completed ? "subtask.markActive" : "subtask.markComplete", {
+                  title: subtask.title,
+                })}
+                className="size-3.5 accent-current"
+              />
+              <span className={`flex-1 truncate ${subtask.completed ? "line-through opacity-50" : ""}`}>
+                {subtask.title}
+              </span>
+              <button
+                type="button"
+                onClick={() => onRemoveSubtask(todo.id, subtask.id)}
+                data-testid={TEST_IDS.subtaskDelete(subtask.title)}
+                aria-label={t("subtask.delete", { title: subtask.title })}
+                className="px-1 text-xs opacity-50 hover:opacity-100"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <input
+            value={subtaskTitle}
+            onChange={(event) => setSubtaskTitle(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                submitSubtask();
+              }
+            }}
+            placeholder={t("subtasks.add.placeholder")}
+            aria-label={t("subtasks.add.label", { title: todo.title })}
+            data-testid={TEST_IDS.subtaskInput(todo.title)}
+            className="rounded-lg bg-transparent px-1 py-1 outline-none placeholder:opacity-50"
+          />
+        </div>
       )}
-
-      {todo.recurrence && (
-        <span
-          data-testid={TEST_IDS.itemRecurrence(todo.title)}
-          className="text-xs opacity-70"
-          aria-label={t(`item.repeats.${todo.recurrence}`)}
-          title={t(`item.repeats.${todo.recurrence}`)}
-        >
-          {t("item.recurrence", { label: t(`recurrence.${todo.recurrence}`) })}
-        </span>
-      )}
-
-      <span
-        data-testid={TEST_IDS.itemPriority(todo.title)}
-        className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[todo.priority]}`}
-      >
-        {t(`priority.${todo.priority}`)}
-      </span>
-
-      <button
-        type="button"
-        onClick={() => onRemove(todo.id)}
-        data-testid={TEST_IDS.itemDelete(todo.title)}
-        aria-label={t("item.delete", { title: todo.title })}
-        className="rounded-lg px-2 py-1 text-sm opacity-70 transition hover:opacity-100"
-      >
-        ×
-      </button>
     </li>
   );
 }

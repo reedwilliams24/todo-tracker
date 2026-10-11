@@ -84,3 +84,7 @@ export function moveVisibleTodo(
   let next = 0;
   return todos.map((todo) => (visible.has(todo.id) ? ordered[next++]! : todo));
 }
+
+export function updateInList(todos: readonly Todo[], id: string, update: (todo: Todo) => Todo): Todo[] {
+  return todos.map((todo) => (todo.id === id ? update(todo) : todo));
+}

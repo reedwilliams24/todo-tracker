@@ -39,6 +39,9 @@ export function TodoApp() {
     undoable,
     undo,
     reorder,
+    addSubtask,
+    toggleSubtask,
+    removeSubtask,
   } = useTodos();
   const t = useT();
   const [sort, setSort] = useSort(localSortStorage);
@@ -310,6 +313,9 @@ export function TodoApp() {
                     }
                   : undefined
               }
+              onAddSubtask={addSubtask}
+              onToggleSubtask={toggleSubtask}
+              onRemoveSubtask={removeSubtask}
             />
           ))}
         </ul>

@@ -4,6 +4,12 @@ export type ReminderOffset = "at" | "1h" | "1d";
 
 export type Recurrence = "daily" | "weekly" | "monthly";
 
+export type Subtask = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
 export type Todo = {
   id: string;
   title: string;
@@ -15,6 +21,7 @@ export type Todo = {
   recurrence?: Recurrence;
   /** ISO timestamp of the most recent completion; cleared when reopened. */
   completedAt?: string;
+  subtasks?: Subtask[];
   createdAt: string;
   updatedAt: string;
 };

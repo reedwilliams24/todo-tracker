@@ -25,6 +25,10 @@ public func renameInList(_ todos: [Todo], id: String, title: String, now: Date =
     updateTodoText(todos, id: id, text: title, now: now)
 }
 
+public func updateInList(_ todos: [Todo], id: String, _ update: (Todo) -> Todo) -> [Todo] {
+    todos.map { $0.id == id ? update($0) : $0 }
+}
+
 public func removeFromList(_ todos: [Todo], ids: [String]) -> [Todo] {
     let doomed = Set(ids)
     return todos.filter { !doomed.contains($0.id) }

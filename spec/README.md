@@ -65,10 +65,13 @@ New feature scenarios add a file in `scenarios/core/`, and each step kind below 
 Actions (`do`):
 
 - `add {title, priority?, dueDate?, recurrence?, reminder?}`
+- `addSubtask {title, subtask}` (type into the todo's subtask input and press Enter)
 - `bulkDelete {confirm}` (tap Delete, then Delete or Cancel in the confirmation)
 - `bulkToggle`
 - `clearCompleted`
 - `delete {title}`
+- `deleteSubtask {subtask}`
+- `expandSubtasks {title}`
 - `filter {filter}`
 - `move {title, onto}` (drag a row onto another; web only, since Maestro can't long-press-drag)
 - `openStats`
@@ -82,6 +85,7 @@ Actions (`do`):
 - `submit`
 - `theme {theme}`
 - `toggle {title}`
+- `toggleSubtask {subtask}`
 - `type {text}` (fills the add form's title without submitting)
 - `undo`
 
@@ -98,6 +102,7 @@ Assertions (`expect`):
 - `reminder {title, text}` (the row's reminder label)
 - `selected {text}`
 - `stats {total, current, longest}` (the Stats panel's texts)
+- `subtaskProgress {title, text}` (the row's `done/total` badge)
 - `theme {theme}` (that theme option is selected; web also checks the `dark` class on `<html>` for `light`/`dark`)
 - `titles {titles}` (web checks exact order; Maestro checks each is visible)
 - `undo {label | null}`

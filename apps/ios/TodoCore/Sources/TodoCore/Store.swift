@@ -22,6 +22,9 @@ public enum TodoAction: Equatable, Sendable {
     case remove(ids: [String])
     case reorder(visibleIds: [String], id: String, targetId: String)
     case clearCompleted
+    case addSubtask(id: String, title: String)
+    case toggleSubtask(id: String, subtaskId: String)
+    case removeSubtask(id: String, subtaskId: String)
     case undo
     case expireUndo
 }
@@ -65,11 +68,38 @@ public func reduceTodos(_ state: TodoState, _ action: TodoAction, now: Date = Da
         let removed = todos.count - next.count
         if removed == 0 { return state }
         return TodoState(todos: next, undoable: snapshot(describeUndo(.delete, count: removed)))
+    case .addSubtask, .toggleSubtask, .removeSubtask:
+        return reduceSubtasks(state, action, now: now)
     case .undo:
         guard let entry = state.undoable else { return state }
         return TodoState(todos: entry.before, undoable: nil)
     case .expireUndo:
         guard let entry = state.undoable, isUndoExpired(entry, now: nowMs) else { return state }
         return TodoState(todos: todos, undoable: nil)
+    }
+}
+
+/// The subtask actions of `reduceTodos`; only completing a parent via its last subtask is undoable.
+private func reduceSubtasks(_ state: TodoState, _ action: TodoAction, now: Date) -> TodoState {
+    let todos = state.todos
+    switch action {
+    case .addSubtask(let id, let title):
+        return TodoState(
+            todos: updateInList(todos, id: id) { addSubtask($0, title: title, now: now) }, undoable: state.undoable)
+    case .toggleSubtask(let id, let subtaskId):
+        let next = toggleSubtaskInList(todos, id: id, subtaskId: subtaskId, now: now)
+        let wasOpen = todos.first { $0.id == id }.map { !$0.completed } ?? false
+        let isDone = next.first { $0.id == id }?.completed ?? false
+        let undoable =
+            wasOpen && isDone
+            ? UndoEntry(label: describeUndo(.complete, count: 1), before: todos, at: Timestamp.milliseconds(now))
+            : state.undoable
+        return TodoState(todos: next, undoable: undoable)
+    case .removeSubtask(let id, let subtaskId):
+        return TodoState(
+            todos: updateInList(todos, id: id) { removeSubtask($0, subtaskId: subtaskId, now: now) },
+            undoable: state.undoable)
+    default:
+        return state
     }
 }

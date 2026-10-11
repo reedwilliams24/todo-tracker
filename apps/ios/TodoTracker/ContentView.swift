@@ -282,6 +282,9 @@ struct ContentView: View {
                         onToggle: { model.toggle(todo.id) },
                         onRename: { model.rename(todo.id, title: $0) },
                         onRemove: { model.remove(todo.id) },
+                        onAddSubtask: { model.addSubtask(todo.id, title: $0) },
+                        onToggleSubtask: { model.toggleSubtask(todo.id, subtaskId: $0) },
+                        onRemoveSubtask: { model.removeSubtask(todo.id, subtaskId: $0) },
                         selection: model.selecting
                             ? TodoRowView.Selection(
                                 selected: model.selectedIds.contains(todo.id),
