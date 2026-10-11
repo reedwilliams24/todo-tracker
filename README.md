@@ -6,6 +6,8 @@ the same conformance fixtures in [`spec/`](spec/README.md).
 
 ## Try the latest build
 
+**Web:** https://todo-tracker-puce.vercel.app
+
 Every merge to `main` ships automatically to the platforms it touches
 ([#39](https://github.com/reedwilliams24/todo-tracker/issues/39)):
 
@@ -115,7 +117,7 @@ Linear ticket's name as a link, followed by `Fixes REED-n`.
 
 ### Web (Vercel)
 
-Vercel's GitHub integration deploys `apps/web`: production on every push to `main`, a preview (linked on
+Vercel's GitHub integration deploys `apps/web` to https://todo-tracker-puce.vercel.app: production on every push to `main`, a preview (linked on
 the PR) for pull requests. [`apps/web/vercel.json`](apps/web/vercel.json) has an `ignoreCommand` that skips
 the build unless `apps/web/**` or the root package/lockfile/workspace config changed, so native-only
 changes don't deploy.
