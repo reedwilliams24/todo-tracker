@@ -18,9 +18,12 @@ import {
   isValidTitle,
   mergeLocalIntoAccount,
   mergeRemoteTodos,
+  mergeTodoFields,
   migrationKey,
   parseStoredTodos,
   parseTranscript,
+  pendingChanges,
+  planSync,
   planCloudSave,
   PRIORITY_ORDER,
   realtimeTopic,
@@ -30,6 +33,8 @@ import {
   searchTodos,
   serializeTodos,
   sortByPriority,
+  syncKey,
+  syncStatus,
   STORAGE_KEY,
   todoChangeFilter,
   toggleTodo,
@@ -113,6 +118,11 @@ export const OPS: Record<string, (given: Given) => unknown> = {
   realtimeTopic: (g) => realtimeTopic(g.userId),
   todoChangeFilter: (g) => todoChangeFilter(g.userId),
   mergeRemoteTodos: (g) => mergeRemoteTodos(g.local, g.remote, g.known),
+  syncKey: (g) => syncKey(g.userId),
+  mergeTodoFields: (g) => mergeTodoFields(g.base ?? null, g.local, g.remote, new Date(g.now)),
+  planSync: (g) => planSync(g.local, g.remote, g.base ?? null, new Date(g.now)),
+  pendingChanges: (g) => pendingChanges(g.local, g.base ?? null),
+  syncStatus: (g) => syncStatus(g.pending),
 };
 
 const NEW_ID = /^new-\d+$/;

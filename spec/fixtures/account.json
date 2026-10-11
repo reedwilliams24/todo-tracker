@@ -1084,6 +1084,1213 @@
         ],
         "changed": false
       }
+    },
+    {
+      "name": "syncKey is per account",
+      "op": "syncKey",
+      "given": {
+        "userId": "u1"
+      },
+      "then": "todo-tracker:sync:u1"
+    },
+    {
+      "name": "mergeTodoFields: edits to different fields are both kept",
+      "op": "mergeTodoFields",
+      "given": {
+        "base": {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        "local": {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": true,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T11:00:00.000Z",
+          "notes": "2% organic"
+        },
+        "remote": {
+          "id": "a",
+          "title": "Buy oat milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "notes": "2% organic"
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "a",
+        "title": "Buy oat milk",
+        "completed": true,
+        "priority": "high",
+        "createdAt": "2026-01-01T09:00:00.000Z",
+        "updatedAt": "2026-01-05T11:00:00.000Z",
+        "notes": "2% organic"
+      }
+    },
+    {
+      "name": "mergeTodoFields: the same field edited on both sides takes the newer edit",
+      "op": "mergeTodoFields",
+      "given": {
+        "base": {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        "local": {
+          "id": "a",
+          "title": "Local title",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T11:00:00.000Z"
+        },
+        "remote": {
+          "id": "a",
+          "title": "Remote title",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "notes": "2% organic"
+        },
+        "now": "2026-01-05T12:00:00.000Z"
+      },
+      "then": {
+        "id": "a",
+        "title": "Local title",
+        "completed": false,
+        "priority": "low",
+        "createdAt": "2026-01-01T09:00:00.000Z",
+        "updatedAt": "2026-01-05T12:00:00.000Z"
+      }
+    },
+    {
+      "name": "mergeTodoFields: a tie on updatedAt goes to the remote edit",
+      "op": "mergeTodoFields",
+      "given": {
+        "base": {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        },
+        "local": {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "dueDate": "2026-01-09"
+        },
+        "remote": {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z"
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "c",
+        "title": "Call mom",
+        "completed": false,
+        "priority": "low",
+        "createdAt": "2026-01-03T09:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z"
+      }
+    },
+    {
+      "name": "mergeTodoFields: with no synced copy each differing field takes the newer side",
+      "op": "mergeTodoFields",
+      "given": {
+        "local": {
+          "id": "x",
+          "title": "Mine",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z"
+        },
+        "remote": {
+          "id": "x",
+          "title": "Theirs",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T11:00:00.000Z"
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "x",
+        "title": "Theirs",
+        "completed": true,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T11:00:00.000Z"
+      }
+    },
+    {
+      "name": "planSync: first sync on a device merges the signed-out list in",
+      "op": "planSync",
+      "given": {
+        "local": [
+          {
+            "id": "l",
+            "title": "Signed-out todo",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "remote": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "now": "2026-01-05T11:00:00.000Z"
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          },
+          {
+            "id": "l",
+            "title": "Signed-out todo",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "push": [
+          {
+            "id": "l",
+            "title": "Signed-out todo",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "remove": [],
+        "changed": true
+      }
+    },
+    {
+      "name": "planSync: nothing changed on either side",
+      "op": "planSync",
+      "given": {
+        "local": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "remote": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "base": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "now": "2026-01-05T11:00:00.000Z"
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "push": [],
+        "remove": [],
+        "changed": false
+      }
+    },
+    {
+      "name": "planSync: edits queued offline are pushed",
+      "op": "planSync",
+      "given": {
+        "local": [
+          {
+            "id": "n",
+            "title": "Added offline",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "remote": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "base": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "now": "2026-01-05T11:00:00.000Z"
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "n",
+            "title": "Added offline",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "push": [
+          {
+            "id": "n",
+            "title": "Added offline",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "notes": "2% organic"
+          }
+        ],
+        "remove": [
+          "b"
+        ],
+        "changed": false
+      }
+    },
+    {
+      "name": "planSync: edits to one todo on both sides merge per field",
+      "op": "planSync",
+      "given": {
+        "local": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "remote": [
+          {
+            "id": "a",
+            "title": "Buy oat milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "base": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "now": "2026-01-05T12:00:00.000Z"
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy oat milk",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T12:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "push": [
+          {
+            "id": "a",
+            "title": "Buy oat milk",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T12:00:00.000Z",
+            "notes": "2% organic"
+          }
+        ],
+        "remove": [],
+        "changed": true
+      }
+    },
+    {
+      "name": "planSync: a local delete wins over a remote edit",
+      "op": "planSync",
+      "given": {
+        "local": [
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "remote": [
+          {
+            "id": "a",
+            "title": "Edited elsewhere",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "base": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "now": "2026-01-05T11:00:00.000Z"
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "push": [],
+        "remove": [
+          "a"
+        ],
+        "changed": false
+      }
+    },
+    {
+      "name": "planSync: a remote delete wins over a local edit",
+      "op": "planSync",
+      "given": {
+        "local": [
+          {
+            "id": "a",
+            "title": "Edited offline",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "remote": [
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "base": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "now": "2026-01-05T11:00:00.000Z"
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "push": [],
+        "remove": [],
+        "changed": true
+      }
+    },
+    {
+      "name": "planSync: changes elsewhere are pulled in alongside local ones",
+      "op": "planSync",
+      "given": {
+        "local": [
+          {
+            "id": "n",
+            "title": "Added here",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "remote": [
+          {
+            "id": "r",
+            "title": "Added elsewhere",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T11:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "base": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "now": "2026-01-05T11:00:00.000Z"
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Added elsewhere",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T11:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z"
+          },
+          {
+            "id": "n",
+            "title": "Added here",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "push": [
+          {
+            "id": "n",
+            "title": "Added here",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "remove": [],
+        "changed": true
+      }
+    },
+    {
+      "name": "pendingChanges: none when the cache matches the last sync",
+      "op": "pendingChanges",
+      "given": {
+        "local": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "base": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": 0
+    },
+    {
+      "name": "pendingChanges: counts adds, edits and deletes",
+      "op": "pendingChanges",
+      "given": {
+        "local": [
+          {
+            "id": "n",
+            "title": "Todo n",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "base": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": 3
+    },
+    {
+      "name": "pendingChanges: before the first sync every todo is pending",
+      "op": "pendingChanges",
+      "given": {
+        "local": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": 3
+    },
+    {
+      "name": "syncStatus: all synced",
+      "op": "syncStatus",
+      "given": {
+        "pending": 0
+      },
+      "then": "syncing across devices"
+    },
+    {
+      "name": "syncStatus: one change waiting",
+      "op": "syncStatus",
+      "given": {
+        "pending": 1
+      },
+      "then": "1 change waiting to sync"
+    },
+    {
+      "name": "syncStatus: several changes waiting",
+      "op": "syncStatus",
+      "given": {
+        "pending": 3
+      },
+      "then": "3 changes waiting to sync"
     }
   ]
 }

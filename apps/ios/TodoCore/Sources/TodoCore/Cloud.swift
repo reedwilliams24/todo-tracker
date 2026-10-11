@@ -149,3 +149,78 @@ public func mergeRemoteTodos(local: [Todo], remote: [Todo], known: [CloudVersion
         || zip(todos, local).contains { $0.id != $1.id || $0.updatedAt != $1.updatedAt }
     return RemoteMerge(todos: todos, changed: changed)
 }
+
+/// Device key holding the signed-in account's cached list and last-synced snapshot.
+public func syncKey(userId: String) -> String { "todo-tracker:sync:\(userId)" }
+
+/// Merges two edits of the same todo field by field against the last-synced copy (`base`): a field changed on
+/// one side only takes that side's value; a field changed on both takes the newer copy's value (remote on a
+/// tie). `updatedAt` becomes the latest of `now` and both copies.
+public func mergeTodoFields(base: Todo?, local: Todo, remote: Todo, now: Date) -> Todo {
+    let localNewer = local.updatedAt > remote.updatedAt
+    func pick<T: Equatable>(_ field: KeyPath<Todo, T>) -> T {
+        let mine = local[keyPath: field]
+        let theirs = remote[keyPath: field]
+        if mine == theirs { return theirs }
+        if let base, mine == base[keyPath: field] { return theirs }
+        if let base, theirs == base[keyPath: field] { return mine }
+        return localNewer ? mine : theirs
+    }
+    var merged = remote
+    merged.title = pick(\.title)
+    merged.notes = pick(\.notes)
+    merged.completed = pick(\.completed)
+    merged.priority = pick(\.priority)
+    merged.dueDate = pick(\.dueDate)
+    merged.createdAt = pick(\.createdAt)
+    merged.updatedAt = max(Timestamp.iso(now), local.updatedAt, remote.updatedAt)
+    return merged
+}
+
+public struct SyncPlan: Codable, Equatable, Sendable {
+    public let todos: [Todo]
+    public let push: [Todo]
+    public let remove: [String]
+    public let changed: Bool
+
+    public init(todos: [Todo], push: [Todo], remove: [String], changed: Bool) {
+        self.todos = todos
+        self.push = push
+        self.remove = remove
+        self.changed = changed
+    }
+}
+
+/// Reconciles this device's cached list with the account's rows. `base` is the last-synced list, or `nil`
+/// before the first sync on this device (then `mergeLocalIntoAccount` folds the signed-out list in). Otherwise
+/// `mergeRemoteTodos` applies, todos edited on both sides merge per field, and deletes on either side win.
+public func planSync(local: [Todo], remote: [Todo], base: [Todo]?, now: Date) -> SyncPlan {
+    let todos: [Todo]
+    if let base {
+        let baseById = Dictionary(base.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
+        let remoteById = Dictionary(remote.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
+        todos = mergeRemoteTodos(local: local, remote: remote, known: cloudVersions(base)).todos.map { todo in
+            guard let theirs = remoteById[todo.id], theirs != todo else { return todo }
+            let synced = baseById[todo.id]
+            let bothEdited = todo.updatedAt != synced?.updatedAt && theirs.updatedAt != synced?.updatedAt
+            return bothEdited ? mergeTodoFields(base: synced, local: todo, remote: theirs, now: now) : todo
+        }
+    } else {
+        todos = mergeLocalIntoAccount(local: local, remote: remote)
+    }
+    let plan = planCloudSave(known: cloudVersions(remote), todos: todos)
+    let changed = todos.count != local.count
+        || zip(todos, local).contains { $0.id != $1.id || $0.updatedAt != $1.updatedAt }
+    return SyncPlan(todos: todos, push: plan.changed, remove: plan.removed, changed: changed)
+}
+
+/// Local changes not yet in the account: adds, edits and deletes since `base`.
+public func pendingChanges(local: [Todo], base: [Todo]?) -> Int {
+    let plan = planCloudSave(known: cloudVersions(base ?? []), todos: local)
+    return plan.changed.count + plan.removed.count
+}
+
+/// Text after "Signed in as <email> · " in the account panel.
+public func syncStatus(pending: Int) -> String {
+    pending == 0 ? "syncing across devices" : "\(pending) \(pending == 1 ? "change" : "changes") waiting to sync"
+}

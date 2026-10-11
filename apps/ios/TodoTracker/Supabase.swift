@@ -222,46 +222,65 @@ final class AccountSession {
 
 /// The account's `todos` rows; saves send only the diff from the last load/save (planCloudSave).
 @MainActor
-final class CloudTodoStore {
+/// Offline-first account storage. The list lives in a per-account device cache (`syncKey`: the list plus the
+/// last-synced `base`), so reads and saves never wait on the network. `pull` fetches the account's rows and plans
+/// the sync (planSync); `push` sends the plan and records the new base. Before the first sync on this device the
+/// cache starts from the signed-out list, which is merged into the account once.
+final class OfflineCloudStore {
+    private struct Cache: Codable {
+        var todos: [Todo]
+        var base: [Todo]?
+    }
+
     private let account: AccountSession
     let userId: String
-    private var known: [CloudVersion] = []
+    private let defaults: UserDefaults
+    private var cache: Cache
 
-    init(account: AccountSession, userId: String) {
+    init(account: AccountSession, userId: String, signedOut: [Todo], defaults: UserDefaults = .standard) {
         self.account = account
         self.userId = userId
-    }
-
-    func load() async throws -> [Todo] {
-        let client = account.client
-        let userId = userId
-        let todos = try await account.authorized { try await client.listTodos(token: $0, userId: userId) }.map(fromRow)
-        known = cloudVersions(todos)
-        return todos
-    }
-
-    func save(_ todos: [Todo]) async throws {
-        let client = account.client
-        let userId = userId
-        let plan = planCloudSave(known: known, todos: todos)
-        if !plan.changed.isEmpty {
-            let rows = plan.changed.map { toRow($0, userId: userId) }
-            try await account.authorized { try await client.upsertTodos(token: $0, rows: rows) }
+        self.defaults = defaults
+        if let data = defaults.data(forKey: syncKey(userId: userId)), let cached = try? JSONDecoder().decode(Cache.self, from: data) {
+            cache = cached
+        } else {
+            cache = Cache(todos: account.isMigrated(userId) ? [] : signedOut, base: nil)
         }
-        if !plan.removed.isEmpty {
-            let ids = plan.removed
-            try await account.authorized { try await client.removeTodos(token: $0, userId: userId, ids: ids) }
-        }
-        known = cloudVersions(todos)
     }
 
-    /// Fetches the account's rows and folds them into `local()` (read after the fetch) after a change elsewhere.
-    func reload(local: () -> [Todo]) async throws -> RemoteMerge {
+    var todos: [Todo] { cache.todos }
+    var pending: Int { pendingChanges(local: cache.todos, base: cache.base) }
+
+    func save(_ todos: [Todo]) {
+        cache.todos = todos
+        write()
+    }
+
+    func pull(local: [Todo]) async throws -> SyncPlan {
         let client = account.client
         let userId = userId
         let remote = try await account.authorized { try await client.listTodos(token: $0, userId: userId) }.map(fromRow)
-        let merge = mergeRemoteTodos(local: local(), remote: remote, known: known)
-        known = cloudVersions(remote)
-        return merge
+        return planSync(local: local, remote: remote, base: cache.base, now: Date())
+    }
+
+    func push(_ plan: SyncPlan) async throws {
+        let client = account.client
+        let userId = userId
+        if !plan.push.isEmpty {
+            let rows = plan.push.map { toRow($0, userId: userId) }
+            try await account.authorized { try await client.upsertTodos(token: $0, rows: rows) }
+        }
+        if !plan.remove.isEmpty {
+            let ids = plan.remove
+            try await account.authorized { try await client.removeTodos(token: $0, userId: userId, ids: ids) }
+        }
+        let first = cache.base == nil
+        cache.base = plan.todos
+        write()
+        if first { account.setMigrated(userId) }
+    }
+
+    private func write() {
+        if let data = try? JSONEncoder().encode(cache) { defaults.set(data, forKey: syncKey(userId: userId)) }
     }
 }

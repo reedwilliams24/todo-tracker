@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { createTodo } from "../todos";
 import {
   cloudConfig,
-  createCloudTodoStorage,
+  createOfflineCloudStorage,
+  fromRow,
   mergeLocalIntoAccount,
+  migrationKey,
+  syncKey,
   toRow,
-  withFirstSignInMigration,
   type TodoRow,
   type TodoTable,
 } from "./index";
@@ -39,32 +41,6 @@ describe("cloud storage", () => {
     expect(cloudConfig("u", "k")).toEqual({ url: "u", anonKey: "k" });
   });
 
-  it("loads only the user's rows and round-trips the todo", async () => {
-    const mine = createTodo({ title: "mine" }, now);
-    const theirs = createTodo({ title: "theirs" }, now);
-    const { table } = fakeTable([toRow(mine, "u1"), toRow(theirs, "u2")]);
-    const storage = createCloudTodoStorage(table, "u1");
-    expect(await storage.load()).toEqual([mine]);
-  });
-
-  it("save upserts only changed todos and deletes missing ones", async () => {
-    const a = createTodo({ title: "a" }, now);
-    const b = createTodo({ title: "b" }, now);
-    const { table, rows, calls } = fakeTable([toRow(a, "u1"), toRow(b, "u1")]);
-    const storage = createCloudTodoStorage(table, "u1");
-    await storage.load();
-
-    const aDone = { ...a, completed: true, updatedAt: new Date(2026, 8, 25).toISOString() };
-    await storage.save([aDone]);
-
-    expect(calls).toEqual(["list", "upsert:1", "remove:1"]);
-    expect([...rows.keys()]).toEqual([a.id]);
-    expect(rows.get(a.id)?.completed).toBe(true);
-
-    await storage.save([aDone]);
-    expect(calls).toHaveLength(3);
-  });
-
   it("mergeLocalIntoAccount keeps the newer copy on collision", () => {
     const shared = createTodo({ title: "shared" }, now);
     const localNewer = { ...shared, title: "edited", updatedAt: new Date(2026, 8, 26).toISOString() };
@@ -75,67 +51,129 @@ describe("cloud storage", () => {
   });
 });
 
-describe("withFirstSignInMigration", () => {
-  it("merges local todos into the account once", async () => {
+function memoryStore() {
+  const values = new Map<string, string>();
+  return { values, get: (key: string) => values.get(key) ?? null, set: (key: string, value: string) => void values.set(key, value) };
+}
+
+function setup(seed: TodoRow[] = [], signedOut: ReturnType<typeof createTodo>[] = []) {
+  const fake = fakeTable(seed);
+  const store = memoryStore();
+  let online = true;
+  let reconnect: () => void = () => {};
+  let fire: () => void = () => {};
+  const list = fake.table.list;
+  fake.table.list = (userId) => (online ? list(userId) : Promise.reject(new Error("offline")));
+  fake.table.onChange = (_userId, callback) => {
+    fire = callback;
+    return () => {};
+  };
+  const storage = createOfflineCloudStorage({
+    table: fake.table,
+    userId: "u1",
+    store,
+    signedOut: { load: () => signedOut, save: () => undefined },
+    onOnline: (callback) => {
+      reconnect = callback;
+      return () => {};
+    },
+    now: () => new Date(2026, 8, 30),
+  });
+  const pending: number[] = [];
+  storage.onPending((count) => pending.push(count));
+  return {
+    ...fake,
+    store,
+    storage,
+    pending,
+    goOffline: () => void (online = false),
+    goOnline: () => {
+      online = true;
+      reconnect();
+    },
+    fire: () => fire(),
+  };
+}
+
+const later = (days: number) => new Date(2026, 8, 24 + days).toISOString();
+
+describe("offline-first account storage", () => {
+  it("merges the signed-out list into the account on the first sync, once", async () => {
     const local = createTodo({ title: "local" }, now);
     const remote = createTodo({ title: "remote" }, now);
-    const { table, rows } = fakeTable([toRow(remote, "u1")]);
-    let migrated = false;
-    const storage = withFirstSignInMigration(
-      createCloudTodoStorage(table, "u1"),
-      { load: () => [local], save: () => undefined },
-      { get: () => migrated, set: () => void (migrated = true) },
-    );
-    const first = await storage.load();
-    expect(first.map((todo) => todo.title).sort()).toEqual(["local", "remote"]);
-    expect(rows.size).toBe(2);
-    rows.delete(local.id);
-    expect((await storage.load()).map((todo) => todo.title)).toEqual(["remote"]);
+    const { storage, rows, store } = setup([toRow(remote, "u1"), toRow(createTodo({ title: "theirs" }, now), "u2")], [local]);
+    expect((await storage.load()).map((todo) => todo.title)).toEqual(["local"]);
+    const seen: string[][] = [];
+    storage.subscribe!((todos) => seen.push(todos.map((todo) => todo.title)));
+    await storage.sync();
+    expect(seen).toEqual([["remote", "local"]]);
+    expect([...rows.values()].filter((row) => row.user_id === "u1")).toHaveLength(2);
+    expect(store.values.get(migrationKey("u1"))).toBe("1");
+    expect(JSON.parse(store.values.get(syncKey("u1"))!).base).toHaveLength(2);
   });
-});
 
-describe("cloud subscribe", () => {
-  function withChangeFeed(seed: TodoRow[]) {
-    const fake = fakeTable(seed);
-    let fire: () => void = () => {};
-    fake.table.onChange = (_userId, callback) => {
-      fire = callback;
-      return () => {};
-    };
-    return { ...fake, fire: () => fire() };
-  }
+  it("queues edits made offline in the device cache and pushes them on reconnect", async () => {
+    const a = createTodo({ title: "a" }, now);
+    const b = createTodo({ title: "b" }, now);
+    const { storage, rows, pending, goOffline, goOnline, store } = setup([toRow(a, "u1"), toRow(b, "u1")]);
+    await storage.load();
+    storage.subscribe!(() => {});
+    await storage.sync();
 
-  it("pushes the merged list when another device changes a row", async () => {
-    const remote = createTodo({ title: "remote" }, now);
-    const { table, rows, fire } = withChangeFeed([toRow(remote, "u1")]);
-    const storage = createCloudTodoStorage(table, "u1");
-    const loaded = await storage.load();
+    goOffline();
+    const added = createTodo({ title: "offline add" }, new Date(2026, 8, 26));
+    await storage.save([added, { ...a, completed: true, updatedAt: later(2) }]);
+    await storage.sync();
+    expect(pending.at(-1)).toBe(3);
+    expect(rows.has(added.id)).toBe(false);
+    expect(JSON.parse(store.values.get(syncKey("u1"))!).todos).toHaveLength(2);
 
-    const added = createTodo({ title: "from phone" }, new Date(2026, 8, 25));
-    rows.set(added.id, toRow(added, "u1"));
-    const seen = new Promise<string[]>((resolve) =>
-      storage.subscribe!((todos) => resolve(todos.map((todo) => todo.title))),
-    );
+    goOnline();
+    await storage.sync();
+    expect(pending.at(-1)).toBe(0);
+    expect([...rows.values()].map((row) => fromRow(row).title).sort()).toEqual(["a", "offline add"]);
+    expect(rows.get(a.id)?.completed).toBe(true);
+  });
+
+  it("merges edits to different fields of the same todo from both sides", async () => {
+    const a = createTodo({ title: "a" }, now);
+    const { storage, rows, fire } = setup([toRow(a, "u1")]);
+    await storage.load();
+    let latest: string[] = [];
+    storage.subscribe!((todos) => (latest = todos.map((todo) => `${todo.title}:${todo.completed}`)));
+    await storage.sync();
+    rows.set(a.id, toRow({ ...a, title: "renamed on phone", updatedAt: later(1) }, "u1"));
+    await storage.save([{ ...a, completed: true, updatedAt: later(2) }]);
     fire();
-    expect(await seen).toEqual(["from phone", "remote"]);
+    await storage.sync();
+    expect(latest).toEqual(["renamed on phone:true"]);
+    expect(fromRow(rows.get(a.id)!)).toMatchObject({ title: "renamed on phone", completed: true });
+  });
 
-    // The reload refreshed `known`, so saving the merged list writes nothing.
-    const calls: string[] = [];
-    table.upsert = async () => void calls.push("upsert");
-    await storage.save([added, ...loaded]);
-    expect(calls).toEqual([]);
+  it("lets a delete win over an edit made on another device", async () => {
+    const a = createTodo({ title: "a" }, now);
+    const { storage, rows, goOffline, goOnline } = setup([toRow(a, "u1")]);
+    await storage.load();
+    storage.subscribe!(() => {});
+    await storage.sync();
+    goOffline();
+    await storage.save([]);
+    rows.set(a.id, toRow({ ...a, title: "edited elsewhere", updatedAt: later(1) }, "u1"));
+    goOnline();
+    await storage.sync();
+    expect(rows.size).toBe(0);
   });
 
   it("stays quiet for the echo of this device's own save", async () => {
-    const { table, fire } = withChangeFeed([]);
-    const storage = createCloudTodoStorage(table, "u1");
+    const { storage, fire, calls } = setup();
     await storage.load();
     const pushed: string[][] = [];
     storage.subscribe!((todos) => pushed.push(todos.map((todo) => todo.title)));
     await storage.save([createTodo({ title: "mine" }, now)]);
+    await storage.sync();
     fire();
-    await storage.save([]);
-    await storage.save([createTodo({ title: "again" }, now)]);
+    await storage.sync();
     expect(pushed).toEqual([]);
+    expect(calls.filter((call) => call.startsWith("upsert"))).toEqual(["upsert:1"]);
   });
 });

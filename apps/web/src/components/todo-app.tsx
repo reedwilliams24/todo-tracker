@@ -32,6 +32,7 @@ export function TodoApp() {
     clearCompleted,
     undoable,
     undo,
+    pending,
   } = useTodos(auth.user);
   const [filter, setFilter] = useState<TodoFilter>("all");
   const [query, setQuery] = useState("");
@@ -46,7 +47,7 @@ export function TodoApp() {
 
   return (
     <section className="flex flex-col gap-4">
-      <AuthPanel {...auth} />
+      <AuthPanel {...auth} pending={pending} />
       <TodoForm onAdd={addTodo} />
       <VoiceCapture todos={todos} onAddMany={addMany} onUndo={removeMany} />
 

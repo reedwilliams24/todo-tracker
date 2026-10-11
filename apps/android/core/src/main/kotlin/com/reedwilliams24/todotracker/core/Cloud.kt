@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.Instant
 
 /** Public Supabase config; `null` from [cloudConfig] means "cloud disabled, stay local-only". */
 @Serializable
@@ -116,3 +117,73 @@ fun mergeRemoteTodos(local: List<Todo>, remote: List<Todo>, known: List<CloudVer
         todos.zip(local).any { (a, b) -> a.id != b.id || a.updatedAt != b.updatedAt }
     return RemoteMerge(todos, changed)
 }
+
+/** Device key holding the signed-in account's cached list and last-synced snapshot. */
+fun syncKey(userId: String) = "todo-tracker:sync:$userId"
+
+/**
+ * Merges two edits of the same todo field by field against the last-synced copy ([base]): a field changed on
+ * one side only takes that side's value; a field changed on both takes the newer copy's value (remote on a
+ * tie). `updatedAt` becomes the latest of [now] and both copies.
+ */
+fun mergeTodoFields(base: Todo?, local: Todo, remote: Todo, now: Instant): Todo {
+    val localNewer = local.updatedAt > remote.updatedAt
+    fun <T> pick(field: (Todo) -> T): T {
+        val mine = field(local)
+        val theirs = field(remote)
+        return when {
+            mine == theirs -> theirs
+            base != null && mine == field(base) -> theirs
+            base != null && theirs == field(base) -> mine
+            localNewer -> mine
+            else -> theirs
+        }
+    }
+    return remote.copy(
+        title = pick { it.title },
+        notes = pick { it.notes },
+        completed = pick { it.completed },
+        priority = pick { it.priority },
+        dueDate = pick { it.dueDate },
+        createdAt = pick { it.createdAt },
+        updatedAt = maxOf(timestamp(now), local.updatedAt, remote.updatedAt),
+    )
+}
+
+@Serializable
+data class SyncPlan(val todos: List<Todo>, val push: List<Todo>, val remove: List<String>, val changed: Boolean)
+
+/**
+ * Reconciles this device's cached list with the account's rows. [base] is the last-synced list, or `null`
+ * before the first sync on this device (then [mergeLocalIntoAccount] folds the signed-out list in). Otherwise
+ * [mergeRemoteTodos] applies, todos edited on both sides merge per field, and deletes on either side win.
+ */
+fun planSync(local: List<Todo>, remote: List<Todo>, base: List<Todo>?, now: Instant): SyncPlan {
+    val todos = if (base == null) {
+        mergeLocalIntoAccount(local, remote)
+    } else {
+        val baseById = base.associateBy { it.id }
+        val remoteById = remote.associateBy { it.id }
+        mergeRemoteTodos(local, remote, cloudVersions(base)).todos.map { todo ->
+            val theirs = remoteById[todo.id]
+            val synced = baseById[todo.id]
+            val bothEdited = theirs != null && todo != theirs &&
+                todo.updatedAt != synced?.updatedAt && theirs.updatedAt != synced?.updatedAt
+            if (bothEdited) mergeTodoFields(synced, todo, theirs!!, now) else todo
+        }
+    }
+    val plan = planCloudSave(cloudVersions(remote), todos)
+    val changed = todos.size != local.size ||
+        todos.zip(local).any { (a, b) -> a.id != b.id || a.updatedAt != b.updatedAt }
+    return SyncPlan(todos, plan.changed, plan.removed, changed)
+}
+
+/** Local changes not yet in the account: adds, edits and deletes since [base]. */
+fun pendingChanges(local: List<Todo>, base: List<Todo>?): Int {
+    val plan = planCloudSave(cloudVersions(base.orEmpty()), local)
+    return plan.changed.size + plan.removed.size
+}
+
+/** Text after "Signed in as <email> · " in the account panel. */
+fun syncStatus(pending: Int): String =
+    if (pending == 0) "syncing across devices" else "$pending ${if (pending == 1) "change" else "changes"} waiting to sync"

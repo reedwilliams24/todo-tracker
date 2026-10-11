@@ -1,5 +1,6 @@
 package com.reedwilliams24.todotracker.ui
 
+import com.reedwilliams24.todotracker.core.syncStatus
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -59,7 +60,7 @@ fun AuthPanel(auth: AuthUiState, viewModel: TodoViewModel) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "Signed in as ${user.email ?: user.id} · syncing across devices",
+                "Signed in as ${user.email ?: user.id} · ${syncStatus(auth.unsynced)}",
                 fontSize = FontSize.sm,
                 color = Palette.foreground.copy(alpha = 0.8f),
                 maxLines = 1,

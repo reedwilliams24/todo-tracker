@@ -1,6 +1,9 @@
 package com.reedwilliams24.todotracker
 
 import android.app.Application
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,8 +16,7 @@ import com.reedwilliams24.todotracker.core.cloudConfig
 import com.reedwilliams24.todotracker.core.reduceTodos
 import com.reedwilliams24.todotracker.data.AccountSession
 import com.reedwilliams24.todotracker.data.AuthUser
-import com.reedwilliams24.todotracker.data.CloudTodoStore
-import com.reedwilliams24.todotracker.data.FirstSignInMigration
+import com.reedwilliams24.todotracker.data.OfflineCloudStore
 import com.reedwilliams24.todotracker.data.SupabaseClient
 import com.reedwilliams24.todotracker.data.TodoChangeFeed
 import com.reedwilliams24.todotracker.data.TodoDatabase
@@ -41,6 +43,8 @@ data class AuthUiState(
     val pendingEmail: String? = null,
     val busy: Boolean = false,
     val status: String? = null,
+    /** Changes made on this device that haven't reached the account yet. */
+    val unsynced: Int = 0,
 )
 
 /** Android counterpart of `useTodos` + `useAuth`: drives the shared reducer and persists to the active store. */
@@ -54,6 +58,9 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     private var undoTimer: Job? = null
     private var feed: TodoChangeFeed? = null
     private var syncJob: Job? = null
+    private var syncRequests: Channel<Unit>? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private val connectivity = application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private val _ui = MutableStateFlow(TodoUiState())
     val ui: StateFlow<TodoUiState> = _ui.asStateFlow()
@@ -122,21 +129,20 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /** Signed in: the account's rows (merging this device's list on first sign-in). Signed out: Room. */
+    /** Signed in: the account's offline-first cache, synced in the background. Signed out: Room. */
     private fun useStoreFor(user: AuthUser?) {
         val account = account
         val next = if (user != null && account != null) {
-            FirstSignInMigration(CloudTodoStore(account, user.id), local, account, user.id)
+            OfflineCloudStore(account, user.id, local, getApplication())
         } else {
             local
         }
         store = next
-        feed?.close()
-        feed = null
-        syncJob?.cancel()
+        stopSync()
         loadJob?.cancel()
         undoTimer?.cancel()
         _ui.value = TodoUiState()
+        _auth.update { it.copy(unsynced = 0) }
         loadJob = viewModelScope.launch {
             val stored = try {
                 next.load()
@@ -146,31 +152,54 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
             }
             if (store !== next) return@launch
             _ui.value = TodoUiState(reduceTodos(TodoState(), TodoAction.Load(stored)), hydrated = true)
-            if (user != null && account != null) followChanges(next, account, user.id)
+            _auth.update { it.copy(unsynced = next.pending()) }
+            if (user != null && account != null) startSync(next, account, user.id)
         }
     }
 
-    /** Signed in: applies changes made on other devices (Supabase Realtime), one reload per burst of events. */
-    private fun followChanges(target: TodoStore, account: AccountSession, userId: String) {
-        val changes = Channel<Unit>(Channel.CONFLATED)
-        feed = TodoChangeFeed(account, userId, viewModelScope) { changes.trySend(Unit) }
+    /**
+     * Signed in: syncs after every save, on changes made on other devices (Supabase Realtime) and when the
+     * network comes back. Requests during a sync collapse into one more sync; a failed sync leaves the changes
+     * queued in the cache for the next request.
+     */
+    private fun startSync(target: TodoStore, account: AccountSession, userId: String) {
+        val requests = Channel<Unit>(Channel.CONFLATED)
+        syncRequests = requests
+        feed = TodoChangeFeed(account, userId, viewModelScope) { requests.trySend(Unit) }
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                requests.trySend(Unit)
+            }
+        }.also { connectivity.registerDefaultNetworkCallback(it) }
+        requests.trySend(Unit)
         syncJob = viewModelScope.launch {
-            for (change in changes) {
+            for (request in requests) {
                 saveLock.withLock {
                     if (store !== target) return@withLock
                     try {
-                        val merge = target.reload { _ui.value.state.todos } ?: return@withLock
-                        if (merge.changed) _ui.update { it.copy(state = reduceTodos(it.state, TodoAction.Load(merge.todos))) }
+                        target.sync({ _ui.value.state.todos }) { plan ->
+                            if (plan.changed) _ui.update { it.copy(state = reduceTodos(it.state, TodoAction.Load(plan.todos))) }
+                        }
                     } catch (_: Exception) {
-                        // Offline or token trouble: the feed reconnects and triggers another reload.
+                        // Offline or token trouble: the changes stay queued until the next request.
                     }
+                    _auth.update { it.copy(unsynced = target.pending()) }
                 }
             }
         }
     }
 
-    override fun onCleared() {
+    private fun stopSync() {
         feed?.close()
+        feed = null
+        networkCallback?.let { runCatching { connectivity.unregisterNetworkCallback(it) } }
+        networkCallback = null
+        syncRequests = null
+        syncJob?.cancel()
+    }
+
+    override fun onCleared() {
+        stopSync()
     }
 
     private fun dispatch(action: TodoAction) {
@@ -193,6 +222,8 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
                 } catch (error: Exception) {
                     _auth.update { it.copy(status = "Couldn't save: ${error.message}") }
                 }
+                _auth.update { it.copy(unsynced = target.pending()) }
+                syncRequests?.trySend(Unit)
             }
         }
     }

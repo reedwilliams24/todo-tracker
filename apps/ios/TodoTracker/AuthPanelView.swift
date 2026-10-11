@@ -1,4 +1,5 @@
 import SwiftUI
+import TodoCore
 
 /// Optional sign-in (spec/features/account.md). Not shown when the build has no Supabase config.
 struct AuthPanelView: View {
@@ -20,7 +21,7 @@ struct AuthPanelView: View {
 
     private func signedIn(_ user: AuthUser) -> some View {
         HStack(spacing: 12) {
-            Text("Signed in as \(user.email ?? user.id) · syncing across devices")
+            Text("Signed in as \(user.email ?? user.id) · \(syncStatus(pending: model.unsynced))")
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.foreground.opacity(0.8))
                 .lineLimit(1)

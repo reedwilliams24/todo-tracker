@@ -1,4 +1,5 @@
 import Foundation
+import Network
 import Observation
 import TodoCore
 
@@ -19,17 +20,19 @@ final class TodoViewModel {
     private(set) var state = TodoState.initial
     private(set) var hydrated = false
     private(set) var auth = AuthState()
+    /// Changes made on this device that haven't reached the account yet.
+    private(set) var unsynced = 0
     var filter: TodoFilter = .all
 
     private let store: TodoStore
     private let account: AccountSession?
     private let now: () -> Date
-    private var cloud: CloudTodoStore?
+    private var cloud: OfflineCloudStore?
     private var expiry: Task<Void, Never>?
-    private var loading: Task<Void, Never>?
     private var saving: Task<Void, Never>?
     private var feed: TodoChangeFeed?
-    private var reloadQueued = false
+    private var syncQueued = false
+    private var connectivity: NWPathMonitor?
 
     init(store: TodoStore, account: AccountSession? = nil, now: @escaping () -> Date = Date.init) {
         self.store = store
@@ -121,55 +124,56 @@ final class TodoViewModel {
         }
     }
 
-    /// Signed in: the account's rows, merging this device's list in on the first sign-in. Signed out: SwiftData.
+    /// Signed in: the account's offline-first cache, synced in the background. Signed out: SwiftData.
     private func useStore(for user: AuthUser?) {
-        loading?.cancel()
         expiry?.cancel()
         feed?.close()
         feed = nil
+        connectivity?.cancel()
+        connectivity = nil
         guard let user, let account else {
             cloud = nil
+            unsynced = 0
             state = reduceTodos(.initial, .load(store.load()), now: now())
             hydrated = true
             return
         }
-        let cloud = CloudTodoStore(account: account, userId: user.id)
+        let cloud = OfflineCloudStore(account: account, userId: user.id, signedOut: account.isMigrated(user.id) ? [] : store.load())
         self.cloud = cloud
-        state = .initial
-        hydrated = false
-        loading = Task { [weak self] in
-            var todos: [Todo] = []
-            do {
-                todos = try await cloud.load()
-                if !account.isMigrated(user.id), let local = self?.store.load() {
-                    todos = mergeLocalIntoAccount(local: local, remote: todos)
-                    try await cloud.save(todos)
-                    account.setMigrated(user.id)
-                }
-            } catch {
-                self?.auth.status = "Couldn't load your todos: \(error.localizedDescription)"
-            }
-            guard let self, self.cloud === cloud, !Task.isCancelled else { return }
-            state = reduceTodos(.initial, .load(todos), now: now())
-            hydrated = true
-            feed = TodoChangeFeed(account: account, userId: user.id) { [weak self] in self?.remoteChanged(cloud) }
+        state = reduceTodos(.initial, .load(cloud.todos), now: now())
+        hydrated = true
+        unsynced = cloud.pending
+        feed = TodoChangeFeed(account: account, userId: user.id) { [weak self] in self?.requestSync(cloud) }
+        let monitor = NWPathMonitor()
+        monitor.pathUpdateHandler = { [weak self] path in
+            guard path.status == .satisfied else { return }
+            Task { @MainActor in self?.requestSync(cloud) }
         }
+        monitor.start(queue: .main)
+        connectivity = monitor
+        requestSync(cloud)
     }
 
-    /// A change on another device (Supabase Realtime): one reload per burst, queued behind pending saves.
-    private func remoteChanged(_ cloud: CloudTodoStore) {
-        guard self.cloud === cloud, !reloadQueued else { return }
-        reloadQueued = true
+    /// Syncs after every save, on changes made on other devices (Supabase Realtime) and when the network comes
+    /// back: one sync at a time, queued behind pending ones. A failed sync leaves the changes queued in the cache.
+    private func requestSync(_ cloud: OfflineCloudStore) {
+        guard self.cloud === cloud, !syncQueued else { return }
+        syncQueued = true
         let previous = saving
         saving = Task { [weak self] in
             await previous?.value
             guard let self, self.cloud === cloud else { return }
-            reloadQueued = false
-            // Offline or token trouble: the feed reconnects and triggers another reload.
-            guard let merge = try? await cloud.reload(local: { self.state.todos }),
-                  merge.changed, self.cloud === cloud
-            else { return }
-            state = reduceTodos(state, .load(merge.todos), now: now())
+            syncQueued = false
+            let snapshot = state.todos
+            defer { if self.cloud === cloud { unsynced = cloud.pending } }
+            guard let plan = try? await cloud.pull(local: snapshot), self.cloud === cloud else { return }
+            // Edited during the fetch: plan again from the latest list.
+            guard state.todos == snapshot else { return requestSync(cloud) }
+            if plan.changed {
+                state = reduceTodos(state, .load(plan.todos), now: now())
+                cloud.save(plan.todos)
+            }
+            try? await cloud.push(plan)
         }
     }
 
@@ -178,17 +182,9 @@ final class TodoViewModel {
             store.save(state.todos)
             return
         }
-        let previous = saving
-        saving = Task { [weak self] in
-            await previous?.value
-            // Save the latest list, not the one captured at dispatch, so writes never go backwards.
-            guard let self, self.cloud === cloud else { return }
-            do {
-                try await cloud.save(state.todos)
-            } catch {
-                auth.status = "Couldn't save: \(error.localizedDescription)"
-            }
-        }
+        cloud.save(state.todos)
+        unsynced = cloud.pending
+        requestSync(cloud)
     }
 
     private func dispatch(_ action: TodoAction) {

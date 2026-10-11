@@ -91,6 +91,16 @@ enum FixtureOps {
             return realtimeTopic(userId: try g.decode("userId"))
         case "todoChangeFilter":
             return todoChangeFilter(userId: try g.decode("userId"))
+        case "syncKey":
+            return syncKey(userId: try g.decode("userId"))
+        case "mergeTodoFields":
+            return mergeTodoFields(base: try g.decode("base", as: Todo?.self), local: try g.decode("local"), remote: try g.decode("remote"), now: try g.date("now"))
+        case "planSync":
+            return planSync(local: try g.decode("local"), remote: try g.decode("remote"), base: try g.decode("base", as: [Todo]?.self), now: try g.date("now"))
+        case "pendingChanges":
+            return pendingChanges(local: try g.decode("local"), base: try g.decode("base", as: [Todo]?.self))
+        case "syncStatus":
+            return syncStatus(pending: try g.decode("pending"))
         case "mergeRemoteTodos":
             return mergeRemoteTodos(local: try g.decode("local"), remote: try g.decode("remote"), known: try g.decode("known"))
         default:

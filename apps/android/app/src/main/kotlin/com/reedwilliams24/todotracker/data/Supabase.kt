@@ -2,24 +2,23 @@ package com.reedwilliams24.todotracker.data
 
 import android.content.Context
 import com.reedwilliams24.todotracker.core.CloudConfig
-import com.reedwilliams24.todotracker.core.CloudVersion
-import com.reedwilliams24.todotracker.core.RemoteMerge
+import com.reedwilliams24.todotracker.core.SyncPlan
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoJson
 import com.reedwilliams24.todotracker.core.TodoRow
-import com.reedwilliams24.todotracker.core.cloudVersions
 import com.reedwilliams24.todotracker.core.fromRow
 import com.reedwilliams24.todotracker.core.migrationKey
-import com.reedwilliams24.todotracker.core.mergeLocalIntoAccount
-import com.reedwilliams24.todotracker.core.mergeRemoteTodos
-import com.reedwilliams24.todotracker.core.planCloudSave
 import com.reedwilliams24.todotracker.core.toJson
+import com.reedwilliams24.todotracker.core.pendingChanges
+import com.reedwilliams24.todotracker.core.planSync
+import com.reedwilliams24.todotracker.core.syncKey
 import com.reedwilliams24.todotracker.core.toRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
@@ -28,6 +27,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
 import java.net.HttpURLConnection
+import java.time.Instant
 import java.net.URL
 import java.net.URLEncoder
 
@@ -215,50 +215,78 @@ interface TodoStore {
     suspend fun load(): List<Todo>
     suspend fun save(todos: List<Todo>)
 
-    /** Cloud only: fetches the account's rows and folds them into [local] (read after the fetch) after a change elsewhere. */
-    suspend fun reload(local: () -> List<Todo>): RemoteMerge? = null
+    /**
+     * Account only: reconciles the cache with the account's rows (planSync). [local] is read after the fetch and
+     * [apply] gets the plan right away, before the push, so edits made during the push aren't overwritten.
+     */
+    suspend fun sync(local: () -> List<Todo>, apply: (SyncPlan) -> Unit): SyncPlan? = null
+
+    /** Account only: changes waiting to sync (pendingChanges). */
+    fun pending(): Int = 0
 }
 
-/** The account's `todos` rows; saves send only the diff from the last load/save (planCloudSave). */
-class CloudTodoStore(private val account: AccountSession, private val userId: String) : TodoStore {
-    private var known: List<CloudVersion> = emptyList()
-
-    override suspend fun load(): List<Todo> {
-        val todos = account.authorized { account.client.listTodos(it, userId) }.map(::fromRow)
-        known = cloudVersions(todos)
-        return todos
-    }
-
-    override suspend fun save(todos: List<Todo>) {
-        val plan = planCloudSave(known, todos)
-        if (plan.changed.isNotEmpty()) account.authorized { token -> account.client.upsertTodos(token, plan.changed.map { toRow(it, userId) }) }
-        if (plan.removed.isNotEmpty()) account.authorized { account.client.removeTodos(it, userId, plan.removed) }
-        known = cloudVersions(todos)
-    }
-
-    override suspend fun reload(local: () -> List<Todo>): RemoteMerge {
-        val remote = account.authorized { account.client.listTodos(it, userId) }.map(::fromRow)
-        return mergeRemoteTodos(local(), remote, known).also { known = cloudVersions(remote) }
-    }
-}
-
-/** On the first sign-in on this device, folds the signed-out list into the account once. */
-class FirstSignInMigration(
-    private val cloud: TodoStore,
-    private val local: TodoStore,
+/**
+ * Offline-first account storage. The list lives in a per-account device cache (`syncKey`: the list plus the
+ * last-synced `base`), so loads and saves never wait on the network; [sync] pushes queued changes and pulls
+ * the account's rows. On the first sync on this device ([signedOut] seeds the cache) the signed-out list is
+ * merged in once.
+ */
+class OfflineCloudStore(
     private val account: AccountSession,
     private val userId: String,
+    private val signedOut: TodoStore,
+    context: Context,
 ) : TodoStore {
-    override suspend fun load(): List<Todo> {
-        val remote = cloud.load()
-        if (account.isMigrated(userId)) return remote
-        val merged = mergeLocalIntoAccount(local.load(), remote)
-        cloud.save(merged)
-        account.setMigrated(userId)
-        return merged
+    private val prefs = context.getSharedPreferences("sync", Context.MODE_PRIVATE)
+    private var todos: List<Todo>? = null
+    private var base: List<Todo>? = null
+
+    private suspend fun cached(): List<Todo> {
+        todos?.let { return it }
+        val stored = prefs.getString(syncKey(userId), null)?.let { raw ->
+            runCatching {
+                val json = TodoJson.parseToJsonElement(raw).jsonObject
+                base = json["base"]?.takeIf { it !is JsonNull }?.let { TodoJson.decodeFromJsonElement(todoList, it) }
+                TodoJson.decodeFromJsonElement(todoList, json.getValue("todos"))
+            }.getOrNull()
+        }
+        return (stored ?: if (account.isMigrated(userId)) emptyList() else signedOut.load()).also { todos = it }
     }
 
-    override suspend fun save(todos: List<Todo>) = cloud.save(todos)
+    private fun write(list: List<Todo>, synced: List<Todo>?) {
+        todos = list
+        base = synced
+        val json = buildJsonObject {
+            put("todos", TodoJson.encodeToJsonElement(todoList, list))
+            put("base", synced?.let { TodoJson.encodeToJsonElement(todoList, it) } ?: JsonNull)
+        }
+        prefs.edit().putString(syncKey(userId), json.toString()).apply()
+    }
 
-    override suspend fun reload(local: () -> List<Todo>) = cloud.reload(local)
+    override suspend fun load(): List<Todo> = cached()
+
+    override suspend fun save(todos: List<Todo>) {
+        cached()
+        write(todos, base)
+    }
+
+    override fun pending(): Int = todos?.let { pendingChanges(it, base) } ?: 0
+
+    override suspend fun sync(local: () -> List<Todo>, apply: (SyncPlan) -> Unit): SyncPlan {
+        cached()
+        val remote = account.authorized { account.client.listTodos(it, userId) }.map(::fromRow)
+        val first = base == null
+        val plan = planSync(local(), remote, base, Instant.now())
+        write(plan.todos, base)
+        apply(plan)
+        if (plan.push.isNotEmpty()) account.authorized { token -> account.client.upsertTodos(token, plan.push.map { toRow(it, userId) }) }
+        if (plan.remove.isNotEmpty()) account.authorized { account.client.removeTodos(it, userId, plan.remove) }
+        write(todos!!, plan.todos)
+        if (first) account.setMigrated(userId)
+        return plan
+    }
+
+    private companion object {
+        val todoList = ListSerializer(Todo.serializer())
+    }
 }

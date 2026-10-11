@@ -430,6 +430,92 @@ export const FEATURES: Feature[] = [
         op: "mergeRemoteTodos",
         given: { local: sample, remote: [], known: [] },
       },
+      { name: "syncKey is per account", op: "syncKey", given: { userId: "u1" } },
+      {
+        name: "mergeTodoFields: edits to different fields are both kept",
+        op: "mergeTodoFields",
+        given: { base: sample[0], local: { ...sample[0]!, completed: true, updatedAt: T2 }, remote: { ...sample[0]!, title: "Buy oat milk", updatedAt: T1 }, now: T0 },
+      },
+      {
+        name: "mergeTodoFields: the same field edited on both sides takes the newer edit",
+        op: "mergeTodoFields",
+        given: {
+          base: sample[0],
+          local: { ...sample[0]!, title: "Local title", notes: undefined, updatedAt: T2 },
+          remote: { ...sample[0]!, title: "Remote title", priority: "low", updatedAt: T1 },
+          now: "2026-01-05T12:00:00.000Z",
+        },
+      },
+      {
+        name: "mergeTodoFields: a tie on updatedAt goes to the remote edit",
+        op: "mergeTodoFields",
+        given: { base: sample[2], local: { ...sample[2]!, dueDate: "2026-01-09", updatedAt: T1 }, remote: { ...sample[2]!, dueDate: undefined, updatedAt: T1 }, now: T0 },
+      },
+      {
+        name: "mergeTodoFields: with no synced copy each differing field takes the newer side",
+        op: "mergeTodoFields",
+        given: { local: todo("x", { title: "Mine", priority: "high", updatedAt: T1 }), remote: todo("x", { title: "Theirs", completed: true, updatedAt: T2 }), now: T0 },
+      },
+      {
+        name: "planSync: first sync on a device merges the signed-out list in",
+        op: "planSync",
+        given: { local: [todo("l", { title: "Signed-out todo" })], remote: sample, now: T2 },
+      },
+      {
+        name: "planSync: nothing changed on either side",
+        op: "planSync",
+        given: { local: sample, remote: sample, base: sample, now: T2 },
+      },
+      {
+        name: "planSync: edits queued offline are pushed",
+        op: "planSync",
+        given: {
+          local: [todo("n", { title: "Added offline", updatedAt: T1 }), { ...sample[0]!, completed: true, updatedAt: T1 }, sample[2]],
+          remote: sample,
+          base: sample,
+          now: T2,
+        },
+      },
+      {
+        name: "planSync: edits to one todo on both sides merge per field",
+        op: "planSync",
+        given: {
+          local: [{ ...sample[0]!, completed: true, updatedAt: T1 }, sample[1], sample[2]],
+          remote: [{ ...sample[0]!, title: "Buy oat milk", updatedAt: T2 }, sample[1], sample[2]],
+          base: sample,
+          now: "2026-01-05T12:00:00.000Z",
+        },
+      },
+      {
+        name: "planSync: a local delete wins over a remote edit",
+        op: "planSync",
+        given: { local: [sample[1], sample[2]], remote: [{ ...sample[0]!, title: "Edited elsewhere", updatedAt: T2 }, sample[1], sample[2]], base: sample, now: T2 },
+      },
+      {
+        name: "planSync: a remote delete wins over a local edit",
+        op: "planSync",
+        given: { local: [{ ...sample[0]!, title: "Edited offline", updatedAt: T2 }, sample[1], sample[2]], remote: [sample[1], sample[2]], base: sample, now: T2 },
+      },
+      {
+        name: "planSync: changes elsewhere are pulled in alongside local ones",
+        op: "planSync",
+        given: {
+          local: [todo("n", { title: "Added here", updatedAt: T1 }), ...sample],
+          remote: [todo("r", { title: "Added elsewhere", createdAt: T2, updatedAt: T2 }), sample[0], { ...sample[1]!, completed: false, updatedAt: T1 }],
+          base: sample,
+          now: T2,
+        },
+      },
+      { name: "pendingChanges: none when the cache matches the last sync", op: "pendingChanges", given: { local: sample, base: sample } },
+      {
+        name: "pendingChanges: counts adds, edits and deletes",
+        op: "pendingChanges",
+        given: { local: [todo("n"), { ...sample[0]!, completed: true, updatedAt: T1 }, sample[2]], base: sample },
+      },
+      { name: "pendingChanges: before the first sync every todo is pending", op: "pendingChanges", given: { local: sample } },
+      { name: "syncStatus: all synced", op: "syncStatus", given: { pending: 0 } },
+      { name: "syncStatus: one change waiting", op: "syncStatus", given: { pending: 1 } },
+      { name: "syncStatus: several changes waiting", op: "syncStatus", given: { pending: 3 } },
     ],
   },
 ];

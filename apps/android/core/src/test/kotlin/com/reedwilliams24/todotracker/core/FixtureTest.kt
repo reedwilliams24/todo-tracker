@@ -55,6 +55,8 @@ private fun JsonObject.optStr(key: String): String? = (get(key) as? JsonPrimitiv
 private fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 private fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
 private fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
+private fun JsonObject.optTodos(key: String): List<Todo>? = get(key)?.takeIf { it !is JsonNull }?.let { TodoJson.decodeFromJsonElement(todoList, it) }
+private fun JsonObject.optTodo(key: String): Todo? = get(key)?.takeIf { it !is JsonNull }?.let { TodoJson.decodeFromJsonElement(Todo.serializer(), it) }
 private fun JsonObject.drafts(key: String): List<TodoDraft> = TodoJson.decodeFromJsonElement(draftList, getValue(key))
 private fun encode(todos: List<Todo>): JsonElement = TodoJson.encodeToJsonElement(todoList, todos)
 private fun encodeDrafts(drafts: List<TodoDraft>): JsonElement = TodoJson.encodeToJsonElement(draftList, drafts)
@@ -146,6 +148,17 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
         RemoteMerge.serializer(),
         mergeRemoteTodos(g.todos("local"), g.todos("remote"), TodoJson.decodeFromJsonElement(ListSerializer(CloudVersion.serializer()), g.getValue("known"))),
     )
+    "syncKey" -> JsonPrimitive(syncKey(g.str("userId")))
+    "mergeTodoFields" -> TodoJson.encodeToJsonElement(
+        Todo.serializer(),
+        mergeTodoFields(g.optTodo("base"), g.optTodo("local")!!, g.optTodo("remote")!!, g.instant("now")),
+    )
+    "planSync" -> TodoJson.encodeToJsonElement(
+        SyncPlan.serializer(),
+        planSync(g.todos("local"), g.todos("remote"), g.optTodos("base"), g.instant("now")),
+    )
+    "pendingChanges" -> JsonPrimitive(pendingChanges(g.todos("local"), g.optTodos("base")))
+    "syncStatus" -> JsonPrimitive(syncStatus(g.getValue("pending").jsonPrimitive.int))
     "mergeLocalIntoAccount" -> encode(mergeLocalIntoAccount(g.todos("local"), g.todos("remote")))
     "planCloudSave" -> TodoJson.encodeToJsonElement(
         CloudSavePlan.serializer(),

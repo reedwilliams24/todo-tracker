@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { TEST_IDS } from "@/domain";
+import { syncStatus, TEST_IDS } from "@/domain";
 import type { useAuth } from "@/hooks/use-auth";
 
-type Props = ReturnType<typeof useAuth>;
+type Props = ReturnType<typeof useAuth> & { pending?: number };
 
-export function AuthPanel({ enabled, ready, user, signInWithEmail, signInWithProvider, signOut }: Props) {
+export function AuthPanel({ enabled, ready, user, signInWithEmail, signInWithProvider, signOut, pending = 0 }: Props) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   if (!enabled || !ready) return null;
@@ -16,7 +16,7 @@ export function AuthPanel({ enabled, ready, user, signInWithEmail, signInWithPro
       <div
         data-testid={TEST_IDS.authPanel}
         className="flex items-center justify-between gap-3 rounded-xl border border-black/10 bg-white/60 px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5">
-        <span data-testid={TEST_IDS.authUser} className="truncate opacity-80">Signed in as {user.email ?? user.id} · syncing across devices</span>
+        <span data-testid={TEST_IDS.authUser} className="truncate opacity-80">Signed in as {user.email ?? user.id} · {syncStatus(pending)}</span>
         <button type="button" data-testid={TEST_IDS.authSignOut} onClick={() => void signOut()} className="underline opacity-70 hover:opacity-100">
           Sign out
         </button>

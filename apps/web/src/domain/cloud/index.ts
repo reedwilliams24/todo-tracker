@@ -129,81 +129,211 @@ export function migrationKey(userId: string): string {
   return `todo-tracker:migrated:${userId}`;
 }
 
-/**
- * TodoStorage backed by a per-user table. `save` diffs against the last
- * loaded/saved snapshot so deletes propagate without a full table rewrite.
- * Saves and remote reloads run one at a time so `known` never goes backwards.
- */
-export function createCloudTodoStorage(table: TodoTable, userId: string): TodoStorage {
-  let known: CloudVersion[] = [];
-  let latest: readonly Todo[] = [];
-  let queue: Promise<void> = Promise.resolve();
-  const enqueue = (task: () => Promise<void>) => {
-    queue = queue.then(task).catch(() => {});
-    return queue;
-  };
-
-  return {
-    async load() {
-      const todos = (await table.list(userId)).map(fromRow);
-      known = cloudVersions(todos);
-      latest = todos;
-      return todos;
-    },
-    save(todos) {
-      latest = todos;
-      return enqueue(async () => {
-        const { changed, removed } = planCloudSave(known, todos);
-        if (changed.length) await table.upsert(changed.map((todo) => toRow(todo, userId)));
-        if (removed.length) await table.remove(userId, removed);
-        known = cloudVersions(todos);
-      });
-    },
-    subscribe(onChange) {
-      if (!table.onChange) return () => {};
-      let pending = false;
-      return table.onChange(userId, () => {
-        // One reload covers a burst of row events (a save touching many rows).
-        if (pending) return;
-        pending = true;
-        void enqueue(async () => {
-          pending = false;
-          const remote = (await table.list(userId)).map(fromRow);
-          const merged = mergeRemoteTodos(latest, remote, known);
-          known = cloudVersions(remote);
-          if (!merged.changed) return;
-          latest = merged.todos;
-          onChange(merged.todos);
-        });
-      });
-    },
-  };
+/** Device key holding the signed-in account's cached list and last-synced snapshot. */
+export function syncKey(userId: string): string {
+  return `todo-tracker:sync:${userId}`;
 }
 
-export type MigrationFlag = {
-  get(): MaybePromise<boolean>;
-  set(): MaybePromise<void>;
+const MERGED_FIELDS = ["title", "notes", "completed", "priority", "dueDate", "createdAt"] as const;
+
+function sameTodo(a: Todo, b: Todo): boolean {
+  return a.updatedAt === b.updatedAt && MERGED_FIELDS.every((field) => a[field] === b[field]);
+}
+
+/**
+ * Merges two edits of the same todo field by field against the last-synced
+ * copy (`base`): a field changed on one side only takes that side's value;
+ * a field changed on both takes the value from the copy with the newer
+ * `updatedAt` (remote on a tie). The result's `updatedAt` is the latest of
+ * `now` and both copies, so it sorts after both edits.
+ */
+export function mergeTodoFields(base: Todo | null, local: Todo, remote: Todo, now: Date): Todo {
+  const localNewer = local.updatedAt > remote.updatedAt;
+  const merged: Todo = { ...remote };
+  for (const field of MERGED_FIELDS) {
+    const mine = local[field];
+    const theirs = remote[field];
+    const value =
+      mine === theirs ? theirs
+      : base && mine === base[field] ? theirs
+      : base && theirs === base[field] ? mine
+      : localNewer ? mine
+      : theirs;
+    if (value === undefined) delete merged[field];
+    else Object.assign(merged, { [field]: value });
+  }
+  merged.updatedAt = [now.toISOString(), local.updatedAt, remote.updatedAt].sort().at(-1)!;
+  return merged;
+}
+
+export type SyncPlan = { todos: Todo[]; push: Todo[]; remove: string[]; changed: boolean };
+
+/**
+ * Reconciles this device's cached list with the account's rows. `base` is the
+ * last-synced list, or `null` before the first sync on this device (then the
+ * signed-out list is merged in with mergeLocalIntoAccount). Otherwise
+ * mergeRemoteTodos applies, todos edited on both sides are merged per field
+ * (mergeTodoFields), and deletes on either side win over edits. `push` and
+ * `remove` are what the account still needs to match `todos`.
+ */
+export function planSync(local: readonly Todo[], remote: readonly Todo[], base: readonly Todo[] | null, now: Date): SyncPlan {
+  let todos: Todo[];
+  if (base === null) {
+    todos = mergeLocalIntoAccount(local, remote);
+  } else {
+    const baseById = new Map(base.map((todo) => [todo.id, todo]));
+    const remoteById = new Map(remote.map((todo) => [todo.id, todo]));
+    todos = mergeRemoteTodos(local, remote, cloudVersions(base)).todos.map((todo) => {
+      const theirs = remoteById.get(todo.id);
+      const synced = baseById.get(todo.id);
+      if (!theirs || sameTodo(todo, theirs)) return todo;
+      const localEdited = todo.updatedAt !== synced?.updatedAt;
+      const remoteEdited = theirs.updatedAt !== synced?.updatedAt;
+      return localEdited && remoteEdited ? mergeTodoFields(synced ?? null, todo, theirs, now) : todo;
+    });
+  }
+  const { changed: push, removed: remove } = planCloudSave(cloudVersions(remote), todos);
+  const changed =
+    todos.length !== local.length ||
+    todos.some((todo, index) => todo.id !== local[index]!.id || todo.updatedAt !== local[index]!.updatedAt);
+  return { todos, push, remove, changed };
+}
+
+/** Local changes not yet in the account: adds, edits and deletes since `base`. */
+export function pendingChanges(local: readonly Todo[], base: readonly Todo[] | null): number {
+  const { changed, removed } = planCloudSave(cloudVersions(base ?? []), local);
+  return changed.length + removed.length;
+}
+
+/** Text after "Signed in as <email> · " in the account panel. */
+export function syncStatus(pending: number): string {
+  if (pending === 0) return "syncing across devices";
+  return `${pending} ${pending === 1 ? "change" : "changes"} waiting to sync`;
+}
+
+export type SyncCache = { todos: Todo[]; base: Todo[] | null };
+
+export type KeyValue = {
+  get(key: string): MaybePromise<string | null>;
+  set(key: string, value: string): MaybePromise<void>;
+};
+
+export type OfflineCloudOptions = {
+  table: TodoTable;
+  userId: string;
+  /** Device storage for the cached list (syncKey(userId)) and the migration flag. */
+  store: KeyValue;
+  /** The signed-out list, merged into the account on the first sync on this device. */
+  signedOut: TodoStorage;
+  onOnline?(callback: () => void): () => void;
+  now?(): Date;
+};
+
+export type OfflineCloudStorage = TodoStorage & {
+  /** Reports pendingChanges after every edit and sync. */
+  onPending(listener: (pending: number) => void): () => void;
+  sync(): Promise<void>;
 };
 
 /**
- * Wraps account storage so the first load for this account folds the
- * signed-out local todos in (see mergeLocalIntoAccount) exactly once.
+ * Offline-first account storage. Reads and writes go to the device cache, so
+ * the list works without a connection; every save, realtime event and
+ * reconnect then runs one sync at a time (fetch rows, planSync, push). A
+ * failed sync leaves the changes queued in the cache for the next trigger.
  */
-export function withFirstSignInMigration(
-  cloud: TodoStorage,
-  local: TodoStorage,
-  flag: MigrationFlag,
-): TodoStorage {
+export function createOfflineCloudStorage(options: OfflineCloudOptions): OfflineCloudStorage {
+  const { table, userId, store, signedOut } = options;
+  const now = options.now ?? (() => new Date());
+  const key = syncKey(userId);
+  let cache: SyncCache | undefined;
+  let onRemote: ((todos: Todo[]) => void) | undefined;
+  const pendingListeners = new Set<(pending: number) => void>();
+  let running: Promise<void> | undefined;
+  let again = false;
+
+  const notify = () => {
+    const pending = pendingChanges(cache!.todos, cache!.base);
+    pendingListeners.forEach((listener) => listener(pending));
+  };
+  const persist = () => store.set(key, JSON.stringify(cache));
+  const read = async (): Promise<SyncCache> => {
+    if (cache) return cache;
+    const raw = await store.get(key);
+    if (raw) cache = JSON.parse(raw) as SyncCache;
+    else {
+      const migrated = (await store.get(migrationKey(userId))) === "1";
+      cache = { todos: migrated ? [] : [...(await signedOut.load())], base: null };
+    }
+    return cache;
+  };
+
+  const syncOnce = async () => {
+    const state = await read();
+    const remote = (await table.list(userId)).map(fromRow);
+    const plan = planSync(state.todos, remote, state.base, now());
+    const first = state.base === null;
+    if (plan.changed) {
+      state.todos = plan.todos;
+      onRemote?.(plan.todos);
+    }
+    await persist();
+    if (plan.push.length) await table.upsert(plan.push.map((todo) => toRow(todo, userId)));
+    if (plan.remove.length) await table.remove(userId, plan.remove);
+    state.base = plan.todos;
+    await persist();
+    if (first) await store.set(migrationKey(userId), "1");
+    notify();
+  };
+
+  const sync = (): Promise<void> => {
+    if (running) {
+      again = true;
+      return running;
+    }
+    running = (async () => {
+      do {
+        again = false;
+        try {
+          await syncOnce();
+        } catch {
+          // Offline or rejected: the changes stay in the cache until the next trigger.
+        }
+      } while (again);
+      running = undefined;
+    })();
+    return running;
+  };
+
   return {
     async load() {
-      const remote = await cloud.load();
-      if (await flag.get()) return remote;
-      const merged = mergeLocalIntoAccount(await local.load(), remote);
-      await cloud.save(merged);
-      await flag.set();
-      return merged;
+      const state = await read();
+      notify();
+      return state.todos;
     },
-    save: (todos) => cloud.save(todos),
-    subscribe: cloud.subscribe?.bind(cloud),
+    async save(todos) {
+      const state = await read();
+      if (JSON.stringify(todos) === JSON.stringify(state.todos)) return;
+      state.todos = [...todos];
+      await persist();
+      notify();
+      void sync();
+    },
+    subscribe(onChange) {
+      onRemote = onChange;
+      const stopRealtime = table.onChange?.(userId, () => void sync());
+      const stopOnline = options.onOnline?.(() => void sync());
+      void sync();
+      return () => {
+        onRemote = undefined;
+        stopRealtime?.();
+        stopOnline?.();
+      };
+    },
+    onPending(listener) {
+      pendingListeners.add(listener);
+      if (cache) listener(pendingChanges(cache.todos, cache.base));
+      return () => pendingListeners.delete(listener);
+    },
+    sync,
   };
 }
