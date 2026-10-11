@@ -4,6 +4,8 @@ import SwiftUI
 @main
 struct TodoTrackerApp: App {
     private let container: ModelContainer
+    // A ModelContext doesn't keep its container alive; fetching after the container is freed traps.
+    private let accountContainer: ModelContainer
     private let guestStore: TodoStore
     private let accountStore: TodoStore
     @State private var model: TodoViewModel
@@ -15,6 +17,7 @@ struct TodoTrackerApp: App {
         self.container = container
         let store = SwiftDataTodoStore(context: container.mainContext)
         let accountContainer = SwiftDataTodoStore.makeContainer(inMemory: inMemory, name: "account")
+        self.accountContainer = accountContainer
         let accountStore = SwiftDataTodoStore(context: accountContainer.mainContext)
         guestStore = store
         self.accountStore = accountStore

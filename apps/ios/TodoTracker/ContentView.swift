@@ -22,8 +22,11 @@ struct ContentView: View {
                             .foregroundStyle(Theme.muted)
                     }
                     Spacer(minLength: 0)
-                    if let auth { AccountMenu(auth: auth) }
                     themePicker
+                }
+                // Own row: the header has no room for an email next to the title and theme picker.
+                if let auth, auth.state.status != .signedOut {
+                    AccountMenu(auth: auth).frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 if let auth { AuthBanner(auth: auth) }
                 TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
@@ -55,6 +58,7 @@ struct ContentView: View {
         }
         .overlay(alignment: .bottom) { toast }
         .animation(.easeOut(duration: 0.15), value: model.undoLabel)
+        .authPresentation(auth)
         .preferredColorScheme(theme.colorScheme)
     }
 
