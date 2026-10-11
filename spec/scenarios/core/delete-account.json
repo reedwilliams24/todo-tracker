@@ -1,0 +1,67 @@
+{
+  "name": "delete-account",
+  "requires": "supabase",
+  "status": {
+    "web": "pass",
+    "ios": "missing",
+    "android": "missing"
+  },
+  "note": "Needs a configured build + local `supabase start`; native follow-up: REED-80",
+  "steps": [
+    {
+      "do": "signIn",
+      "email": "reed@example.com"
+    },
+    {
+      "expect": "account",
+      "email": "reed@example.com"
+    },
+    {
+      "do": "add",
+      "title": "Call mom"
+    },
+    {
+      "do": "openDeleteAccount"
+    },
+    {
+      "expect": "deleteDialog",
+      "email": "reed@example.com"
+    },
+    {
+      "do": "cancelDeleteAccount"
+    },
+    {
+      "expect": "account",
+      "email": "reed@example.com"
+    },
+    {
+      "expect": "titles",
+      "titles": ["Call mom"]
+    },
+    {
+      "do": "openDeleteAccount"
+    },
+    {
+      "do": "confirmDeleteAccount"
+    },
+    {
+      "expect": "guestBanner",
+      "value": true
+    },
+    {
+      "expect": "titles",
+      "titles": []
+    },
+    {
+      "do": "relaunch"
+    },
+    {
+      "expect": "guestBanner",
+      "value": true
+    },
+    {
+      "expect": "titles",
+      "titles": []
+    }
+  ]
+}

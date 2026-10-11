@@ -139,6 +139,9 @@ private struct SignInSheet: View {
 /// Header button with the signed-in email; opens a menu with Sign out.
 struct AccountMenu: View {
     let auth: AuthViewModel
+    @State private var confirmingDelete = false
+    @State private var deleting = false
+    @State private var deleteError: TodoCore.AuthError?
 
     var body: some View {
         if auth.state.status != .signedOut {
@@ -147,13 +150,52 @@ struct AccountMenu: View {
                     .accessibilityIdentifier(TestID.authAccountEmail)
                 Button(t("auth.signOut"), role: .destructive, action: auth.signOut)
                     .accessibilityIdentifier(TestID.authSignOut)
+                Button(t("auth.delete.menu"), role: .destructive) {
+                    deleteError = nil
+                    confirmingDelete = true
+                }
+                .accessibilityIdentifier(TestID.authDeleteAccount)
             } label: {
-                Text(auth.state.email.isEmpty ? t("auth.account.label") : auth.state.email)
+                Text(label)
                     .font(.system(size: 14, weight: .medium))
                     .lineLimit(1)
                     .foregroundStyle(Theme.foreground)
             }
+            .disabled(deleting)
             .accessibilityIdentifier(TestID.authAccount)
+            .alert(t("auth.delete.title"), isPresented: $confirmingDelete) {
+                Button(t("auth.cancel"), role: .cancel) {}
+                    .accessibilityIdentifier(TestID.authDeleteCancel)
+                Button(t("auth.delete.confirm"), role: .destructive, action: deleteAccount)
+                    .accessibilityIdentifier(TestID.authDeleteConfirm)
+            } message: {
+                Text(deleteMessage)
+            }
+        }
+    }
+
+    private var label: String {
+        if deleting { return t("auth.delete.deleting") }
+        return auth.state.email.isEmpty ? t("auth.account.label") : auth.state.email
+    }
+
+    private var deleteMessage: String {
+        let message = t("auth.delete.message", ["email": auth.state.email])
+        guard let deleteError else { return message }
+        return t("auth.error.\(deleteError.rawValue)") + "\n\n" + message
+    }
+
+    private func deleteAccount() {
+        deleting = true
+        Task {
+            defer { deleting = false }
+            do {
+                try await auth.deleteAccount()
+            } catch {
+                // Re-ask with the failure shown; nothing was deleted.
+                deleteError = (error as? AuthFailure)?.kind ?? .unknown
+                confirmingDelete = true
+            }
         }
     }
 }

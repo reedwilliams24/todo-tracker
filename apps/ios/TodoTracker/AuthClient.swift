@@ -26,6 +26,8 @@ protocol AuthClient: Sendable {
     func sendCode(email: String) async throws
     func verifyCode(email: String, code: String) async throws -> AuthSession
     func signOut() async
+    /// Deletes the user's todos and auth user on the server (`delete_account`), then ends the session like `signOut`.
+    func deleteAccount() async throws
 }
 
 enum SupabaseConfig {
@@ -88,6 +90,14 @@ private final class SupabaseAuthClient: AuthClient {
         await signingOut.set()
         // REED-68's Realtime channel closes here too; the local session is cleared even if the server call fails.
         await client.removeAllChannels()
+        try? await client.auth.signOut(scope: .local)
+    }
+
+    func deleteAccount() async throws {
+        _ = try await mapErrors { try await client.rpc("delete_account").execute() }
+        await signingOut.set()
+        await client.removeAllChannels()
+        // The server already revoked every session along with the user.
         try? await client.auth.signOut(scope: .local)
     }
 

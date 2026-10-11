@@ -14,6 +14,8 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
+import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.postgrest.postgrest
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +41,11 @@ interface AuthClient {
 
     suspend fun signOut()
 
+    /**
+     * Deletes the user's todos and auth user on the server (`delete_account`), then ends the session like [signOut].
+     */
+    suspend fun deleteAccount()
+
     companion object {
         val configured: Boolean
             get() = BuildConfig.SUPABASE_URL.isNotBlank() && BuildConfig.SUPABASE_ANON_KEY.isNotBlank()
@@ -53,6 +60,7 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
     private val client: SupabaseClient =
         createSupabaseClient(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY) {
             install(Auth) { sessionManager = EncryptedSessionManager(context) }
+            install(Postgrest)
         }
     private var signingOut = false
 
@@ -82,6 +90,13 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
         signingOut = true
         // REED-68's Realtime socket closes here too; the local session is cleared even if the server call fails.
         runCatching { client.auth.signOut() }.onFailure { client.auth.clearSession() }
+    }
+
+    override suspend fun deleteAccount() {
+        mapErrors { client.postgrest.rpc("delete_account") }
+        signingOut = true
+        // The server already revoked every session along with the user.
+        client.auth.clearSession()
     }
 
     private suspend fun <T> mapErrors(block: suspend () -> T): T =

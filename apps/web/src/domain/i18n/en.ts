@@ -140,6 +140,11 @@ export const en = {
   "auth.account.label": "Account",
   "auth.account.signedInAs": "Signed in as {email}",
   "auth.signOut": "Sign out",
+  "auth.delete.menu": "Delete account",
+  "auth.delete.title": "Delete your account?",
+  "auth.delete.message": "This permanently deletes {email} and all of its todos, on every device. This can't be undone.",
+  "auth.delete.confirm": "Delete account",
+  "auth.delete.deleting": "Deleting…",
   "auth.expired.banner": "Your session expired. Sign in again to keep syncing.",
   "auth.expired.signIn": "Sign in again",
 } as const;

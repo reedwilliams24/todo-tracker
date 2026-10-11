@@ -151,12 +151,25 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         val auth = client ?: return
         viewModelScope.launch {
             auth.signOut()
-            wipeAccount()
-            guest.save(emptyList())
-            _session.value = null
-            dispatch(AuthEvent.SignedOut(initiated = true))
-            _scope.value = TodoScope.GUEST
+            endSession()
         }
+    }
+
+    /** Calls [onFailure] (keeping the session) when the server call fails. */
+    fun deleteAccount(onFailure: (AuthError) -> Unit) {
+        val auth = client ?: return
+        viewModelScope.launch {
+            runCatching { auth.deleteAccount() }.onSuccess { endSession() }.onFailure { onFailure(it.kind()) }
+        }
+    }
+
+    /** Leaves the device as after sign out: account cache and cursor wiped, empty guest list. */
+    private suspend fun endSession() {
+        wipeAccount()
+        guest.save(emptyList())
+        _session.value = null
+        dispatch(AuthEvent.SignedOut(initiated = true))
+        _scope.value = TodoScope.GUEST
     }
 
     /** Wipes the account cache when a different user signs in on this device. */
