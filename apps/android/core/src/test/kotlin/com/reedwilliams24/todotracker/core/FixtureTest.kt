@@ -55,6 +55,7 @@ private fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
 private fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
 private fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
 private fun JsonObject.drafts(key: String): List<TodoDraft> = TodoJson.decodeFromJsonElement(draftList, getValue(key))
+private fun JsonObject.importMode(): ImportMode = ImportMode.valueOf(str("mode").uppercase())
 private fun encode(todos: List<Todo>): JsonElement = TodoJson.encodeToJsonElement(todoList, todos)
 private fun encodeDrafts(drafts: List<TodoDraft>): JsonElement = TodoJson.encodeToJsonElement(draftList, drafts)
 
@@ -68,6 +69,7 @@ private fun applyStep(state: TodoState, step: JsonObject): TodoState {
         "clearCompleted" -> TodoAction.ClearCompleted
         "undo" -> TodoAction.Undo
         "expireUndo" -> TodoAction.ExpireUndo
+        "import" -> TodoAction.Import(step.todos(), step.importMode())
         else -> error("Unknown applyActions step \"$name\"")
     }
     return reduceTodos(state, action, now)
@@ -135,6 +137,19 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "cleanTitle" -> JsonPrimitive(cleanTitle(g.str("text")))
     "coerceDrafts" -> encodeDrafts(coerceDrafts(g["value"]))
     "reconcileDrafts" -> encodeDrafts(reconcileDrafts(g.drafts("heuristic"), g.drafts("llm")))
+    "exportTodosJson" -> Json.parseToJsonElement(exportTodosJson(g.todos(), g.instant("now")))
+    "exportTodosCsv" -> JsonPrimitive(exportTodosCsv(g.todos()))
+    "exportFileName" -> JsonPrimitive(exportFileName(ExportFormat.valueOf(g.str("format").uppercase()), g.instant("now")))
+    "isValidTimestamp" -> JsonPrimitive(isValidTimestamp(g.str("value")))
+    "parseImportJson" -> parseImportJson(g["raw"]?.jsonPrimitive?.content ?: g.getValue("json").toString()).let {
+        buildJsonObject {
+            put("todos", encode(it.todos))
+            put("errors", JsonArray(it.errors.map(::JsonPrimitive)))
+        }
+    }
+    "applyImport" -> encode(applyImport(g.todos("existing"), g.todos("imported"), g.importMode()))
+    "describeImport" -> JsonPrimitive(describeImport(g.getValue("valid").jsonPrimitive.int, g.getValue("problems").jsonPrimitive.int))
+    "describeImported" -> JsonPrimitive(describeImported(g.getValue("count").jsonPrimitive.int, g.importMode()))
     else -> error("Unknown op \"$op\"")
 }
 

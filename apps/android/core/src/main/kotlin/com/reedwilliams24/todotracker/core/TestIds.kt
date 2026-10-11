@@ -22,4 +22,13 @@ object TestIds {
     const val undoToast = "undo-toast"
     const val undoLabel = "undo-toast-label"
     const val undoAction = "undo-toast-action"
+    const val exportJson = "todo-export-json"
+    const val exportCsv = "todo-export-csv"
+    const val importOpen = "todo-import"
+    const val importDialog = "todo-import-dialog"
+    const val importSummary = "todo-import-summary"
+    const val importError = "todo-import-error"
+    fun importMode(mode: String) = "todo-import-$mode"
+    const val importCancel = "todo-import-cancel"
+    const val importStatus = "todo-import-status"
 }

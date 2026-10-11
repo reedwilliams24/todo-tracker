@@ -37,6 +37,7 @@ final class TodoViewModel {
     func remove(_ id: String) { dispatch(.remove(ids: [id])) }
     func clearCompleted() { dispatch(.clearCompleted) }
     func undo() { dispatch(.undo) }
+    func importTodos(_ todos: [Todo], mode: ImportMode) { dispatch(.importTodos(todos, mode: mode)) }
 
     private func dispatch(_ action: TodoAction) {
         let previous = state

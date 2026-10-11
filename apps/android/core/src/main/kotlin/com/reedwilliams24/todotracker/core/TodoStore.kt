@@ -13,6 +13,7 @@ sealed interface TodoAction {
     data object ClearCompleted : TodoAction
     data object Undo : TodoAction
     data object ExpireUndo : TodoAction
+    data class Import(val todos: List<Todo>, val mode: ImportMode) : TodoAction
 }
 
 /** Port of `reduceTodos` in apps/web/src/domain/store.ts. */
@@ -41,5 +42,6 @@ fun reduceTodos(state: TodoState, action: TodoAction, now: Instant = Instant.now
         TodoAction.Undo -> state.undoable?.let { TodoState(it.before.toList(), null) } ?: state
         TodoAction.ExpireUndo ->
             if (state.undoable != null && isUndoExpired(state.undoable, now.toEpochMilli())) state.copy(undoable = null) else state
+        is TodoAction.Import -> TodoState(applyImport(todos, action.todos, action.mode), null)
     }
 }

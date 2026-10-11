@@ -167,6 +167,8 @@ fun TodoApp(viewModel: TodoViewModel) {
                 color = Palette.muted,
                 modifier = Modifier.testTag(TestIds.remaining),
             )
+
+            if (ui.hydrated) TransferBar(todos, onImport = viewModel::importTodos)
         }
 
         ui.state.undoable?.let { entry ->

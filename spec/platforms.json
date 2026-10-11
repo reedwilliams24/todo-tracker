@@ -6,7 +6,8 @@
     "list": { "web": "pass", "ios": "pass", "android": "pass" },
     "undo": { "web": "pass", "ios": "pass", "android": "pass" },
     "storage": { "web": "pass", "ios": "pass", "android": "pass" },
-    "voice": { "web": "pass", "ios": "pass", "android": "pass" }
+    "voice": { "web": "pass", "ios": "pass", "android": "pass" },
+    "transfer": { "web": "pass", "ios": "pass", "android": "pass" }
   },
   "scenarios": {
     "add-todo": { "web": "pass", "ios": "pass", "android": "pass" },
@@ -15,6 +16,7 @@
     "rename-persists": { "web": "pass", "ios": "pass", "android": "pass" },
     "sort-by-priority": { "web": "pass", "ios": "pass", "android": "pass" },
     "filter-and-clear-completed": { "web": "pass", "ios": "pass", "android": "pass" },
-    "search": { "web": "pass", "ios": "n/a", "android": "n/a" }
+    "search": { "web": "pass", "ios": "n/a", "android": "n/a" },
+    "export-and-import": { "web": "pass", "ios": "missing", "android": "missing", "ticket": "REED-18" }
   }
 }

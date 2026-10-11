@@ -82,6 +82,26 @@
         { "do": "search", "query": "milk" },
         { "expect": "titles", "titles": ["Buy milk"] }
       ]
+    },
+    {
+      "name": "export-and-import",
+      "platforms": ["web"],
+      "steps": [
+        { "do": "add", "title": "Existing" },
+        { "do": "export", "format": "json" },
+        { "do": "export", "format": "csv" },
+        { "do": "import", "json": { "version": 1, "todos": [{ "id": "imp-1", "title": "Imported", "completed": false, "priority": "low", "createdAt": "2026-01-05T09:00:00.000Z", "updatedAt": "2026-01-05T09:00:00.000Z" }, { "id": "imp-2", "title": "Broken", "completed": "yes", "priority": "low", "createdAt": "2026-01-05T09:00:00.000Z" }] } },
+        { "expect": "importSummary", "text": "Found 1 valid todo and 1 problem." },
+        { "expect": "importErrors", "errors": ["Item 2 (imp-2): completed must be true/false"] },
+        { "do": "confirmImport", "mode": "merge" },
+        { "expect": "titles", "titles": ["Existing", "Imported"] },
+        { "expect": "importStatus", "text": "Imported 1 todo (merge)." },
+        { "do": "import", "json": [{ "id": "imp-3", "title": "Only one", "completed": false, "priority": "medium", "createdAt": "2026-01-05T09:00:00.000Z", "updatedAt": "2026-01-05T09:00:00.000Z" }] },
+        { "do": "confirmImport", "mode": "replace" },
+        { "expect": "titles", "titles": ["Only one"] },
+        { "do": "relaunch" },
+        { "expect": "titles", "titles": ["Only one"] }
+      ]
     }
   ]
 }

@@ -21,5 +21,15 @@
   "itemDelete": "todo-delete-{title}",
   "undoToast": "undo-toast",
   "undoLabel": "undo-toast-label",
-  "undoAction": "undo-toast-action"
+  "undoAction": "undo-toast-action",
+  "exportJson": "todo-export-json",
+  "exportCsv": "todo-export-csv",
+  "importOpen": "todo-import",
+  "importFile": "todo-import-file",
+  "importDialog": "todo-import-dialog",
+  "importSummary": "todo-import-summary",
+  "importError": "todo-import-error",
+  "importMode": "todo-import-{mode}",
+  "importCancel": "todo-import-cancel",
+  "importStatus": "todo-import-status"
 }

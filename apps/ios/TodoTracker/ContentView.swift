@@ -22,6 +22,7 @@ struct ContentView: View {
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.muted)
                     .accessibilityIdentifier(TestID.remaining)
+                TransferView(todos: model.state.todos, onImport: model.importTodos)
             }
             .padding(16)
             .padding(.bottom, 72)

@@ -13,8 +13,8 @@ class TestIdsTest {
         val registry = Json.parseToJsonElement(File("../../../spec/test-ids.json").readText()).jsonObject
             .filterKeys { !it.startsWith("$") }
             .mapValues { it.value.jsonPrimitive.content }
-        // Search is not on mobile yet, so the Android app has no selector for it.
-        val expected = registry - setOf("search", "searchClear")
+        // Search is not on mobile yet, and importFile is web's hidden <input type="file">; Android uses the system picker.
+        val expected = registry - setOf("search", "searchClear", "importFile")
         val actual = mapOf(
             "formTitle" to TestIds.formTitle,
             "formPriority" to TestIds.formPriority,
@@ -36,6 +36,15 @@ class TestIdsTest {
             "undoToast" to TestIds.undoToast,
             "undoLabel" to TestIds.undoLabel,
             "undoAction" to TestIds.undoAction,
+            "exportJson" to TestIds.exportJson,
+            "exportCsv" to TestIds.exportCsv,
+            "importOpen" to TestIds.importOpen,
+            "importDialog" to TestIds.importDialog,
+            "importSummary" to TestIds.importSummary,
+            "importError" to TestIds.importError,
+            "importMode" to TestIds.importMode("{mode}"),
+            "importCancel" to TestIds.importCancel,
+            "importStatus" to TestIds.importStatus,
         )
         assertEquals(expected, actual)
     }

@@ -61,11 +61,11 @@ Swift and Kotlin load the same files; nothing is copied or regenerated per platf
 
 `scenarios/core.json` lists user flows as steps. Every platform drives its UI through the IDs in `test-ids.json` (`data-testid` on web, `accessibilityIdentifier` in SwiftUI, `Modifier.testTag` with `testTagsAsResourceId` in Compose). `{title}` placeholders take the todo's title.
 
-Actions (`do`): `add {title, priority?, dueDate?}`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `search {query}`, `clearCompleted`, `undo`, `relaunch`.
+Actions (`do`): `add {title, priority?, dueDate?}`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `search {query}`, `clearCompleted`, `undo`, `relaunch`, `export {format}` (`json` | `csv`; web checks the download name), `import {json | raw}` (feeds a file to the import picker), `confirmImport {mode}`.
 
-Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maestro checks each is visible), `remaining {text}`, `completed {title, value}`, `undo {label | null}`.
+Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maestro checks each is visible), `remaining {text}`, `completed {title, value}`, `undo {label | null}`, `importSummary {text}`, `importErrors {errors}`, `importStatus {text}`.
 
-A scenario may set `platforms` (`web`, `mobile`) when a feature isn't on every platform yet, e.g. mobile has no search today.
+A scenario may set `platforms` (`web`, `mobile`) when a feature isn't on every platform yet, e.g. mobile has no search today, and `export-and-import` goes through the system file pickers, which Maestro can't drive (REED-18).
 
 Running on the Android emulator or iOS Simulator, with the native app installed:
 

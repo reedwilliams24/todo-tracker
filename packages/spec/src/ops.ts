@@ -1,20 +1,28 @@
 import {
   addTodos,
+  applyImport,
   cleanTitle,
   clearCompletedInList,
   coerceDrafts,
   countRemaining,
   createTodo,
   DEFAULT_PRIORITY,
+  describeImport,
+  describeImported,
   describeUndo,
   EMPTY_TODO_FORM,
+  exportFileName,
+  exportTodosCsv,
+  exportTodosJson,
   extractDueDate,
   extractPriority,
   filterTodos,
   INITIAL_TODO_STATE,
   isUndoExpired,
   isValidDueDate,
+  isValidTimestamp,
   isValidTitle,
+  parseImportJson,
   parseStoredTodos,
   parseTranscript,
   PRIORITY_ORDER,
@@ -29,6 +37,8 @@ import {
   toTodoDraft,
   UNDO_TIMEOUT_MS,
   updateTodoText,
+  type ExportFormat,
+  type ImportMode,
   type Todo,
   type TodoAction,
   type TodoDraft,
@@ -46,6 +56,7 @@ type Step =
   | { action: "rename"; id: string; title: string; now: string }
   | { action: "remove"; ids: string[]; now: string }
   | { action: "clearCompleted"; now: string }
+  | { action: "import"; todos: Todo[]; mode: ImportMode; now: string }
   | { action: "undo"; now: string }
   | { action: "expireUndo"; now: string };
 
@@ -97,6 +108,14 @@ export const OPS: Record<string, (given: Given) => unknown> = {
   cleanTitle: (g) => cleanTitle(g.text),
   coerceDrafts: (g) => coerceDrafts(g.value),
   reconcileDrafts: (g) => reconcileDrafts(g.heuristic, g.llm),
+  exportTodosJson: (g) => JSON.parse(exportTodosJson(g.todos, new Date(g.now))),
+  exportTodosCsv: (g) => exportTodosCsv(g.todos),
+  exportFileName: (g) => exportFileName(g.format as ExportFormat, new Date(g.now)),
+  isValidTimestamp: (g) => isValidTimestamp(g.value),
+  parseImportJson: (g) => parseImportJson(g.raw ?? JSON.stringify(g.json)),
+  applyImport: (g) => applyImport(g.existing, g.imported, g.mode as ImportMode),
+  describeImport: (g) => describeImport(g.valid, g.problems),
+  describeImported: (g) => describeImported(g.count, g.mode as ImportMode),
 };
 
 const NEW_ID = /^new-\d+$/;

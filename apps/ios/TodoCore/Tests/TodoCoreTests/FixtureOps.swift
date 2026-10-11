@@ -77,6 +77,24 @@ enum FixtureOps {
             return coerceDrafts(g.raw["value"] ?? .null)
         case "reconcileDrafts":
             return reconcileDrafts(heuristic: try g.decode("heuristic"), llm: try g.decode("llm"))
+        case "exportTodosJson":
+            let json = exportTodosJson(try g.decode("todos"), now: try g.date("now"))
+            return try JSONDecoder().decode(JSONValue.self, from: Data(json.utf8))
+        case "exportTodosCsv":
+            return exportTodosCsv(try g.decode("todos"))
+        case "exportFileName":
+            return exportFileName(try g.decode("format"), now: try g.date("now"))
+        case "isValidTimestamp":
+            return isValidTimestamp(try g.decode("value"))
+        case "parseImportJson":
+            if case .string(let raw)? = g.raw["raw"] { return parseImportJson(raw) }
+            return parseImportJson(String(decoding: try JSONEncoder().encode(g.raw["json"] ?? .null), as: UTF8.self))
+        case "applyImport":
+            return applyImport(try g.decode("existing"), imported: try g.decode("imported"), mode: try g.decode("mode"))
+        case "describeImport":
+            return describeImport(valid: try g.decode("valid"), problems: try g.decode("problems"))
+        case "describeImported":
+            return describeImported(count: try g.decode("count"), mode: try g.decode("mode"))
         default:
             throw UnknownOp(op: op)
         }
@@ -111,6 +129,8 @@ enum FixtureOps {
         let id: String?
         let title: String?
         let ids: [String]?
+        let todos: [Todo]?
+        let mode: ImportMode?
 
         func apply(to state: TodoState) throws -> TodoState {
             guard let date = Timestamp.parse(now) else { throw BadGiven(description: "bad step now \(now)") }
@@ -125,6 +145,7 @@ enum FixtureOps {
             case "clearCompleted": action = .clearCompleted
             case "undo": action = .undo
             case "expireUndo": action = .expireUndo
+            case "import": action = .importTodos(try require(todos), mode: try require(mode))
             default: throw BadGiven(description: "unknown step action \(self.action)")
             }
             return reduceTodos(state, action, now: date)

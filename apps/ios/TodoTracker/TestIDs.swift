@@ -22,4 +22,13 @@ enum TestID {
     static let undoToast = "undo-toast"
     static let undoLabel = "undo-toast-label"
     static let undoAction = "undo-toast-action"
+    static let exportJson = "todo-export-json"
+    static let exportCsv = "todo-export-csv"
+    static let importOpen = "todo-import"
+    static let importDialog = "todo-import-dialog"
+    static let importSummary = "todo-import-summary"
+    static let importError = "todo-import-error"
+    static func importMode(_ mode: ImportMode) -> String { "todo-import-\(mode.rawValue)" }
+    static let importCancel = "todo-import-cancel"
+    static let importStatus = "todo-import-status"
 }

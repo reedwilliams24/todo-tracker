@@ -1,0 +1,1126 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "transfer",
+  "spec": "features/transfer.md",
+  "cases": [
+    {
+      "name": "exportTodosJson wraps the list in a versioned envelope",
+      "op": "exportTodosJson",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "version": 1,
+        "exportedAt": "2026-01-05T10:00:00.000Z",
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      }
+    },
+    {
+      "name": "exportTodosJson with no todos",
+      "op": "exportTodosJson",
+      "given": {
+        "todos": [],
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "version": 1,
+        "exportedAt": "2026-01-05T10:00:00.000Z",
+        "todos": []
+      }
+    },
+    {
+      "name": "exportTodosCsv writes a header and quotes cells with quotes, commas and newlines",
+      "op": "exportTodosCsv",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          },
+          {
+            "id": "q",
+            "title": "Say \"hi\", then leave",
+            "completed": true,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "line1\nline2"
+          }
+        ]
+      },
+      "then": "id,title,completed,priority,dueDate,notes,createdAt,updatedAt\na,Buy milk,false,high,,2% organic,2026-01-01T09:00:00.000Z,2026-01-05T09:00:00.000Z\nb,Walk the dog,true,medium,,,2026-01-02T09:00:00.000Z,2026-01-05T09:00:00.000Z\nc,Call mom,false,low,2026-01-06,,2026-01-03T09:00:00.000Z,2026-01-05T09:00:00.000Z\nq,\"Say \"\"hi\"\", then leave\",true,low,,\"line1\nline2\",2026-01-05T09:00:00.000Z,2026-01-05T09:00:00.000Z"
+    },
+    {
+      "name": "exportTodosCsv with no todos is just the header",
+      "op": "exportTodosCsv",
+      "given": {
+        "todos": []
+      },
+      "then": "id,title,completed,priority,dueDate,notes,createdAt,updatedAt"
+    },
+    {
+      "name": "exportFileName json",
+      "op": "exportFileName",
+      "given": {
+        "format": "json",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": "todos-2026-01-05.json"
+    },
+    {
+      "name": "exportFileName uses the UTC date",
+      "op": "exportFileName",
+      "given": {
+        "format": "csv",
+        "now": "2026-01-05T23:30:00.000Z"
+      },
+      "then": "todos-2026-01-05.csv"
+    },
+    {
+      "name": "isValidTimestamp: with milliseconds",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "2026-01-05T09:00:00.000Z"
+      },
+      "then": true
+    },
+    {
+      "name": "isValidTimestamp: without milliseconds",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "2026-01-05T09:00:00Z"
+      },
+      "then": true
+    },
+    {
+      "name": "isValidTimestamp: one fraction digit",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "2026-01-05T09:00:00.5Z"
+      },
+      "then": true
+    },
+    {
+      "name": "isValidTimestamp: no Z",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "2026-01-05T09:00:00.000"
+      },
+      "then": false
+    },
+    {
+      "name": "isValidTimestamp: offset",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "2026-01-05T09:00:00+01:00"
+      },
+      "then": false
+    },
+    {
+      "name": "isValidTimestamp: date only",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "2026-01-05"
+      },
+      "then": false
+    },
+    {
+      "name": "isValidTimestamp: not a real date",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "2026-02-30T09:00:00.000Z"
+      },
+      "then": false
+    },
+    {
+      "name": "isValidTimestamp: hour 24",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "2026-01-05T24:00:00.000Z"
+      },
+      "then": false
+    },
+    {
+      "name": "isValidTimestamp: garbage",
+      "op": "isValidTimestamp",
+      "given": {
+        "value": "yesterday"
+      },
+      "then": false
+    },
+    {
+      "name": "parseImportJson reads the export envelope",
+      "op": "parseImportJson",
+      "given": {
+        "json": {
+          "version": 1,
+          "exportedAt": "2026-01-05T10:00:00.000Z",
+          "todos": [
+            {
+              "id": "a",
+              "title": "Buy milk",
+              "completed": false,
+              "priority": "high",
+              "createdAt": "2026-01-01T09:00:00.000Z",
+              "updatedAt": "2026-01-05T09:00:00.000Z",
+              "notes": "2% organic"
+            },
+            {
+              "id": "b",
+              "title": "Walk the dog",
+              "completed": true,
+              "priority": "medium",
+              "createdAt": "2026-01-02T09:00:00.000Z",
+              "updatedAt": "2026-01-05T09:00:00.000Z"
+            },
+            {
+              "id": "c",
+              "title": "Call mom",
+              "completed": false,
+              "priority": "low",
+              "createdAt": "2026-01-03T09:00:00.000Z",
+              "updatedAt": "2026-01-05T09:00:00.000Z",
+              "dueDate": "2026-01-06"
+            }
+          ]
+        }
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "notes": "2% organic",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "dueDate": "2026-01-06",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "name": "parseImportJson accepts a bare array",
+      "op": "parseImportJson",
+      "given": {
+        "json": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "notes": "2% organic",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "dueDate": "2026-01-06",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "name": "parseImportJson trims titles, drops empty or null optional fields and defaults updatedAt",
+      "op": "parseImportJson",
+      "given": {
+        "json": [
+          {
+            "id": "t1",
+            "title": "  Padded  ",
+            "completed": false,
+            "priority": "low",
+            "dueDate": "",
+            "notes": "",
+            "createdAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t2",
+            "title": "Nulls",
+            "completed": true,
+            "priority": "high",
+            "dueDate": null,
+            "notes": null,
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": null
+          },
+          {
+            "id": "t3",
+            "title": "Bad updatedAt",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "later"
+          },
+          {
+            "id": "t4",
+            "title": "Extra keys",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "tags": [
+              "x"
+            ]
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "t1",
+            "title": "Padded",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t2",
+            "title": "Nulls",
+            "completed": true,
+            "priority": "high",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t3",
+            "title": "Bad updatedAt",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "t4",
+            "title": "Extra keys",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "name": "parseImportJson reports each invalid item and keeps the valid ones",
+      "op": "parseImportJson",
+      "given": {
+        "json": [
+          {
+            "id": "ok",
+            "title": "Valid",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          "nope",
+          [
+            1,
+            2
+          ],
+          {
+            "title": "No id",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": 7,
+            "title": "Todo num",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "blank",
+            "title": "   ",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "long",
+            "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "yes",
+            "title": "Todo yes",
+            "completed": "yes",
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "urgent",
+            "title": "Todo urgent",
+            "completed": false,
+            "priority": "urgent",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "date",
+            "title": "Todo date",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-02-30"
+          },
+          {
+            "id": "notes",
+            "title": "Todo notes",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": 5
+          },
+          {
+            "id": "created",
+            "title": "Todo created",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "nocreated",
+            "title": "Todo nocreated",
+            "completed": false,
+            "priority": "medium",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "ok",
+            "title": "Duplicate",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "ok",
+            "title": "Valid",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "errors": [
+          "Item 2: not an object",
+          "Item 3: not an object",
+          "Item 4: missing id",
+          "Item 5: missing id",
+          "Item 6 (blank): title must be 1-200 characters",
+          "Item 7 (long): title must be 1-200 characters",
+          "Item 8 (yes): completed must be true/false",
+          "Item 9 (urgent): priority must be low, medium, or high",
+          "Item 10 (date): dueDate must be YYYY-MM-DD",
+          "Item 11 (notes): notes must be text",
+          "Item 12 (created): invalid createdAt",
+          "Item 13 (nocreated): invalid createdAt",
+          "Item 14 (ok): duplicate id"
+        ]
+      }
+    },
+    {
+      "name": "parseImportJson rejects invalid JSON",
+      "op": "parseImportJson",
+      "given": {
+        "raw": "{oops"
+      },
+      "then": {
+        "todos": [],
+        "errors": [
+          "File is not valid JSON"
+        ]
+      }
+    },
+    {
+      "name": "parseImportJson rejects an empty file",
+      "op": "parseImportJson",
+      "given": {
+        "raw": ""
+      },
+      "then": {
+        "todos": [],
+        "errors": [
+          "File is not valid JSON"
+        ]
+      }
+    },
+    {
+      "name": "parseImportJson rejects a non-list todos field",
+      "op": "parseImportJson",
+      "given": {
+        "raw": "{\"todos\": 3}"
+      },
+      "then": {
+        "todos": [],
+        "errors": [
+          "Expected a list of todos"
+        ]
+      }
+    },
+    {
+      "name": "parseImportJson rejects an object without todos",
+      "op": "parseImportJson",
+      "given": {
+        "raw": "{\"version\": 1}"
+      },
+      "then": {
+        "todos": [],
+        "errors": [
+          "Expected a list of todos"
+        ]
+      }
+    },
+    {
+      "name": "parseImportJson rejects a bare value",
+      "op": "parseImportJson",
+      "given": {
+        "raw": "42"
+      },
+      "then": {
+        "todos": [],
+        "errors": [
+          "Expected a list of todos"
+        ]
+      }
+    },
+    {
+      "name": "parseImportJson with an empty list",
+      "op": "parseImportJson",
+      "given": {
+        "raw": "[]"
+      },
+      "then": {
+        "todos": [],
+        "errors": []
+      }
+    },
+    {
+      "name": "applyImport merge overwrites same-id todos in place and appends new ones",
+      "op": "applyImport",
+      "given": {
+        "existing": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "imported": [
+          {
+            "id": "n",
+            "title": "New",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog twice",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "mode": "merge"
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "b",
+          "title": "Walk the dog twice",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        },
+        {
+          "id": "n",
+          "title": "New",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "applyImport merge into an empty list",
+      "op": "applyImport",
+      "given": {
+        "existing": [],
+        "imported": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "mode": "merge"
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "applyImport replace keeps only the imported todos",
+      "op": "applyImport",
+      "given": {
+        "existing": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "imported": [
+          {
+            "id": "n",
+            "title": "New",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "mode": "replace"
+      },
+      "then": [
+        {
+          "id": "n",
+          "title": "New",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "applyImport replace with nothing empties the list",
+      "op": "applyImport",
+      "given": {
+        "existing": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "imported": [],
+        "mode": "replace"
+      },
+      "then": []
+    },
+    {
+      "name": "describeImport: 1 valid, 0 problems",
+      "op": "describeImport",
+      "given": {
+        "valid": 1,
+        "problems": 0
+      },
+      "then": "Found 1 valid todo."
+    },
+    {
+      "name": "describeImport: 2 valid, 0 problems",
+      "op": "describeImport",
+      "given": {
+        "valid": 2,
+        "problems": 0
+      },
+      "then": "Found 2 valid todos."
+    },
+    {
+      "name": "describeImport: 1 valid, 1 problems",
+      "op": "describeImport",
+      "given": {
+        "valid": 1,
+        "problems": 1
+      },
+      "then": "Found 1 valid todo and 1 problem."
+    },
+    {
+      "name": "describeImport: 3 valid, 2 problems",
+      "op": "describeImport",
+      "given": {
+        "valid": 3,
+        "problems": 2
+      },
+      "then": "Found 3 valid todos and 2 problems."
+    },
+    {
+      "name": "describeImport: 0 valid, 1 problems",
+      "op": "describeImport",
+      "given": {
+        "valid": 0,
+        "problems": 1
+      },
+      "then": "Found 0 valid todos and 1 problem."
+    },
+    {
+      "name": "describeImported: 1 merge",
+      "op": "describeImported",
+      "given": {
+        "count": 1,
+        "mode": "merge"
+      },
+      "then": "Imported 1 todo (merge)."
+    },
+    {
+      "name": "describeImported: 3 replace",
+      "op": "describeImported",
+      "given": {
+        "count": 3,
+        "mode": "replace"
+      },
+      "then": "Imported 3 todos (replace)."
+    },
+    {
+      "name": "describeImported: 0 merge",
+      "op": "describeImported",
+      "given": {
+        "count": 0,
+        "mode": "merge"
+      },
+      "then": "Imported 0 todos (merge)."
+    },
+    {
+      "name": "importing clears a pending undo",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "steps": [
+          {
+            "action": "remove",
+            "ids": [
+              "a"
+            ],
+            "now": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "action": "import",
+            "todos": [
+              {
+                "id": "n",
+                "title": "New",
+                "completed": false,
+                "priority": "medium",
+                "createdAt": "2026-01-05T09:00:00.000Z",
+                "updatedAt": "2026-01-05T09:00:00.000Z"
+              }
+            ],
+            "mode": "merge",
+            "now": "2026-01-05T11:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          },
+          {
+            "id": "n",
+            "title": "New",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "undoLabel": null
+      }
+    },
+    {
+      "name": "import replace through the reducer",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "steps": [
+          {
+            "action": "import",
+            "todos": [
+              {
+                "id": "n",
+                "title": "New",
+                "completed": false,
+                "priority": "medium",
+                "createdAt": "2026-01-05T09:00:00.000Z",
+                "updatedAt": "2026-01-05T09:00:00.000Z"
+              }
+            ],
+            "mode": "replace",
+            "now": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "n",
+            "title": "New",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          }
+        ],
+        "undoLabel": null
+      }
+    }
+  ]
+}

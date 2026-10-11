@@ -28,7 +28,13 @@ async function visibleTitles(page: Page): Promise<string[]> {
 }
 
 async function run(page: Page, step: Step) {
-  const s = step as Record<string, string> & { value?: boolean; titles?: string[]; label?: string | null };
+  const s = step as Record<string, string> & {
+    value?: boolean;
+    titles?: string[];
+    errors?: string[];
+    label?: string | null;
+    json?: unknown;
+  };
   switch (step.do) {
     case "add":
       await page.getByTestId(id("formTitle")).fill(s.title!);
@@ -55,6 +61,22 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("undoAction")).click();
     case "relaunch":
       return void (await page.reload());
+    case "export": {
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        page.getByTestId(id(s.format === "csv" ? "exportCsv" : "exportJson")).click(),
+      ]);
+      expect(download.suggestedFilename()).toMatch(new RegExp(`^todos-\\d{4}-\\d{2}-\\d{2}\\.${s.format}$`));
+      return;
+    }
+    case "import":
+      return page.getByTestId(id("importFile")).setInputFiles({
+        name: "todos.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(s.raw ?? JSON.stringify(s.json)),
+      });
+    case "confirmImport":
+      return page.getByTestId(id("importMode", s.mode)).click();
   }
   switch (step.expect) {
     case "empty":
@@ -69,6 +91,12 @@ async function run(page: Page, step: Step) {
     case "undo":
       if (s.label === null) return expect(page.getByTestId(id("undoToast"))).toBeHidden();
       return expect(page.getByTestId(id("undoLabel"))).toHaveText(s.label!);
+    case "importSummary":
+      return expect(page.getByTestId(id("importSummary"))).toHaveText(s.text!);
+    case "importErrors":
+      return expect(page.getByTestId(id("importError"))).toHaveText(s.errors!);
+    case "importStatus":
+      return expect(page.getByTestId(id("importStatus"))).toHaveText(s.text!);
   }
   throw new Error(`Unknown step ${JSON.stringify(step)}`);
 }

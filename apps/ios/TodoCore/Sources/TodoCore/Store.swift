@@ -22,6 +22,7 @@ public enum TodoAction: Equatable, Sendable {
     case clearCompleted
     case undo
     case expireUndo
+    case importTodos([Todo], mode: ImportMode)
 }
 
 /// Pure state transition for the todo list, including the undo snapshot.
@@ -58,5 +59,7 @@ public func reduceTodos(_ state: TodoState, _ action: TodoAction, now: Date = Da
     case .expireUndo:
         guard let entry = state.undoable, isUndoExpired(entry, now: nowMs) else { return state }
         return TodoState(todos: todos, undoable: nil)
+    case .importTodos(let imported, let mode):
+        return TodoState(todos: applyImport(todos, imported: imported, mode: mode), undoable: nil)
     }
 }

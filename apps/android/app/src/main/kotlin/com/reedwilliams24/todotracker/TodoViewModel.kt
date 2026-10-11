@@ -3,6 +3,8 @@ package com.reedwilliams24.todotracker
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.reedwilliams24.todotracker.core.ImportMode
+import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoAction
 import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoState
@@ -45,6 +47,7 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     fun remove(id: String) = dispatch(TodoAction.Remove(listOf(id)))
     fun clearCompleted() = dispatch(TodoAction.ClearCompleted)
     fun undo() = dispatch(TodoAction.Undo)
+    fun importTodos(todos: List<Todo>, mode: ImportMode) = dispatch(TodoAction.Import(todos, mode))
 
     private fun dispatch(action: TodoAction) {
         val before = _ui.value
