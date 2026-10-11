@@ -13,6 +13,7 @@
     "completed": { "type": "boolean" },
     "priority": { "$ref": "#/$defs/priority" },
     "dueDate": { "$ref": "#/$defs/date" },
+    "reminder": { "$ref": "#/$defs/reminder" },
     "recurrence": { "$ref": "#/$defs/recurrence" },
     "createdAt": { "$ref": "#/$defs/timestamp" },
     "updatedAt": { "$ref": "#/$defs/timestamp" },
@@ -23,6 +24,10 @@
   },
   "$defs": {
     "priority": { "enum": ["low", "medium", "high"] },
+    "reminder": {
+      "enum": ["at", "1h", "1d"],
+      "description": "Reminder offset; only set when dueDate is set. See features/reminders.md."
+    },
     "recurrence": { "enum": ["daily", "weekly", "monthly"], "description": "Repeat rule; see features/recurrence.md." },
     "date": {
       "type": "string",
@@ -43,6 +48,7 @@
         "notes": { "type": "string" },
         "priority": { "$ref": "#/$defs/priority" },
         "dueDate": { "$ref": "#/$defs/date" },
+        "reminder": { "$ref": "#/$defs/reminder" },
         "recurrence": { "$ref": "#/$defs/recurrence" }
       }
     }

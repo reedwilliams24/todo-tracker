@@ -64,7 +64,7 @@ New feature scenarios add a file in `scenarios/core/`, and each step kind below 
 
 Actions (`do`):
 
-- `add {title, priority?, dueDate?, recurrence?}`
+- `add {title, priority?, dueDate?, recurrence?, reminder?}`
 - `bulkDelete {confirm}` (tap Delete, then Delete or Cancel in the confirmation)
 - `bulkToggle`
 - `clearCompleted`
@@ -95,6 +95,7 @@ Assertions (`expect`):
 - `priority {title, priority}` (case-insensitive)
 - `quickAddPreview {title | null}` (`null`: preview hidden)
 - `remaining {text}`
+- `reminder {title, text}` (the row's reminder label)
 - `selected {text}`
 - `stats {total, current, longest}` (the Stats panel's texts)
 - `theme {theme}` (that theme option is selected; web also checks the `dark` class on `<html>` for `light`/`dark`)

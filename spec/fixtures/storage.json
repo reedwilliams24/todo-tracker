@@ -44,6 +44,25 @@
       ]
     },
     {
+      "name": "parse keeps reminder",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": "[{\"id\":\"r\",\"title\":\"Todo r\",\"completed\":false,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\",\"dueDate\":\"2026-02-01\",\"reminder\":\"1h\"}]"
+      },
+      "then": [
+        {
+          "id": "new-1",
+          "title": "Todo r",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-02-01",
+          "reminder": "1h"
+        }
+      ]
+    },
+    {
       "name": "parse null",
       "op": "parseStoredTodos",
       "given": {

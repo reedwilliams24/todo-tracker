@@ -25,6 +25,7 @@
           "title": "",
           "priority": "medium",
           "dueDate": "",
+          "reminder": "",
           "recurrence": ""
         }
       }
@@ -217,6 +218,98 @@
         "completed": false,
         "priority": "high",
         "dueDate": "2026-02-01",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "toTodoDraft keeps reminder with a due date",
+      "op": "toTodoDraft",
+      "given": {
+        "form": {
+          "title": "Pay rent",
+          "priority": "medium",
+          "dueDate": "2026-02-01",
+          "reminder": "1d"
+        }
+      },
+      "then": {
+        "title": "Pay rent",
+        "priority": "medium",
+        "dueDate": "2026-02-01",
+        "reminder": "1d"
+      }
+    },
+    {
+      "name": "toTodoDraft drops reminder without a due date",
+      "op": "toTodoDraft",
+      "given": {
+        "form": {
+          "title": "Pay rent",
+          "priority": "medium",
+          "dueDate": "",
+          "reminder": "1h"
+        }
+      },
+      "then": {
+        "title": "Pay rent",
+        "priority": "medium"
+      }
+    },
+    {
+      "name": "toTodoDraft drops empty reminder",
+      "op": "toTodoDraft",
+      "given": {
+        "form": {
+          "title": "Pay rent",
+          "priority": "medium",
+          "dueDate": "2026-02-01",
+          "reminder": ""
+        }
+      },
+      "then": {
+        "title": "Pay rent",
+        "priority": "medium",
+        "dueDate": "2026-02-01"
+      }
+    },
+    {
+      "name": "createTodo keeps reminder with a due date",
+      "op": "createTodo",
+      "given": {
+        "draft": {
+          "title": "Pay rent",
+          "dueDate": "2026-02-01",
+          "reminder": "at"
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Pay rent",
+        "completed": false,
+        "priority": "medium",
+        "dueDate": "2026-02-01",
+        "reminder": "at",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "createTodo drops reminder without a due date",
+      "op": "createTodo",
+      "given": {
+        "draft": {
+          "title": "Pay rent",
+          "reminder": "1d"
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Pay rent",
+        "completed": false,
+        "priority": "medium",
         "createdAt": "2026-01-05T09:00:00.000Z",
         "updatedAt": "2026-01-05T09:00:00.000Z"
       }

@@ -62,6 +62,31 @@ export const feature: Feature = {
       },
     },
     {
+      name: "toTodoDraft keeps reminder with a due date",
+      op: "toTodoDraft",
+      given: { form: { title: "Pay rent", priority: "medium", dueDate: "2026-02-01", reminder: "1d" } },
+    },
+    {
+      name: "toTodoDraft drops reminder without a due date",
+      op: "toTodoDraft",
+      given: { form: { title: "Pay rent", priority: "medium", dueDate: "", reminder: "1h" } },
+    },
+    {
+      name: "toTodoDraft drops empty reminder",
+      op: "toTodoDraft",
+      given: { form: { title: "Pay rent", priority: "medium", dueDate: "2026-02-01", reminder: "" } },
+    },
+    {
+      name: "createTodo keeps reminder with a due date",
+      op: "createTodo",
+      given: { draft: { title: "Pay rent", dueDate: "2026-02-01", reminder: "at" }, now: T0 },
+    },
+    {
+      name: "createTodo drops reminder without a due date",
+      op: "createTodo",
+      given: { draft: { title: "Pay rent", reminder: "1d" }, now: T0 },
+    },
+    {
       name: "createTodo drops blank notes",
       op: "createTodo",
       given: { draft: { title: "Read", notes: "   " }, now: T0 },

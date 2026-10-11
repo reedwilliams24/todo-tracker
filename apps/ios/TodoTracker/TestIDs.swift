@@ -17,6 +17,8 @@ enum TestID {
     static func formRecurrenceOption(_ recurrence: Recurrence?) -> String {
         "todo-form-recurrence-\(recurrence?.rawValue ?? "none")"
     }
+    static let formReminder = "todo-form-reminder"
+    static func formReminderOption(_ reminder: String) -> String { "todo-form-reminder-\(reminder)" }
     static let formSubmit = "todo-form-submit"
     static let formTitle = "todo-form-title"
     static func item(_ title: String) -> String { "todo-item-\(title)" }
@@ -26,6 +28,7 @@ enum TestID {
     static func itemOverdue(_ title: String) -> String { "todo-overdue-\(title)" }
     static func itemPriority(_ title: String) -> String { "todo-priority-\(title)" }
     static func itemRecurrence(_ title: String) -> String { "todo-recurrence-\(title)" }
+    static func itemReminder(_ title: String) -> String { "todo-reminder-\(title)" }
     static func itemSelect(_ title: String) -> String { "todo-select-item-\(title)" }
     static func itemTitle(_ title: String) -> String { "todo-title-\(title)" }
     static func itemToggle(_ title: String) -> String { "todo-toggle-\(title)" }

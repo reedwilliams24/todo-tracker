@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import {
   EMPTY_TODO_FORM,
+  REMINDER_LABELS,
+  REMINDER_OFFSETS,
   hasQuickAddMeta,
   isValidTitle,
   parseQuickAdd,
@@ -10,6 +12,7 @@ import {
   RECURRENCES,
   RECURRENCE_LABELS,
   TEST_IDS,
+  type ReminderOffset,
   type Recurrence,
   type TodoDraft,
   type TodoPriority,
@@ -19,14 +22,15 @@ const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate, recurrence } = form;
+  const { title, priority, dueDate, reminder, recurrence } = form;
   const parsed = useMemo(() => parseQuickAdd(title), [title]);
   const canAdd = isValidTitle(parsed.title);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canAdd) return;
-    onAdd({ ...quickAddToDraft(parsed, priority, dueDate), recurrence: recurrence || undefined });
+    const draft = { ...quickAddToDraft(parsed, priority, dueDate), recurrence: recurrence || undefined };
+    onAdd(draft.dueDate && reminder ? { ...draft, reminder } : draft);
     setForm(EMPTY_TODO_FORM);
   }
 
@@ -70,6 +74,26 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           data-testid={TEST_IDS.formDueDate}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
         />
+        <select
+          value={reminder}
+          disabled={!dueDate}
+          onChange={(event) => setForm((f) => ({ ...f, reminder: event.target.value as ReminderOffset | "" }))}
+          aria-label="Reminder"
+          data-testid={TEST_IDS.formReminder}
+          className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm disabled:opacity-40 dark:border-white/15"
+        >
+          <option value="">No reminder</option>
+          {REMINDER_OFFSETS.map((option) => (
+            <option
+              key={option}
+              value={option}
+              data-testid={TEST_IDS.formReminderOption(option)}
+              className="text-foreground"
+            >
+              {REMINDER_LABELS[option]}
+            </option>
+          ))}
+        </select>
         <select
           value={recurrence}
           onChange={(event) => setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))}
