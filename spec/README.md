@@ -19,7 +19,7 @@ spec/
 | --- | --- |
 | `pnpm --filter @todo/spec test` | TypeScript fixture runner + schema validation |
 | `pnpm spec:record` | Re-records `fixtures/*.json` from `packages/spec/src/cases.ts` and the current TS implementation |
-| `pnpm spec:generate` | Regenerates `packages/shared/src/test-ids.ts` and `scenarios/maestro/*.yaml` |
+| `pnpm spec:generate` | Regenerates `apps/web/src/domain/test-ids.ts` and `scenarios/maestro/*.yaml` |
 | `pnpm spec:check` | Fails if fixtures or generated files are stale |
 | `pnpm spec:parity` | Prints the parity matrix from `platforms.json` |
 | `pnpm --filter web e2e` | Runs `scenarios/core.json` (and the older web-only specs) with Playwright |
@@ -59,7 +59,7 @@ Swift and Kotlin load the same files; nothing is copied or regenerated per platf
 
 ## UI scenarios
 
-`scenarios/core.json` lists user flows as steps. Every platform drives its UI through the IDs in `test-ids.json` (`data-testid` on web, `testID` in React Native, `accessibilityIdentifier` in SwiftUI, `Modifier.testTag` with `testTagsAsResourceId` in Compose). `{title}` placeholders take the todo's title.
+`scenarios/core.json` lists user flows as steps. Every platform drives its UI through the IDs in `test-ids.json` (`data-testid` on web, `accessibilityIdentifier` in SwiftUI, `Modifier.testTag` with `testTagsAsResourceId` in Compose). `{title}` placeholders take the todo's title.
 
 Actions (`do`): `add {title, priority?, dueDate?}`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `search {query}`, `clearCompleted`, `undo`, `relaunch`.
 
@@ -67,11 +67,8 @@ Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maest
 
 A scenario may set `platforms` (`web`, `mobile`) when a feature isn't on every platform yet, e.g. mobile has no search today.
 
-Running on Android with the current Expo app:
+Running on the Android emulator or iOS Simulator, with the native app installed:
 
 ```bash
-cd apps/mobile && npx expo start            # Metro on :8081, open in Expo Go on the emulator once
-maestro test --include-tags spec -e APP_ID=host.exp.exponent -e EXPO_URL=exp://10.0.2.2:8081 spec/scenarios/maestro
+maestro test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker spec/scenarios/maestro
 ```
-
-For the native apps, pass `-e APP_ID=com.reedwilliams24.todotracker` and no `EXPO_URL`.

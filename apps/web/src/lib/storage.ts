@@ -1,4 +1,4 @@
-import { STORAGE_KEY, parseStoredTodos, serializeTodos, type TodoStorage } from "@todo/shared";
+import { STORAGE_KEY, parseStoredTodos, serializeTodos, type TodoStorage } from "@/domain";
 
 export const localTodoStorage: TodoStorage = {
   load() {

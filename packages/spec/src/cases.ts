@@ -1,4 +1,4 @@
-import type { Todo } from "@todo/shared";
+import type { Todo } from "web/domain";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Case = { name: string; op: string; given: Record<string, any> };

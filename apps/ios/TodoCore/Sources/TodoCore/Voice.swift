@@ -1,6 +1,6 @@
 import Foundation
 
-// Regex fallback for voice capture; a line-by-line port of packages/shared/src/voice.ts.
+// Regex fallback for voice capture; a line-by-line port of apps/web/src/domain/voice.ts.
 // Patterns go through JSRegex so `\b`, `\s` and `replace` keep JavaScript semantics.
 
 private let separator = JSRegex(

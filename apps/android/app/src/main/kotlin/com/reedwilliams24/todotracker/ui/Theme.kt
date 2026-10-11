@@ -5,7 +5,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reedwilliams24.todotracker.core.TodoPriority
 
-/** Same tokens as apps/mobile/src/theme.ts (Tailwind scale used by apps/web). */
+/** Tailwind scale tokens, matching apps/web. */
 object Palette {
     val background = Color(0xFFF7F7F5)
     val card = Color.White

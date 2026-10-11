@@ -1,8 +1,8 @@
 # Todo Tracker for iOS
 
-Native SwiftUI app (iOS 18+, bundle id `com.reedwilliams24.todotracker`). It replaces the Expo app in `apps/mobile` on iOS (REED-27).
+Native SwiftUI app (iOS 18+, bundle id `com.reedwilliams24.todotracker`). It replaced the Expo app on iOS (REED-27).
 
-- `TodoCore/`: a Swift package with the domain logic (todos, list ops, undo reducer, storage format, voice parser), ported from `packages/shared`. No UI or persistence.
+- `TodoCore/`: a Swift package with the domain logic (todos, list ops, undo reducer, storage format, voice parser), ported from `apps/web/src/domain`. No UI or persistence.
 - `TodoTracker/`: the SwiftUI app. `TodoViewModel` drives the `reduceTodos` reducer and schedules undo expiry. `SwiftDataTodoStore` persists the list with SwiftData.
 - `TodoTrackerUITests/`: an XCUITest smoke test (add, complete, undo, delete).
 

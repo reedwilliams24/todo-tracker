@@ -98,7 +98,7 @@ function maestroFlows(): Record<string, string> {
 }
 
 const outputs: Record<string, string> = {
-  "packages/shared/src/test-ids.ts": `// ${HEADER}\n\nexport const TEST_IDS = {\n${entries.map(tsEntry).join("\n")}\n} as const;\n`,
+  "apps/web/src/domain/test-ids.ts": `// ${HEADER}\n\nexport const TEST_IDS = {\n${entries.map(tsEntry).join("\n")}\n} as const;\n`,
   ...maestroFlows(),
 };
 

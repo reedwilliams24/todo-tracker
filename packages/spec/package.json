@@ -12,7 +12,7 @@
     "parity": "tsx src/parity.ts"
   },
   "dependencies": {
-    "@todo/shared": "workspace:*"
+    "web": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20",

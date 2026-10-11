@@ -1,6 +1,6 @@
 # Undo
 
-Fixtures: [`../fixtures/undo.json`](../fixtures/undo.json). The `applyActions` op drives the list reducer (`reduceTodos` in `packages/shared/src/store.ts`) through a sequence of user actions and reports `{ todos, undoLabel }`.
+Fixtures: [`../fixtures/undo.json`](../fixtures/undo.json). The `applyActions` op drives the list reducer (`reduceTodos` in `apps/web/src/domain/store.ts`) through a sequence of user actions and reports `{ todos, undoLabel }`.
 
 ## Rules
 

@@ -35,7 +35,7 @@ import {
   type TodoFilter,
   type TodoFormState,
   type TodoState,
-} from "@todo/shared";
+} from "web/domain";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Given = Record<string, any>;

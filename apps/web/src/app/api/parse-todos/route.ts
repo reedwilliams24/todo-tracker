@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { coerceDrafts, parseTranscript, reconcileDrafts, type TodoDraft } from "@todo/shared";
+import { coerceDrafts, parseTranscript, reconcileDrafts, type TodoDraft } from "@/domain";
 
 const OLLAMA_URL = process.env.OLLAMA_URL ?? "http://127.0.0.1:11434";
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "llama3.2:3b";

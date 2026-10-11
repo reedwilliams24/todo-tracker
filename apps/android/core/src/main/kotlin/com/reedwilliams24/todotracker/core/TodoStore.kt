@@ -15,7 +15,7 @@ sealed interface TodoAction {
     data object ExpireUndo : TodoAction
 }
 
-/** Port of `reduceTodos` in packages/shared/src/store.ts. */
+/** Port of `reduceTodos` in apps/web/src/domain/store.ts. */
 fun reduceTodos(state: TodoState, action: TodoAction, now: Instant = Instant.now()): TodoState {
     val todos = state.todos
     fun snapshot(label: String) = UndoEntry(label, todos, now.toEpochMilli())
