@@ -1,0 +1,41 @@
+# Applies supabase/migrations to the hosted projects after merge: dev first, then prod.
+# Not a PR check (db-tests-supabase in ci.yml tests migrations on PRs), so it isn't in the `ci` gate.
+name: Supabase migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-migrations
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-supabase-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup # installs the supabase CLI pinned in package.json
+      - run: scripts/supabase-db-push.sh
+        env:
+          PROJECT_REF: ${{ secrets.SUPABASE_DEV_PROJECT_REF }}
+          DB_PASSWORD: ${{ secrets.SUPABASE_DEV_DB_PASSWORD }}
+          POOLER_HOST: aws-0-us-east-1.pooler.supabase.com
+
+  deploy-supabase-prod:
+    needs: deploy-supabase-dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: scripts/supabase-db-push.sh
+        env:
+          PROJECT_REF: ${{ secrets.SUPABASE_PROD_PROJECT_REF }}
+          DB_PASSWORD: ${{ secrets.SUPABASE_PROD_DB_PASSWORD }}
+          POOLER_HOST: aws-1-us-west-2.pooler.supabase.com # aws-1, not aws-0
