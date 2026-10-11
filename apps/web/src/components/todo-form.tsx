@@ -8,7 +8,9 @@ import {
   isValidTitle,
   parseQuickAdd,
   quickAddToDraft,
+  RECURRENCES,
   TEST_IDS,
+  type Recurrence,
   type TodoDraft,
   type TodoPriority,
 } from "@/domain";
@@ -18,14 +20,14 @@ const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const t = useT();
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate } = form;
+  const { title, priority, dueDate, recurrence } = form;
   const parsed = useMemo(() => parseQuickAdd(title), [title]);
   const canAdd = isValidTitle(parsed.title);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canAdd) return;
-    onAdd(quickAddToDraft(parsed, priority, dueDate));
+    onAdd({ ...quickAddToDraft(parsed, priority, dueDate), recurrence: recurrence || undefined });
     setForm(EMPTY_TODO_FORM);
   }
 
@@ -71,6 +73,24 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           data-testid={TEST_IDS.formDueDate}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
         />
+        <select
+          value={recurrence}
+          onChange={(event) =>
+            setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))
+          }
+          aria-label={t("form.recurrence.label")}
+          data-testid={TEST_IDS.formRecurrence}
+          className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
+        >
+          <option value="" className="text-foreground">
+            {t("recurrence.none")}
+          </option>
+          {RECURRENCES.map((option) => (
+            <option key={option} value={option} className="text-foreground">
+              {t(`recurrence.${option}`)}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           data-testid={TEST_IDS.formSubmit}

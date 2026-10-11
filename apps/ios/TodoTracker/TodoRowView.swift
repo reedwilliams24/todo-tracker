@@ -82,58 +82,73 @@ struct TodoRowView: View {
             .accessibilityLabel(toggleLabel)
             .accessibilityIdentifier(TestID.itemToggle(todo.title))
 
-            if editing {
-                TextField(t("item.editTitle"), text: $draftTitle)
-                    .font(.system(size: 16))
-                    .foregroundStyle(Theme.foreground)
-                    .padding(.vertical, 4)
-                    .focused($editFocused)
-                    .submitLabel(.done)
-                    .onSubmit(commit)
-                    .onChange(of: editFocused) { _, focused in
-                        if !focused { commit() }
-                    }
-                    .onAppear { editFocused = true }
-                    .accessibilityLabel(t("item.editTitle"))
-                    .accessibilityIdentifier(TestID.itemEditInput)
-            } else {
-                Button {
-                    draftTitle = todo.title
-                    editing = true
-                } label: {
-                    Text(todo.title)
+            VStack(alignment: .leading, spacing: 2) {
+                if editing {
+                    TextField(t("item.editTitle"), text: $draftTitle)
                         .font(.system(size: 16))
                         .foregroundStyle(Theme.foreground)
-                        .strikethrough(todo.completed)
-                        .opacity(todo.completed ? 0.7 : 1)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(t("item.edit", ["title": todo.title]))
-                .accessibilityHint(t("item.editA11yHint"))
-                .accessibilityIdentifier(TestID.itemTitle(todo.title))
-            }
-
-            if let dueDate = todo.dueDate {
-                HStack(spacing: 0) {
-                    if overdue {
-                        Text(t("item.overdueBadge"))
-                            .font(.system(size: 12, weight: .medium))
-                            .accessibilityIdentifier(TestID.itemOverdue(todo.title))
+                        .padding(.vertical, 4)
+                        .focused($editFocused)
+                        .submitLabel(.done)
+                        .onSubmit(commit)
+                        .onChange(of: editFocused) { _, focused in
+                            if !focused { commit() }
+                        }
+                        .onAppear { editFocused = true }
+                        .accessibilityLabel(t("item.editTitle"))
+                        .accessibilityIdentifier(TestID.itemEditInput)
+                } else {
+                    Button {
+                        draftTitle = todo.title
+                        editing = true
+                    } label: {
+                        Text(todo.title)
+                            .font(.system(size: 16))
+                            .foregroundStyle(Theme.foreground)
+                            .strikethrough(todo.completed)
+                            .opacity(todo.completed ? 0.7 : 1)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                     }
-                    Text(dueDate)
-                        .font(.system(size: 12))
-                        .accessibilityIdentifier(TestID.itemDueDate(todo.title))
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(t("item.edit", ["title": todo.title]))
+                    .accessibilityHint(t("item.editA11yHint"))
+                    .accessibilityIdentifier(TestID.itemTitle(todo.title))
                 }
-                .foregroundStyle(overdue ? Theme.danger : Theme.muted)
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                .layoutPriority(1)
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel(t(overdue ? "item.overdue" : "item.due", ["date": dueDate]))
+
+                if todo.dueDate != nil || todo.recurrence != nil {
+                    HStack(spacing: 8) {
+                        if let dueDate = todo.dueDate {
+                            HStack(spacing: 0) {
+                                if overdue {
+                                    Text(t("item.overdueBadge"))
+                                        .font(.system(size: 12, weight: .medium))
+                                        .accessibilityIdentifier(TestID.itemOverdue(todo.title))
+                                }
+                                Text(dueDate)
+                                    .font(.system(size: 12))
+                                    .accessibilityIdentifier(TestID.itemDueDate(todo.title))
+                            }
+                            .foregroundStyle(overdue ? Theme.danger : Theme.muted)
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .layoutPriority(1)
+                            .accessibilityElement(children: .contain)
+                            .accessibilityLabel(t(overdue ? "item.overdue" : "item.due", ["date": dueDate]))
+                        }
+                        if let recurrence = todo.recurrence {
+                            Text(t("item.recurrence", ["label": t("recurrence.\(recurrence.rawValue)")]))
+                                .font(.system(size: 12))
+                                .foregroundStyle(Theme.muted)
+                                .lineLimit(1)
+                                .fixedSize()
+                                .accessibilityIdentifier(TestID.itemRecurrence(todo.title))
+                        }
+                    }
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             let colors = Theme.priority(todo.priority)
             Text(t("priority.\(todo.priority.rawValue)"))

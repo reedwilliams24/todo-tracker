@@ -134,6 +134,17 @@ export function TodoItem({ todo, onToggle, onRename, onRemove, selection }: Todo
         </span>
       )}
 
+      {todo.recurrence && (
+        <span
+          data-testid={TEST_IDS.itemRecurrence(todo.title)}
+          className="text-xs opacity-70"
+          aria-label={t(`item.repeats.${todo.recurrence}`)}
+          title={t(`item.repeats.${todo.recurrence}`)}
+        >
+          {t("item.recurrence", { label: t(`recurrence.${todo.recurrence}`) })}
+        </span>
+      )}
+
       <span
         data-testid={TEST_IDS.itemPriority(todo.title)}
         className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[todo.priority]}`}>

@@ -51,6 +51,7 @@ function maestroStep(step: Step): string[] {
         ...tap(id("formTitle")),
         `- inputText: ${q(s.title!)}`,
         ...(s.priority ? tap(id("formPriorityOption", s.priority)) : []),
+        ...(s.recurrence ? tap(id("formRecurrenceOption", s.recurrence)) : []),
         ...(s.dueDate ? [...tap(id("formDueDate")), `- inputText: ${q(s.dueDate)}`] : []),
         "- hideKeyboard",
         ...tap(id("formSubmit")),
@@ -109,6 +110,8 @@ function maestroStep(step: Step): string[] {
       return visible(id("itemPriority", s.title!), [`    text: ${q(capitalize(s.priority!))}`]);
     case "dueDate":
       return visible(id("itemDueDate", s.title!), [`    text: ${q(s.dueDate)}`]);
+    case "recurrence":
+      return visible(id("itemRecurrence", s.title!), [`    text: ${q(s.text)}`]);
     case "overdue":
       return step.value
         ? visible(id("itemOverdue", s.title!))

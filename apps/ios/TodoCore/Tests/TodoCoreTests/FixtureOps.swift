@@ -56,6 +56,12 @@ enum FixtureOps {
             return countCompleted(try g.decode("todos"))
         case "addTodos":
             return addTodos(try g.decode("todos"), drafts: try g.decode("drafts"), now: try g.date("now"))
+        case "toggleInList":
+            return toggleInList(try g.decode("todos"), id: try g.decode("id"), now: try g.date("now"))
+        case "nextOccurrence":
+            return nextOccurrence(try g.decode("dueDate"), try g.decode("recurrence"))
+        case "scheduleNext":
+            return scheduleNext(try g.decode("todo"), now: try g.date("now"))
         case "removeFromList":
             return removeFromList(try g.decode("todos"), ids: try g.decode("ids"))
         case "clearCompletedInList":
@@ -131,6 +137,7 @@ enum FixtureOps {
         let defaultPriority = TodoCore.defaultPriority
         let priorityOrder = Dictionary(uniqueKeysWithValues: TodoPriority.allCases.map { ($0.rawValue, $0.order) })
         let emptyForm = TodoFormState.empty
+        let recurrences = Recurrence.allCases
         let statsDays = TodoCore.statsDays
     }
 

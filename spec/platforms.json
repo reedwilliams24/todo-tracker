@@ -8,6 +8,7 @@
     "storage": { "web": "pass", "ios": "pass", "android": "pass" },
     "voice": { "web": "pass", "ios": "pass", "android": "pass" },
     "localization": { "web": "pass", "ios": "pass", "android": "pass" },
+    "recurrence": { "web": "pass", "ios": "pass", "android": "pass" },
     "quick-add": { "web": "pass", "ios": "pass", "android": "pass" },
     "stats": { "web": "pass", "ios": "pass", "android": "pass" }
   },
@@ -23,6 +24,7 @@
     "sort-by-due-date-and-overdue": { "web": "pass", "ios": "pass", "android": "pass" },
     "bulk-select": { "web": "pass", "ios": "pass", "android": "pass" },
     "search": { "web": "pass", "ios": "n/a", "android": "n/a" },
-    "stats": { "web": "pass", "ios": "pass", "android": "pass" }
+    "stats": { "web": "pass", "ios": "pass", "android": "pass" },
+    "recurring-reschedules": { "web": "pass", "ios": "pass", "android": "pass" }
   }
 }

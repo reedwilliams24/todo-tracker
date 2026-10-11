@@ -25,7 +25,7 @@ final class FixtureTests: XCTestCase {
         .appendingPathComponent("../../../spec/fixtures")
         .standardizedFileURL
 
-    static let features = ["todo", "list", "undo", "storage", "voice", "localization", "quick-add", "stats"]
+    static let features = ["todo", "list", "undo", "storage", "voice", "localization", "recurrence", "quick-add", "stats"]
 
     func testTodo() throws { try runFixtures("todo") }
     func testList() throws { try runFixtures("list") }
@@ -33,6 +33,7 @@ final class FixtureTests: XCTestCase {
     func testStorage() throws { try runFixtures("storage") }
     func testVoice() throws { try runFixtures("voice") }
     func testLocalization() throws { try runFixtures("localization") }
+    func testRecurrence() throws { try runFixtures("recurrence") }
     func testQuickAdd() throws { try runFixtures("quick-add") }
     func testStats() throws { try runFixtures("stats") }
 

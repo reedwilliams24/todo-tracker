@@ -89,6 +89,7 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
         put("defaultPriority", DEFAULT_PRIORITY.key)
         put("priorityOrder", buildJsonObject { PRIORITY_ORDER.forEach { (p, n) -> put(p.key, n) } })
         put("emptyForm", Json { encodeDefaults = true }.encodeToJsonElement(TodoFormState.serializer(), EMPTY_TODO_FORM))
+        put("recurrences", JsonArray(RECURRENCES.map { JsonPrimitive(it.key) }))
         put("statsDays", STATS_DAYS)
     }
     "isValidTitle" -> JsonPrimitive(isValidTitle(g.str("title")))
@@ -123,6 +124,10 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
             put("created", encode(it.created))
         }
     }
+    "toggleInList" -> encode(toggleInList(g.todos(), g.str("id"), g.instant("now")))
+    "nextOccurrence" -> JsonPrimitive(nextOccurrence(g.str("dueDate"), requireNotNull(Recurrence.fromKey(g.str("recurrence")))))
+    "scheduleNext" -> scheduleNext(TodoJson.decodeFromJsonElement(Todo.serializer(), g.getValue("todo")), g.instant("now"))
+        ?.let { TodoJson.encodeToJsonElement(Todo.serializer(), it) } ?: JsonNull
     "removeFromList" -> encode(removeFromList(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content }))
     "clearCompletedInList" -> encode(clearCompletedInList(g.todos()))
     "bulkToggle" -> encode(bulkToggle(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content }, g.instant("now")))

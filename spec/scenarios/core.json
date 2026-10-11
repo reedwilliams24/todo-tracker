@@ -152,6 +152,21 @@
       ]
     },
     {
+      "name": "recurring-reschedules",
+      "steps": [
+        { "do": "add", "title": "Water plants", "dueDate": "2026-01-31", "recurrence": "monthly" },
+        { "expect": "recurrence", "title": "Water plants", "text": "↻ Monthly" },
+        { "do": "toggle", "title": "Water plants" },
+        { "expect": "titles", "titles": ["Water plants", "Water plants"] },
+        { "expect": "dueDate", "title": "Water plants", "dueDate": "2026-02-28" },
+        { "expect": "remaining", "text": "1 task remaining" },
+        { "expect": "undo", "label": "Completed todo" },
+        { "do": "relaunch" },
+        { "expect": "titles", "titles": ["Water plants", "Water plants"] },
+        { "expect": "dueDate", "title": "Water plants", "dueDate": "2026-02-28" }
+      ]
+    },
+    {
       "name": "stats",
       "steps": [
         { "do": "add", "title": "Stretch" },

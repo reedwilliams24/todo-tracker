@@ -25,7 +25,12 @@ private val DATE_KEY = DateTimeFormatter.ofPattern("uuuu-MM-dd")
 private val TIMESTAMP = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(java.time.ZoneOffset.UTC)
 
 fun toTodoDraft(form: TodoFormState): TodoDraft =
-    TodoDraft(title = form.title, priority = form.priority, dueDate = form.dueDate.ifEmpty { null })
+    TodoDraft(
+        title = form.title,
+        priority = form.priority,
+        dueDate = form.dueDate.ifEmpty { null },
+        recurrence = Recurrence.fromKey(form.recurrence),
+    )
 
 /** Accepts an empty value or a real calendar date in YYYY-MM-DD form. */
 fun isValidDueDate(value: String?): Boolean {
@@ -55,6 +60,7 @@ fun createTodo(draft: TodoDraft, now: Instant = Instant.now()): Todo {
         completed = false,
         priority = draft.priority ?: DEFAULT_PRIORITY,
         dueDate = draft.dueDate,
+        recurrence = draft.recurrence,
         createdAt = stamp,
         updatedAt = stamp,
     )

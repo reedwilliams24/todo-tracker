@@ -1,0 +1,46 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: recurring-reschedules
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Water plants"
+- tapOn:
+    id: "todo-form-recurrence-monthly"
+- tapOn:
+    id: "todo-form-due-date"
+- inputText: "2026-01-31"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Water plants"
+- assertVisible:
+    id: "todo-recurrence-Water plants"
+    text: "↻ Monthly"
+- tapOn:
+    id: "todo-toggle-Water plants"
+- assertVisible:
+    id: "todo-item-Water plants"
+- assertVisible:
+    id: "todo-item-Water plants"
+- assertVisible:
+    id: "todo-due-Water plants"
+    text: "2026-02-28"
+- assertVisible:
+    id: "todo-remaining"
+    text: "1 task remaining"
+- assertVisible:
+    id: "undo-toast-label"
+    text: "Completed todo"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "todo-item-Water plants"
+- assertVisible:
+    id: "todo-item-Water plants"
+- assertVisible:
+    id: "todo-due-Water plants"
+    text: "2026-02-28"

@@ -6,6 +6,13 @@ public enum TodoFilter: String, Codable, CaseIterable, Sendable {
     case all, active, completed
 }
 
+/// Repeat rule; see spec/features/recurrence.md.
+public enum Recurrence: String, Codable, CaseIterable, Sendable {
+    case daily, weekly, monthly
+
+    public var label: String { rawValue.capitalized }
+}
+
 public enum TodoSort: String, Codable, CaseIterable, Sendable {
     case priority, due
 }
@@ -18,6 +25,7 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
     public var priority: TodoPriority
     /// Calendar date `YYYY-MM-DD`, no time zone.
     public var dueDate: String?
+    public var recurrence: Recurrence?
     /// UTC ISO-8601 with milliseconds, e.g. `2026-01-05T09:00:00.000Z`.
     public var createdAt: String
     public var updatedAt: String
@@ -31,6 +39,7 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
         completed: Bool = false,
         priority: TodoPriority = defaultPriority,
         dueDate: String? = nil,
+        recurrence: Recurrence? = nil,
         createdAt: String,
         updatedAt: String,
         completedAt: String? = nil
@@ -41,6 +50,7 @@ public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {
         self.completed = completed
         self.priority = priority
         self.dueDate = dueDate
+        self.recurrence = recurrence
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.completedAt = completedAt
@@ -52,11 +62,19 @@ public struct TodoDraft: Codable, Equatable, Sendable {
     public var notes: String?
     public var priority: TodoPriority?
     public var dueDate: String?
+    public var recurrence: Recurrence?
 
-    public init(title: String, notes: String? = nil, priority: TodoPriority? = nil, dueDate: String? = nil) {
+    public init(
+        title: String,
+        notes: String? = nil,
+        priority: TodoPriority? = nil,
+        dueDate: String? = nil,
+        recurrence: Recurrence? = nil
+    ) {
         self.title = title
         self.notes = notes
         self.priority = priority
         self.dueDate = dueDate
+        self.recurrence = recurrence
     }
 }

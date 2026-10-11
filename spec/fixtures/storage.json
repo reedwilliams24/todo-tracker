@@ -133,6 +133,25 @@
       ]
     },
     {
+      "name": "parse keeps recurrence",
+      "op": "parseStoredTodos",
+      "given": {
+        "raw": "[{\"id\":\"r\",\"title\":\"Gym\",\"completed\":false,\"priority\":\"medium\",\"createdAt\":\"2026-01-05T09:00:00.000Z\",\"updatedAt\":\"2026-01-05T09:00:00.000Z\",\"recurrence\":\"weekly\",\"dueDate\":\"2026-01-05\"}]"
+      },
+      "then": [
+        {
+          "id": "new-1",
+          "title": "Gym",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "recurrence": "weekly",
+          "dueDate": "2026-01-05"
+        }
+      ]
+    },
+    {
       "name": "parse keeps completedAt",
       "op": "parseStoredTodos",
       "given": {
