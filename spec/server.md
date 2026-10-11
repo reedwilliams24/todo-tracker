@@ -23,6 +23,7 @@ One row per todo. Columns mirror [`todo.schema.json`](schema/todo.schema.json) i
 | `due_date`     | `date`          | Nullable. `YYYY-MM-DD`.                                                                        |
 | `recurrence`   | `text`          | Nullable. `daily`, `weekly` or `monthly`.                                                      |
 | `completed_at` | `utc_timestamp` | Nullable.                                                                                      |
+| `subtasks`     | `jsonb`         | Nullable. Ordered array of `{ id, title, completed }` (REED-10). Must be an array or `23514`.  |
 | `created_at`   | `utc_timestamp` |                                                                                                |
 | `updated_at`   | `utc_timestamp` | When the client made the edit. Conflicts are resolved on it.                                   |
 | `deleted_at`   | `utc_timestamp` | Tombstone. Non-null means the todo is deleted.                                                 |
