@@ -3,6 +3,7 @@ import TodoCore
 
 struct ContentView: View {
     @Bindable var model: TodoViewModel
+    var auth: AuthViewModel?
     @AppStorage(themeStorageKey) private var storedTheme = defaultTheme.rawValue
 
     private var theme: ThemePreference { parseThemePreference(storedTheme) }
@@ -23,6 +24,11 @@ struct ContentView: View {
                     Spacer(minLength: 0)
                     themePicker
                 }
+                // Own row: the header has no room for an email next to the title and theme picker.
+                if let auth, auth.state.status != .signedOut {
+                    AccountMenu(auth: auth).frame(maxWidth: .infinity, alignment: .trailing)
+                }
+                if let auth { AuthBanner(auth: auth) }
                 TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
                 toolbar
                 sortControl
@@ -52,6 +58,7 @@ struct ContentView: View {
         }
         .overlay(alignment: .bottom) { toast }
         .animation(.easeOut(duration: 0.15), value: model.undoLabel)
+        .authPresentation(auth)
         .preferredColorScheme(theme.colorScheme)
     }
 

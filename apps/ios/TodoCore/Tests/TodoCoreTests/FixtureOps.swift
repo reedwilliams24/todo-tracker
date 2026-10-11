@@ -26,6 +26,7 @@ enum FixtureOps {
     /// alphabetical order, so features added in parallel don't conflict.
     static var modules: [[String: Op]] {
         [
+            authOps,
             listOps,
             quickAddOps,
             recurrenceOps,

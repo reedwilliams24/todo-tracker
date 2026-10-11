@@ -161,6 +161,7 @@ function maestroFlows(): Record<string, string> {
   const flows: Record<string, string> = {};
   for (const scenario of loadScenarios()) {
     if (scenario.status.ios === "n/a" && scenario.status.android === "n/a") continue;
+    if (scenario.requires) continue;
     const body = ["- runFlow: launch.yaml", ...scenario.steps.flatMap(maestroStep)];
     flows[`spec/scenarios/maestro/${scenario.name}.yaml`] =
       `# Generated from spec/scenarios/core/${scenario.file} by \`pnpm spec:generate\`. Do not edit.\nappId: \${APP_ID}\nname: ${scenario.name}\ntags:\n  - spec\n---\n${body.join("\n")}\n`;

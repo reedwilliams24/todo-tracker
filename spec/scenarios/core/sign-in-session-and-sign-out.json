@@ -1,0 +1,66 @@
+{
+  "name": "sign-in-session-and-sign-out",
+  "requires": "supabase",
+  "status": {
+    "web": "pass",
+    "ios": "missing",
+    "android": "missing"
+  },
+  "note": "Needs a configured build + local `supabase start`; native follow-up: REED-80",
+  "steps": [
+    {
+      "expect": "guestBanner",
+      "value": true
+    },
+    {
+      "do": "requestCode",
+      "email": "reed@example.com"
+    },
+    {
+      "do": "enterCode",
+      "code": "000000"
+    },
+    {
+      "expect": "authError",
+      "text": "That code is wrong or has expired. Check it or send a new one."
+    },
+    {
+      "do": "enterCode",
+      "code": "{emailed}"
+    },
+    {
+      "expect": "account",
+      "email": "reed@example.com"
+    },
+    {
+      "expect": "guestBanner",
+      "value": false
+    },
+    {
+      "do": "add",
+      "title": "Call mom"
+    },
+    {
+      "do": "relaunch"
+    },
+    {
+      "expect": "account",
+      "email": "reed@example.com"
+    },
+    {
+      "expect": "titles",
+      "titles": ["Call mom"]
+    },
+    {
+      "do": "signOut"
+    },
+    {
+      "expect": "guestBanner",
+      "value": true
+    },
+    {
+      "expect": "titles",
+      "titles": []
+    }
+  ]
+}

@@ -1,3 +1,20 @@
+import java.util.Properties
+
+/**
+ * Supabase config: empty by default (guest-only build, as CI uses). Pass -PsupabaseEnv=dev|prod to read
+ * config/supabase-<env>.properties, or -PsupabaseUrl=… -PsupabaseAnonKey=… (e.g. local `supabase start`).
+ */
+val supabaseConfig =
+    Properties().apply {
+        providers.gradleProperty("supabaseEnv").orNull?.let { env ->
+            rootProject.file("config/supabase-$env.properties").inputStream().use(::load)
+        }
+        providers.gradleProperty("supabaseUrl").orNull?.let { setProperty("supabaseUrl", it) }
+        providers.gradleProperty("supabaseAnonKey").orNull?.let { setProperty("supabaseAnonKey", it) }
+    }
+
+fun supabaseField(name: String) = "\"${supabaseConfig.getProperty(name, "")}\""
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -15,6 +32,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+        buildConfigField("String", "SUPABASE_URL", supabaseField("supabaseUrl"))
+        buildConfigField("String", "SUPABASE_ANON_KEY", supabaseField("supabaseAnonKey"))
     }
 
     buildTypes {
@@ -30,7 +49,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    buildFeatures { compose = true }
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
 }
 
 kotlin { jvmToolchain(17) }
@@ -49,6 +71,11 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.lifecycle.process)
+    implementation(libs.security.crypto)
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.auth)
+    implementation(libs.ktor.client.okhttp)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)

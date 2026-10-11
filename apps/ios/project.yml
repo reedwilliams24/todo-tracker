@@ -7,6 +7,9 @@ options:
 packages:
   TodoCore:
     path: TodoCore
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: 2.5.1
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -19,8 +22,14 @@ targets:
     sources: [TodoTracker]
     dependencies:
       - package: TodoCore
+      - package: Supabase
+        product: Supabase
+    configFiles:
+      Debug: Config/Supabase.xcconfig
+      Release: Config/Supabase.xcconfig
     settings:
       base:
+        INFOPLIST_FILE: Config/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.reedwilliams24.todotracker
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Todo Tracker

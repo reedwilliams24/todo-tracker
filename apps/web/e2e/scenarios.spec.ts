@@ -4,7 +4,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 /** Runs the platform-neutral scenarios in spec/scenarios/core/*.json against the web app. */
 type Step = Record<string, unknown> & { do?: string; expect?: string };
-type Scenario = { name: string; status: { web: string }; steps: Step[] };
+type Scenario = { name: string; status: { web: string }; requires?: string; steps: Step[] };
+/** Per-test state: scenario emails are made unique per run so resend limits and Mailpit searches never collide. */
+type Ctx = { emails: Map<string, string>; email?: string };
 
 const SPEC_DIR = join(process.cwd(), "../../spec");
 const ids = JSON.parse(readFileSync(join(SPEC_DIR, "test-ids.json"), "utf8")) as Record<string, string>;
@@ -21,6 +23,51 @@ function id(key: string, value = ""): string {
 }
 
 const ITEM_PREFIX = id("item");
+const AUTH = !!process.env.E2E_SUPABASE;
+const MAILPIT = process.env.E2E_MAILPIT_URL ?? "http://127.0.0.1:54324";
+
+function uniqueEmail(ctx: Ctx, email: string): string {
+  if (!ctx.emails.has(email)) {
+    const [local, domain] = email.split("@");
+    ctx.emails.set(email, `${local}+${Date.now()}${Math.floor(Math.random() * 1e6)}@${domain}`);
+  }
+  return ctx.emails.get(email)!;
+}
+
+/** The newest 6-digit code Mailpit received for `email`. */
+async function emailedCode(email: string): Promise<string> {
+  let code = "";
+  await expect
+    .poll(
+      async () => {
+        const search = await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`);
+        const { messages = [] } = (await search.json()) as { messages?: { ID: string }[] };
+        if (!messages[0]) return "";
+        const message = (await (await fetch(`${MAILPIT}/api/v1/message/${messages[0].ID}`)).json()) as {
+          Text?: string;
+          HTML?: string;
+        };
+        code = `${message.Text ?? ""} ${message.HTML ?? ""}`.match(/\b(\d{6})\b/)?.[1] ?? "";
+        return code;
+      },
+      { timeout: 15_000 },
+    )
+    .toMatch(/^\d{6}$/);
+  return code;
+}
+
+async function requestCode(page: Page, ctx: Ctx, email: string) {
+  ctx.email = uniqueEmail(ctx, email);
+  await page.getByTestId(id("authSignIn")).click();
+  await page.getByTestId(id("authEmail")).fill(ctx.email);
+  await page.getByTestId(id("authSendCode")).click();
+  await expect(page.getByTestId(id("authCode"))).toBeVisible();
+}
+
+async function enterCode(page: Page, ctx: Ctx, code: string) {
+  await page.getByTestId(id("authCode")).fill(code === "{emailed}" ? await emailedCode(ctx.email!) : code);
+  await page.getByTestId(id("authVerify")).click();
+}
 
 async function visibleTitles(page: Page): Promise<string[]> {
   const testIds = await page
@@ -29,9 +76,10 @@ async function visibleTitles(page: Page): Promise<string[]> {
   return testIds.map((testId) => testId.slice(ITEM_PREFIX.length));
 }
 
-async function run(page: Page, step: Step) {
+async function run(page: Page, step: Step, ctx: Ctx) {
   const s = step as Record<string, string> & {
     value?: boolean;
+    text?: string | null;
     titles?: string[];
     label?: string | null;
     title?: string | null;
@@ -55,12 +103,16 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel")).click();
     case "bulkToggle":
       return page.getByTestId(id("bulkToggle")).click();
+    case "chooseGuestTodos":
+      return page.getByTestId(id(s.choice === "move" ? "authMoveConfirm" : "authMoveDiscard")).click();
     case "clearCompleted":
       return page.getByTestId(id("clearCompleted")).click();
     case "delete":
       return page.getByTestId(id("itemDelete", s.title!)).click();
     case "deleteSubtask":
       return page.getByTestId(id("subtaskDelete", s.subtask!)).click();
+    case "enterCode":
+      return enterCode(page, ctx, s.code!);
     case "expandSubtasks":
       return page.getByTestId(id("itemSubtasksToggle", s.title!)).click();
     case "filter":
@@ -75,6 +127,8 @@ async function run(page: Page, step: Step) {
       await page.getByTestId(id("itemTitle", s.from)).dblclick();
       await page.getByTestId(id("itemEditInput")).fill(s.to!);
       return page.getByTestId(id("itemEditInput")).press("Enter");
+    case "requestCode":
+      return requestCode(page, ctx, s.email!);
     case "search":
       return page.getByTestId(id("search")).fill(s.query!);
     case "select":
@@ -83,6 +137,13 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("selectAll")).click();
     case "selectMode":
       return page.getByTestId(id("selectMode")).click();
+    case "signIn":
+      await requestCode(page, ctx, s.email!);
+      return enterCode(page, ctx, "{emailed}");
+    case "signOut":
+      await page.getByTestId(id("authAccount")).click();
+      await page.getByTestId(id("authSignOut")).click();
+      return expect(page.getByTestId(id("authAccount"))).toBeHidden();
     case "sort":
       return void (await page.getByTestId(id("sort")).selectOption(s.sort!));
     case "submit":
@@ -99,6 +160,10 @@ async function run(page: Page, step: Step) {
       return page.getByTestId(id("undoAction")).click();
   }
   switch (step.expect) {
+    case "account":
+      return expect(page.getByTestId(id("authAccount"))).toHaveText(uniqueEmail(ctx, s.email!));
+    case "authError":
+      return expect(page.getByTestId(id("authError"))).toHaveText(s.text!);
     case "clearCompleted":
       return expect(page.getByTestId(id("clearCompleted"))).toHaveText(s.text!);
     case "completed":
@@ -109,6 +174,12 @@ async function run(page: Page, step: Step) {
       ).toBeVisible();
     case "empty":
       return expect(page.getByTestId(id("empty"))).toBeVisible();
+    case "guestBanner":
+      if (s.value) return expect(page.getByTestId(id("authGuestBanner"))).toBeVisible();
+      return expect(page.getByTestId(id("authGuestBanner"))).toBeHidden();
+    case "movePrompt":
+      if (s.text === null) return expect(page.getByTestId(id("authMovePrompt"))).toBeHidden();
+      return expect(page.getByTestId(id("authMovePrompt"))).toContainText(s.text!);
     case "overdue":
       if (s.value) return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeVisible();
       return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeHidden();
@@ -151,12 +222,14 @@ async function run(page: Page, step: Step) {
 test.describe("spec scenarios", () => {
   for (const scenario of scenarios) {
     if (scenario.status.web === "n/a") continue;
+    if (!!scenario.requires !== AUTH) continue;
     test(scenario.name, async ({ page }) => {
       await page.goto("/");
       await page.evaluate(() => localStorage.clear());
       await page.reload();
+      const ctx: Ctx = { emails: new Map() };
       for (const step of scenario.steps) {
-        await test.step(JSON.stringify(step), () => run(page, step));
+        await test.step(JSON.stringify(step), () => run(page, step, ctx));
       }
     });
   }

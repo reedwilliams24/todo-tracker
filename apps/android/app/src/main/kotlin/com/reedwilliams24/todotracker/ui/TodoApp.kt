@@ -113,7 +113,7 @@ import java.time.Instant
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun TodoApp(viewModel: TodoViewModel) {
+fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, banner: @Composable () -> Unit = {}) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val theme by viewModel.theme.collectAsStateWithLifecycle()
     var filter by rememberSaveable { mutableStateOf(TodoFilter.ALL) }
@@ -184,6 +184,8 @@ fun TodoApp(viewModel: TodoViewModel) {
                 }
                 ThemeToggle(theme, t, onSelect = viewModel::setTheme)
             }
+            account()
+            banner()
 
             val context = LocalContext.current
             val notificationPermission =
@@ -410,7 +412,7 @@ fun TodoApp(viewModel: TodoViewModel) {
 
 /** UI copy for the device's preferred locales (spec/features/localization.md). */
 @Composable
-private fun LinkText(label: String, tag: String, onClick: () -> Unit) {
+internal fun LinkText(label: String, tag: String, onClick: () -> Unit) {
     Text(
         label,
         fontSize = FontSize.sm,
@@ -420,7 +422,7 @@ private fun LinkText(label: String, tag: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ActionButton(
+internal fun ActionButton(
     label: String,
     tag: String,
     enabled: Boolean = true,
@@ -669,10 +671,10 @@ private fun EmptyText(text: String, modifier: Modifier) {
     )
 }
 
-@Composable private fun inputStyle() = TextStyle(fontSize = FontSize.base, color = Palette.foreground)
+@Composable internal fun inputStyle() = TextStyle(fontSize = FontSize.base, color = Palette.foreground)
 
 @Composable
-private fun Field(
+internal fun Field(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
