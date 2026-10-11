@@ -1,4 +1,5 @@
 import type { TodoDraft, TodoPriority } from "./types";
+import { isValidDueDate } from "./todos";
 import { cleanTitle, extractDueDate, extractPriority } from "./voice";
 
 export type QuickAddParse = {
@@ -33,7 +34,7 @@ function toIsoDate(date: Date): string {
 /**
  * Parses quick-add shorthand such as `call mom tomorrow 5pm #family !p1`
  * into a draft: `#tag` -> tags, `!p1`/`!high` -> priority, natural dates
- * (today, tomorrow, friday, next week, in 3 days, YYYY-MM-DD) -> dueDate.
+ * (today, tomorrow, friday, next week, in 3 days, a real YYYY-MM-DD) -> dueDate.
  * Times like `5pm` stay in the title since todos carry a date only.
  */
 export function parseQuickAdd(input: string, now: Date = new Date()): QuickAddParse {
@@ -59,7 +60,7 @@ export function parseQuickAdd(input: string, now: Date = new Date()): QuickAddPa
   let dueDate: string | undefined;
   const iso = ISO_DATE.exec(rest);
   const inDays = IN_DAYS.exec(rest);
-  if (iso) {
+  if (iso && isValidDueDate(iso[2])) {
     dueDate = iso[2];
     rest = rest.replace(ISO_DATE, " ");
   } else if (inDays) {

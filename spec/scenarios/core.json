@@ -74,6 +74,18 @@
       ]
     },
     {
+      "name": "quick-add-shorthand",
+      "steps": [
+        { "do": "type", "text": "Call mom 2030-01-15 #family !p1" },
+        { "expect": "quickAddPreview", "title": "Call mom" },
+        { "do": "submit" },
+        { "expect": "titles", "titles": ["Call mom"] },
+        { "expect": "priority", "title": "Call mom", "priority": "high" },
+        { "expect": "dueDate", "title": "Call mom", "dueDate": "2030-01-15" },
+        { "expect": "quickAddPreview", "title": null }
+      ]
+    },
+    {
       "name": "search",
       "platforms": ["web"],
       "steps": [

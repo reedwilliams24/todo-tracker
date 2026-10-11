@@ -6,6 +6,8 @@ export const TEST_IDS = {
   formPriorityOption: (priority: string) => `todo-form-priority-${priority}`,
   formDueDate: "todo-form-due-date",
   formSubmit: "todo-form-submit",
+  quickAddPreview: "todo-quick-add-preview",
+  quickAddPreviewTitle: "todo-quick-add-preview-title",
   search: "todo-search",
   searchClear: "todo-search-clear",
   filter: (filter: string) => `todo-filter-${filter}`,

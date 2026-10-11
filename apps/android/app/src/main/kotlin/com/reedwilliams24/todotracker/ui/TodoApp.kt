@@ -70,11 +70,13 @@ import com.reedwilliams24.todotracker.core.TodoFilter
 import com.reedwilliams24.todotracker.core.TodoPriority
 import com.reedwilliams24.todotracker.core.countRemaining
 import com.reedwilliams24.todotracker.core.filterTodos
+import com.reedwilliams24.todotracker.core.hasQuickAddMeta
 import com.reedwilliams24.todotracker.core.isValidDueDate
 import com.reedwilliams24.todotracker.core.isValidTitle
+import com.reedwilliams24.todotracker.core.parseQuickAdd
+import com.reedwilliams24.todotracker.core.quickAddToDraft
 import com.reedwilliams24.todotracker.core.remainingLabel
 import com.reedwilliams24.todotracker.core.sortTodos
-import com.reedwilliams24.todotracker.core.toTodoDraft
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -246,12 +248,13 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
+    val parsed = remember(title) { parseQuickAdd(title) }
     val dateOk = isValidDueDate(dueDate)
-    val canAdd = isValidTitle(title) && dateOk
+    val canAdd = isValidTitle(parsed.title) && dateOk
 
     fun submit() {
         if (!canAdd) return
-        onAdd(toTodoDraft(EMPTY_TODO_FORM.copy(title = title, priority = priority, dueDate = dueDate)))
+        onAdd(quickAddToDraft(parsed, priority, dueDate))
         title = EMPTY_TODO_FORM.title
         priority = EMPTY_TODO_FORM.priority
         dueDate = EMPTY_TODO_FORM.dueDate
@@ -269,7 +272,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
         Field(
             value = title,
             onValueChange = { title = it },
-            placeholder = "What needs doing?",
+            placeholder = "What needs doing? e.g. tomorrow !p1 #tag",
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { submit() }),
             modifier = Modifier
@@ -314,6 +317,30 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
                     .testTag(TestIds.formDueDate)
                     .padding(horizontal = Spacing.s2, vertical = Spacing.s1_5),
             )
+        }
+        if (hasQuickAddMeta(parsed)) {
+            Column(
+                Modifier
+                    .testTag(TestIds.quickAddPreview)
+                    .padding(horizontal = Spacing.s2),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s0_5),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                    Text("Will add:", fontSize = FontSize.xs, color = Palette.muted)
+                    Text(
+                        parsed.title.ifEmpty { "…" },
+                        fontSize = FontSize.xs,
+                        fontWeight = FontWeight.Medium,
+                        color = Palette.foreground,
+                        modifier = Modifier.testTag(TestIds.quickAddPreviewTitle),
+                    )
+                }
+                val meta = listOfNotNull(
+                    parsed.dueDate?.let { "Due $it" },
+                    parsed.priority?.let { "${it.key.replaceFirstChar(Char::uppercase)} priority" },
+                ) + parsed.tags.map { "#$it" }
+                if (meta.isNotEmpty()) Text(meta.joinToString("  ·  "), fontSize = FontSize.xs, color = Palette.muted)
+            }
         }
         Text(
             "Add",

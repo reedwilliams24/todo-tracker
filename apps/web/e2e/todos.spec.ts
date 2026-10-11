@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { TEST_IDS } from "../src/domain/test-ids";
 
 const STORAGE_KEY = "todo-tracker:todos:v1";
 
@@ -195,7 +196,7 @@ test("undo restores deleted and completed todos in their original position", asy
 test("quick-add shorthand previews and applies due date, priority", async ({ page }) => {
   const input = page.getByLabel("Todo title");
   await input.fill("call mom tomorrow #family !p1");
-  const preview = page.getByTestId("quick-add-preview");
+  const preview = page.getByTestId(TEST_IDS.quickAddPreview);
   await expect(preview).toContainText("Will add: call mom");
   await expect(preview).toContainText("Due 20");
   await expect(preview).toContainText("high priority");

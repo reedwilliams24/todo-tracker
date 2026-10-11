@@ -7,6 +7,8 @@ enum TestID {
     static func formPriorityOption(_ priority: TodoPriority) -> String { "todo-form-priority-\(priority.rawValue)" }
     static let formDueDate = "todo-form-due-date"
     static let formSubmit = "todo-form-submit"
+    static let quickAddPreview = "todo-quick-add-preview"
+    static let quickAddPreviewTitle = "todo-quick-add-preview-title"
     static func filter(_ filter: TodoFilter) -> String { "todo-filter-\(filter.rawValue)" }
     static let clearCompleted = "todo-clear-completed"
     static let list = "todo-list"
