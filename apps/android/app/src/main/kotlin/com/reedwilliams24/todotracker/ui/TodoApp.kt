@@ -56,10 +56,12 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -584,6 +586,34 @@ private fun Field(
 }
 
 @Composable
+private fun Field(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = inputStyle(),
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        textStyle = style,
+        cursorBrush = SolidColor(Palette.foreground),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        modifier = modifier,
+        decorationBox = { inner ->
+            Box {
+                if (value.text.isEmpty()) Text(placeholder, style = style.copy(color = Palette.muted))
+                inner()
+            }
+        },
+    )
+}
+
+@Composable
 private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
@@ -735,15 +765,19 @@ private fun TodoItem(
     var editing by remember { mutableStateOf(false) }
     // onFocusChanged reports "unfocused" when the editor first attaches; only a real blur commits.
     var editorFocused by remember { mutableStateOf(false) }
-    var draftTitle by remember(todo.title) { mutableStateOf(todo.title) }
+    var draft by remember(todo.title) { mutableStateOf(TextFieldValue(todo.title, TextRange(todo.title.length))) }
     val focus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val overdue = isOverdue(todo)
 
     fun commit() {
         if (!editing) return
-        if (isValidTitle(draftTitle) && draftTitle.trim() != todo.title) onRename(todo.id, draftTitle)
-        else draftTitle = todo.title
+        val title = draft.text
+        if (isValidTitle(title) && title.trim() != todo.title) {
+            onRename(todo.id, title)
+        } else {
+            draft = TextFieldValue(todo.title, TextRange(todo.title.length))
+        }
         editing = false
         editorFocused = false
     }
@@ -776,8 +810,8 @@ private fun TodoItem(
         if (editing) {
             LaunchedEffect(Unit) { focus.requestFocus() }
             Field(
-                value = draftTitle,
-                onValueChange = { draftTitle = it },
+                value = draft,
+                onValueChange = { draft = it },
                 placeholder = "",
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
