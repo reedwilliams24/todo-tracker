@@ -3,18 +3,25 @@ import TodoCore
 
 struct ContentView: View {
     @Bindable var model: TodoViewModel
+    @AppStorage(themeStorageKey) private var storedTheme = defaultTheme.rawValue
+
+    private var theme: ThemePreference { parseThemePreference(storedTheme) }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Todo Tracker")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundStyle(Theme.foreground)
-                        .accessibilityAddTraits(.isHeader)
-                    Text("A tiny local-first todo list.")
-                        .font(.system(size: 14))
-                        .foregroundStyle(Theme.muted)
+                HStack(alignment: .top, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Todo Tracker")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundStyle(Theme.foreground)
+                            .accessibilityAddTraits(.isHeader)
+                        Text("A tiny local-first todo list.")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.muted)
+                    }
+                    Spacer(minLength: 0)
+                    themePicker
                 }
                 TodoFormView(onAdd: model.add)
                 toolbar
@@ -45,6 +52,31 @@ struct ContentView: View {
         }
         .overlay(alignment: .bottom) { toast }
         .animation(.easeOut(duration: 0.15), value: model.undoLabel)
+        .preferredColorScheme(theme.colorScheme)
+    }
+
+    private var themePicker: some View {
+        HStack(spacing: 0) {
+            ForEach(themePreferences, id: \.self) { option in
+                let selected = theme == option
+                Button { storedTheme = option.rawValue } label: {
+                    Text(option.label)
+                        .font(.system(size: 12))
+                        .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(selected ? Theme.foreground : .clear)
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier(TestID.themeOption(option))
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Theme")
+        .accessibilityIdentifier(TestID.themeToggle)
     }
 
     private var toolbar: some View {

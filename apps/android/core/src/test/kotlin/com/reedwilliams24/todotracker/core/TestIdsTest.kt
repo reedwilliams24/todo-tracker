@@ -55,6 +55,8 @@ class TestIdsTest {
             "statsLongest" to TestIds.statsLongest,
             "statsToggle" to TestIds.statsToggle,
             "statsTotal" to TestIds.statsTotal,
+            "themeOption" to TestIds.themeOption("{theme}"),
+            "themeToggle" to TestIds.themeToggle,
             "undoAction" to TestIds.undoAction,
             "undoLabel" to TestIds.undoLabel,
             "undoToast" to TestIds.undoToast,

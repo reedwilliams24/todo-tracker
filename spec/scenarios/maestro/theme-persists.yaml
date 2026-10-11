@@ -1,0 +1,24 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: theme-persists
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- assertVisible:
+    id: "theme-option-system"
+    selected: true
+- tapOn:
+    id: "theme-option-dark"
+- assertVisible:
+    id: "theme-option-dark"
+    selected: true
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "theme-option-dark"
+    selected: true
+- tapOn:
+    id: "theme-option-light"
+- assertVisible:
+    id: "theme-option-light"
+    selected: true

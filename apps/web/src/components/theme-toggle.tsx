@@ -1,6 +1,6 @@
 "use client";
 
-import { THEME_LABELS, THEME_PREFERENCES, type ThemePreference } from "@/domain";
+import { TEST_IDS, THEME_LABELS, THEME_PREFERENCES, type ThemePreference } from "@/domain";
 import { useTheme } from "@/hooks/use-theme";
 
 export function ThemeToggle() {
@@ -10,6 +10,7 @@ export function ThemeToggle() {
     <div
       role="radiogroup"
       aria-label="Theme"
+      data-testid={TEST_IDS.themeToggle}
       className="flex rounded-lg border border-black/10 text-xs dark:border-white/15"
     >
       {THEME_PREFERENCES.map((option: ThemePreference) => {
@@ -20,6 +21,7 @@ export function ThemeToggle() {
             type="button"
             role="radio"
             aria-checked={selected}
+            data-testid={TEST_IDS.themeOption(option)}
             onClick={() => setPreference(option)}
             className={`px-2.5 py-1 first:rounded-l-lg last:rounded-r-lg ${
               selected ? "bg-foreground text-background" : "opacity-70 hover:opacity-100"
