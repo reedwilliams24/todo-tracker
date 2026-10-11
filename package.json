@@ -23,7 +23,8 @@
     "spec:record": "pnpm --filter @todo/spec record",
     "spec:generate": "pnpm --filter @todo/spec generate",
     "spec:check": "pnpm --filter @todo/spec record --check && pnpm --filter @todo/spec generate --check",
-    "spec:parity": "pnpm --filter @todo/spec parity"
+    "spec:parity": "pnpm --filter @todo/spec parity",
+    "supabase:auth-config": "node scripts/supabase-auth-config.mjs"
   },
   "devDependencies": {
     "prettier": "3.9.10",
