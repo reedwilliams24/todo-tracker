@@ -1,24 +1,88 @@
 package com.reedwilliams24.todotracker.ui
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reedwilliams24.todotracker.core.TodoPriority
 
-/** Tailwind scale tokens, matching apps/web; text colors meet WCAG AA (spec/features/accessibility.md). */
-object Palette {
-    val background = Color(0xFFF7F7F5)
-    val card = Color.White
-    val border = Color(0x1A000000)
-    val foreground = Color(0xFF171717)
-    val muted = Color(0xB3171717)
-    val danger = Color(0xFFDC2626)
+/**
+ * Tailwind scale tokens, matching apps/web; dark values mirror the web `.dark` palette. Text meets WCAG AA
+ * (spec/features/accessibility.md).
+ */
+@Immutable
+data class Colors(
+    val background: Color,
+    val card: Color,
+    val border: Color,
+    val foreground: Color,
+    val danger: Color,
+    val high: Color,
+    val medium: Color,
+    val low: Color,
+)
 
+val LightColors =
+    Colors(
+        background = Color(0xFFF7F7F5),
+        card = Color.White,
+        border = Color(0x1A000000),
+        foreground = Color(0xFF171717),
+        danger = Color(0xFFDC2626),
+        high = Color(0xFFB91C1C),
+        medium = Color(0xFF92400E),
+        low = Color(0xFF047857),
+    )
+
+val DarkColors =
+    Colors(
+        background = Color(0xFF0B0C0F),
+        card = Color(0xFF17181B),
+        border = Color(0x26FFFFFF),
+        foreground = Color(0xFFE9EAEE),
+        danger = Color(0xFFF87171),
+        high = Color(0xFFF87171),
+        medium = Color(0xFFFBBF24),
+        low = Color(0xFF34D399),
+    )
+
+val LocalColors = staticCompositionLocalOf { LightColors }
+
+@Composable
+fun TodoTheme(dark: Boolean, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalColors provides if (dark) DarkColors else LightColors, content = content)
+}
+
+object Palette {
+    val background: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.background
+
+    val card: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.card
+
+    val border: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.border
+
+    val foreground: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.foreground
+
+    val muted: Color
+        @Composable @ReadOnlyComposable get() = foreground.copy(alpha = 0.7f)
+
+    val danger: Color
+        @Composable @ReadOnlyComposable get() = LocalColors.current.danger
+
+    @Composable
+    @ReadOnlyComposable
     fun priority(priority: TodoPriority): Pair<Color, Color> =
         when (priority) {
-            TodoPriority.HIGH -> Color(0x26EF4444) to Color(0xFFB91C1C)
-            TodoPriority.MEDIUM -> Color(0x26F59E0B) to Color(0xFF92400E)
-            TodoPriority.LOW -> Color(0x2610B981) to Color(0xFF047857)
+            TodoPriority.HIGH -> Color(0x26EF4444) to LocalColors.current.high
+            TodoPriority.MEDIUM -> Color(0x26F59E0B) to LocalColors.current.medium
+            TodoPriority.LOW -> Color(0x2610B981) to LocalColors.current.low
         }
 }
 

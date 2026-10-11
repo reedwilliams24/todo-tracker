@@ -79,6 +79,7 @@ Actions (`do`):
 - `selectMode` (tap Select/Done)
 - `sort {sort}`
 - `submit`
+- `theme {theme}`
 - `toggle {title}`
 - `type {text}` (fills the add form's title without submitting)
 - `undo`
@@ -95,6 +96,7 @@ Assertions (`expect`):
 - `remaining {text}`
 - `selected {text}`
 - `stats {total, current, longest}` (the Stats panel's texts)
+- `theme {theme}` (that theme option is selected; web also checks the `dark` class on `<html>` for `light`/`dark`)
 - `titles {titles}` (web checks exact order; Maestro checks each is visible)
 - `undo {label | null}`
 

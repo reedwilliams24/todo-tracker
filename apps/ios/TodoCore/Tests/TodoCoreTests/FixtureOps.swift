@@ -31,6 +31,7 @@ enum FixtureOps {
             recurrenceOps,
             statsOps,
             storageOps,
+            themeOps,
             todoOps,
             undoOps,
             voiceOps,

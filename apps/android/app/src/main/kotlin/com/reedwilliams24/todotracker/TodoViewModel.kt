@@ -1,13 +1,17 @@
 package com.reedwilliams24.todotracker
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.reedwilliams24.todotracker.core.THEME_STORAGE_KEY
+import com.reedwilliams24.todotracker.core.ThemePreference
 import com.reedwilliams24.todotracker.core.TodoAction
 import com.reedwilliams24.todotracker.core.TodoDraft
 import com.reedwilliams24.todotracker.core.TodoState
 import com.reedwilliams24.todotracker.core.UNDO_TIMEOUT_MS
 import com.reedwilliams24.todotracker.core.addTodos
+import com.reedwilliams24.todotracker.core.parseThemePreference
 import com.reedwilliams24.todotracker.core.reduceTodos
 import com.reedwilliams24.todotracker.data.TodoDatabase
 import com.reedwilliams24.todotracker.data.TodoRepository
@@ -31,6 +35,16 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _ui = MutableStateFlow(TodoUiState())
     val ui: StateFlow<TodoUiState> = _ui.asStateFlow()
+
+    // Read synchronously so the first frame already uses the stored theme.
+    private val prefs = application.getSharedPreferences("todo-tracker", Context.MODE_PRIVATE)
+    private val _theme = MutableStateFlow(parseThemePreference(prefs.getString(THEME_STORAGE_KEY, null)))
+    val theme: StateFlow<ThemePreference> = _theme.asStateFlow()
+
+    fun setTheme(preference: ThemePreference) {
+        _theme.value = preference
+        prefs.edit().putString(THEME_STORAGE_KEY, preference.key).apply()
+    }
 
     init {
         viewModelScope.launch {

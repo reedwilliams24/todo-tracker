@@ -9,3 +9,4 @@ export * from "./test-ids";
 export * from "./recurrence";
 export * from "./quick-add";
 export * from "./stats";
+export * from "./theme";
