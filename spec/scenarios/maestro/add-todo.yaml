@@ -1,4 +1,4 @@
-# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+# Generated from spec/scenarios/core/add-todo.json by `pnpm spec:generate`. Do not edit.
 appId: ${APP_ID}
 name: add-todo
 tags:

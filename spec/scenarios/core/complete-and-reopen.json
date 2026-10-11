@@ -1,0 +1,14 @@
+{
+  "name": "complete-and-reopen",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "do": "add", "title": "Walk the dog" },
+    { "do": "toggle", "title": "Walk the dog" },
+    { "expect": "completed", "title": "Walk the dog", "value": true },
+    { "expect": "remaining", "text": "0 tasks remaining" },
+    { "expect": "undo", "label": "Completed todo" },
+    { "do": "toggle", "title": "Walk the dog" },
+    { "expect": "completed", "title": "Walk the dog", "value": false },
+    { "expect": "remaining", "text": "1 task remaining" }
+  ]
+}

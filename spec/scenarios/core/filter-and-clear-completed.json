@@ -1,0 +1,19 @@
+{
+  "name": "filter-and-clear-completed",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "do": "add", "title": "Buy milk" },
+    { "do": "add", "title": "Call mom" },
+    { "do": "toggle", "title": "Buy milk" },
+    { "do": "filter", "filter": "active" },
+    { "expect": "titles", "titles": ["Call mom"] },
+    { "do": "filter", "filter": "completed" },
+    { "expect": "titles", "titles": ["Buy milk"] },
+    { "do": "filter", "filter": "all" },
+    { "do": "clearCompleted" },
+    { "expect": "titles", "titles": ["Call mom"] },
+    { "expect": "undo", "label": "Deleted todo" },
+    { "do": "undo" },
+    { "expect": "titles", "titles": ["Call mom", "Buy milk"] }
+  ]
+}

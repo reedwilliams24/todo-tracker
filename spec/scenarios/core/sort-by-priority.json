@@ -1,0 +1,10 @@
+{
+  "name": "sort-by-priority",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "do": "add", "title": "Low one", "priority": "low" },
+    { "do": "add", "title": "Medium one" },
+    { "do": "add", "title": "High one", "priority": "high" },
+    { "expect": "titles", "titles": ["High one", "Medium one", "Low one"] }
+  ]
+}
