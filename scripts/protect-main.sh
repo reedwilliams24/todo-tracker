@@ -7,7 +7,7 @@
 #     [x] Restrict deletions
 #     [x] Block force pushes
 #     [x] Require status checks to pass
-#           checks: lint, typecheck, spec, build, unit-tests-web, unit-tests-android, unit-tests-ios, build-ios
+#           checks: ci   (the gate job in ci.yml; it needs every PR job, so never list jobs here)
 #           (e2e-tests-* run on main only and are NOT required)
 #           [ ] Require branches to be up to date before merging   (the queue does this)
 #     (Require merge queue is only offered to organization-owned repos; not available here.)

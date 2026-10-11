@@ -144,6 +144,17 @@ jobs:
             -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO
 
+  # The only check the main ruleset requires. Passes when every PR job above passed or was
+  # skipped by the path filter, so jobs can be added/renamed here without touching the ruleset.
+  ci:
+    needs: [lint, typecheck, spec, build, unit-tests-web, unit-tests-android, unit-tests-ios, build-ios]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | map(select(.value.result == "failure" or .value.result == "cancelled")) | length == 0' \
+            || { echo "::error::a required job failed or was cancelled"; exit 1; }
+
   # ---------------------------------------------------------------- e2e tests (push to main)
 
   e2e-tests-web:

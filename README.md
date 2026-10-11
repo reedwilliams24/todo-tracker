@@ -87,8 +87,6 @@ pnpm test
 pnpm build
 ```
 
-### Required CI checks
-
 ## CI
 
 `.github/workflows/ci.yml` runs two tiers:
@@ -100,14 +98,13 @@ pnpm build
 | E2E tests | `e2e-tests-web` (Playwright), `e2e-tests-android` (Maestro on an emulator), `e2e-tests-ios` (XCUITest + Maestro on the Simulator) | push to `main` (or `workflow_dispatch` with `e2e: true`) |
 
 Platform detection: files under `apps/<platform>` count for that platform only; everything
-else (`spec/`, `packages/`, root config, workflows) counts for all three. A skipped
-required job satisfies the ruleset, so platform-only PRs stay fast.
+else (`spec/`, `packages/`, root config, workflows) counts for all three.
 
-`main` is protected by a ruleset requiring `lint`, `typecheck`, `spec`, `build`,
-`unit-tests-web`, `unit-tests-android`, `unit-tests-ios` and `build-ios`, without
-"require branches to be up to date" (see `scripts/protect-main.sh` for the UI steps;
-rulesets can't be edited by the Devin app). E2E jobs are not required: they run after
-merge, and a failure on `main` is fixed in a follow-up PR.
+The `main` ruleset requires exactly one check, `ci`: a gate job that passes when every PR
+job passed or was skipped by the path filter. Jobs can be added, split or renamed in
+`ci.yml` without editing the ruleset (which the Devin app can't do; see
+`scripts/protect-main.sh` for the one-time UI steps). E2E jobs are not required: they run
+after merge, and a failure on `main` is fixed in a follow-up PR.
 
 ## Pull requests
 
