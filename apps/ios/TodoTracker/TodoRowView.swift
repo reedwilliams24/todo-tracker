@@ -69,7 +69,7 @@ struct TodoRowView: View {
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
                     .layoutPriority(1)
-                    .accessibilityLabel("Reminder \(reminder.label.lowercased())")
+                    .accessibilityHint("Reminder")
                     .accessibilityIdentifier(TestID.itemReminder(todo.title))
             }
 
