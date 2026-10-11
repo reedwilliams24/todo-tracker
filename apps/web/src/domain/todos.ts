@@ -152,9 +152,10 @@ export function sortByDue(todos: readonly Todo[]): Todo[] {
   });
 }
 
-export const SORTS: TodoSort[] = ["priority", "due"];
+export const SORTS: TodoSort[] = ["priority", "due", "manual"];
 
 export function sortTodos(todos: readonly Todo[], sort: TodoSort = "priority"): Todo[] {
+  if (sort === "manual") return [...todos];
   if (sort === "due") return sortByDue(todos);
   return sortByPriority(todos);
 }

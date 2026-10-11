@@ -46,3 +46,23 @@ public func bulkToggle(_ todos: [Todo], ids: [String], now: Date = Date()) -> [T
     let complete = selected.contains { !$0.completed }
     return todos.map { chosen.contains($0.id) && $0.completed != complete ? toggleTodo($0, now: now) : $0 }
 }
+
+/// Moves the todo at `fromIndex` to `toIndex`; out-of-range or equal indexes change nothing.
+public func reorderTodos(_ todos: [Todo], fromIndex: Int, toIndex: Int) -> [Todo] {
+    var next = todos
+    guard fromIndex != toIndex, next.indices.contains(fromIndex), next.indices.contains(toIndex) else { return next }
+    next.insert(next.remove(at: fromIndex), at: toIndex)
+    return next
+}
+
+/// Moves `id` into `targetId`'s slot within the displayed rows (`visibleIds`, in display order) and
+/// writes that order back into the slots the visible todos occupy; hidden todos stay put.
+public func moveVisibleTodo(_ todos: [Todo], visibleIds: [String], id: String, targetId: String) -> [Todo] {
+    guard let from = visibleIds.firstIndex(of: id), let to = visibleIds.firstIndex(of: targetId), from != to else {
+        return todos
+    }
+    let byId = Dictionary(todos.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    var ordered = reorderTodos(visibleIds.compactMap { byId[$0] }, fromIndex: from, toIndex: to).makeIterator()
+    let visible = Set(visibleIds)
+    return todos.map { visible.contains($0.id) ? ordered.next()! : $0 }
+}

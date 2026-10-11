@@ -12,7 +12,16 @@ struct TodoTrackerApp: App {
         self.container = container
         let store = SwiftDataTodoStore(context: container.mainContext)
         let reminders: ReminderScheduling? = inMemory ? nil : ReminderScheduler()
-        _model = State(initialValue: TodoViewModel(store: store, reminders: reminders))
+        let defaults = inMemory ? Self.uiTestingDefaults() : .standard
+        _model = State(initialValue: TodoViewModel(store: store, reminders: reminders, defaults: defaults))
+    }
+
+    /// UI tests start from a clean sort preference, like the in-memory store.
+    private static func uiTestingDefaults() -> UserDefaults {
+        let suite = "todo-tracker-ui-testing"
+        let defaults = UserDefaults(suiteName: suite) ?? .standard
+        defaults.removePersistentDomain(forName: suite)
+        return defaults
     }
 
     var body: some Scene {

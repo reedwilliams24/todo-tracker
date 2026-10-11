@@ -11,6 +11,7 @@ sealed interface TodoAction {
     data class ToggleMany(val ids: List<String>) : TodoAction
     data class Rename(val id: String, val title: String) : TodoAction
     data class Remove(val ids: List<String>) : TodoAction
+    data class Reorder(val visibleIds: List<String>, val id: String, val targetId: String) : TodoAction
     data object ClearCompleted : TodoAction
     data object Undo : TodoAction
     data object ExpireUndo : TodoAction
@@ -42,6 +43,10 @@ fun reduceTodos(state: TodoState, action: TodoAction, now: Instant = Instant.now
         is TodoAction.Remove -> {
             val next = removeFromList(todos, action.ids)
             if (next.size == todos.size) state else TodoState(next, snapshot(describeUndo(UndoKind.DELETE, action.ids.size)))
+        }
+        is TodoAction.Reorder -> {
+            val next = moveVisibleTodo(todos, action.visibleIds, action.id, action.targetId)
+            if (next == todos) state else state.copy(todos = next)
         }
         TodoAction.ClearCompleted -> {
             val next = clearCompletedInList(todos)

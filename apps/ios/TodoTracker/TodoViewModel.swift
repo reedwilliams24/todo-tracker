@@ -8,20 +8,25 @@ import TodoCore
 final class TodoViewModel {
     private(set) var state = TodoState.initial
     var filter: TodoFilter = .all
-    var sort: TodoSort = .priority
+    var sort: TodoSort {
+        didSet { defaults.set(sort.rawValue, forKey: sortStorageKey) }
+    }
     var selecting = false
     var selectedIds: Set<String> = []
     var confirmingDelete = false
 
     private let store: TodoStore
     private let reminders: ReminderScheduling?
+    private let defaults: UserDefaults
     private let now: () -> Date
     private var expiry: Task<Void, Never>?
 
-    init(store: TodoStore, reminders: ReminderScheduling? = nil, now: @escaping () -> Date = Date.init) {
+    init(store: TodoStore, reminders: ReminderScheduling? = nil, defaults: UserDefaults = .standard, now: @escaping () -> Date = Date.init) {
         self.store = store
         self.reminders = reminders
+        self.defaults = defaults
         self.now = now
+        sort = parseStoredSort(defaults.string(forKey: sortStorageKey))
         state = reduceTodos(state, .load(store.load()), now: now())
         reminders?.sync(state.todos)
     }
@@ -83,6 +88,12 @@ final class TodoViewModel {
         confirmingDelete = false
     }
     func undo() { dispatch(.undo) }
+
+    /// Drops `id` onto `targetId` within the shown rows and switches to manual sort so the new order shows.
+    func reorder(_ id: String, onto targetId: String) {
+        dispatch(.reorder(visibleIds: visibleTodos.map(\.id), id: id, targetId: targetId))
+        sort = .manual
+    }
 
     private func dispatch(_ action: TodoAction) {
         let previous = state

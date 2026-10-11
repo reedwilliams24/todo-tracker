@@ -29,7 +29,7 @@ public enum Recurrence: String, Codable, CaseIterable, Sendable {
 }
 
 public enum TodoSort: String, Codable, CaseIterable, Sendable {
-    case priority, due
+    case priority, due, manual
 }
 
 public struct Todo: Codable, Equatable, Hashable, Identifiable, Sendable {

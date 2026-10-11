@@ -53,6 +53,11 @@ export function useTodos(storage: TodoStorage) {
   const removeMany = useCallback((ids: string[]) => dispatch({ type: "remove", ids }), []);
   const clearCompleted = useCallback(() => dispatch({ type: "clearCompleted" }), []);
   const undo = useCallback(() => dispatch({ type: "undo" }), []);
+  const reorder = useCallback(
+    (visibleIds: readonly string[], id: string, targetId: string) =>
+      dispatch({ type: "reorder", visibleIds: [...visibleIds], id, targetId }),
+    [],
+  );
 
   return {
     todos,
@@ -67,5 +72,6 @@ export function useTodos(storage: TodoStorage) {
     clearCompleted,
     undoable,
     undo,
+    reorder,
   };
 }

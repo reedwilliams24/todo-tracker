@@ -27,5 +27,7 @@ import java.time.ZoneId
 /** `storage` ops; mirrors packages/spec/src/features/storage.ts. */
 internal val storageOps: Map<String, Op> = mapOf(
     "parseStoredTodos" to { g: JsonObject -> encode(parseStoredTodos((g["raw"] as? JsonPrimitive)?.takeIf { it.isString }?.content)) },
+    "parseStoredSort" to { g: JsonObject -> JsonPrimitive(parseStoredSort((g["raw"] as? JsonPrimitive)?.takeIf { it.isString }?.content).key) },
+    "sortStorageKey" to { _: JsonObject -> JsonPrimitive(SORT_STORAGE_KEY) },
     "serializeTodos" to { g: JsonObject -> Json.parseToJsonElement(serializeTodos(g.todos())) },
 )

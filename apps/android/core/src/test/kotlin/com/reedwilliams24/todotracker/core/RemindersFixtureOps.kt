@@ -37,15 +37,13 @@ internal val remindersOps: Map<String, Op> = mapOf(
     "reminderAt" to { g: JsonObject -> reminderAt(g.reminderTodo())?.let { JsonPrimitive(LOCAL_TIME.format(it)) } ?: JsonNull },
     "describeReminder" to { g: JsonObject -> JsonPrimitive(describeReminder(g.reminderTodo())) },
     "planReminders" to { g: JsonObject -> encodeReminders(planReminders(g.todos())) },
-    "dueReminders" to { g: JsonObject -> encodeReminders(dueReminders(g.todos(), g.strings("delivered"), g.local("now"))) },
-    "pruneDelivered" to { g: JsonObject -> JsonArray(pruneDelivered(g.strings("delivered"), g.todos()).sorted().map(::JsonPrimitive)) },
+    "dueReminders" to { g: JsonObject -> encodeReminders(dueReminders(g.todos(), g.strings("delivered").toSet(), g.local("now"))) },
+    "pruneDelivered" to { g: JsonObject -> JsonArray(pruneDelivered(g.strings("delivered").toSet(), g.todos()).sorted().map(::JsonPrimitive)) },
 )
 
 private val LOCAL_TIME = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
 
 private fun JsonObject.reminderTodo(): Todo = TodoJson.decodeFromJsonElement(Todo.serializer(), getValue("todo"))
-
-private fun JsonObject.strings(key: String): Set<String> = getValue(key).jsonArray.mapTo(LinkedHashSet()) { it.jsonPrimitive.content }
 
 private fun encodeReminders(reminders: List<Reminder>): JsonElement = JsonArray(reminders.map {
     buildJsonObject {
