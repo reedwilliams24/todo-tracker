@@ -2,6 +2,11 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "voice",
   "spec": "features/voice.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
     {
       "name": "extractPriority: high priority call the bank",

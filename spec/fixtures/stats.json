@@ -2,7 +2,20 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "stats",
   "spec": "features/stats.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
+    {
+      "name": "constants",
+      "op": "statsConstants",
+      "given": {},
+      "then": {
+        "statsDays": 30
+      }
+    },
     {
       "name": "computeStats: no todos",
       "op": "computeStats",

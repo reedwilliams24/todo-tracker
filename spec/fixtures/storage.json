@@ -2,6 +2,11 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "storage",
   "spec": "features/storage.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
     {
       "name": "parse valid list",

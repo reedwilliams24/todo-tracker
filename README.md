@@ -93,14 +93,15 @@ pnpm build
 
 | Tier | Jobs | When |
 | --- | --- | --- |
-| Fast checks | `lint`, `typecheck`, `spec`, `build` | every PR and push |
-| Unit tests | `unit-tests-web` (vitest + TS fixture runner), `unit-tests-android` (`:core:test` + debug APK + lint), `unit-tests-ios` (`swift test`), `build-ios` (compiles the SwiftUI app when it changes) | every PR, only for the platforms the PR touches |
+| Fast checks | `lint` (eslint, web + packages), `lint-android` (Android lint), `typecheck`, `spec` | every PR and push (`lint-android` when android files change) |
+| Unit tests | `unit-tests-web` (vitest + TS fixture runner), `unit-tests-android` (`:core:test`), `unit-tests-ios` (`swift test`) | every PR, only for the platforms the PR touches |
+| Builds | `build-web` (`next build`), `build-android` (debug APK), `build-ios` (Simulator build of the SwiftUI app, when the app target changes) | every PR, only for the platforms the PR touches |
 | E2E tests | `e2e-tests-web` (Playwright), `e2e-tests-android` (Maestro on an emulator), `e2e-tests-ios` (XCUITest + Maestro on the Simulator) | push to `main` (or `workflow_dispatch` with `e2e: true`) |
 
 Platform detection: files under `apps/<platform>` count for that platform only; everything
 else (`spec/`, `packages/`, root config, workflows) counts for all three.
 
-The `main` ruleset requires exactly one check, `ci`: a gate job that passes when every PR
+The `main` ruleset requires exactly one check, `Required CI Checks` (job `ci`): a gate job that passes when every PR
 job passed or was skipped by the path filter. Jobs can be added, split or renamed in
 `ci.yml` without editing the ruleset (which the Devin app can't do; see
 `scripts/protect-main.sh` for the one-time UI steps). E2E jobs are not required: they run

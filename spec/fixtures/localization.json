@@ -2,6 +2,11 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "localization",
   "spec": "features/localization.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
     {
       "name": "messages: the English catalog",

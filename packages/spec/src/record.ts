@@ -1,17 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { FEATURES } from "./cases";
+import { FEATURES } from "./features";
 import { runOp } from "./ops";
 import { FIXTURES_DIR, toJson } from "./paths";
 
-/** Renders spec/fixtures/<feature>.json from the case definitions and the current TS implementation. */
+/** Renders spec/fixtures/<feature>.json from features/<feature>.ts and the current TS implementation. */
 export function renderFixtures(): Map<string, string> {
   const files = new Map<string, string>();
   for (const feature of FEATURES) {
     const cases = feature.cases.map(({ name, op, given }) => ({ name, op, given, then: runOp(op, given) }));
     files.set(
       join(FIXTURES_DIR, `${feature.feature}.json`),
-      toJson({ $schema: "../schema/fixture.schema.json", feature: feature.feature, spec: feature.spec, cases }),
+      toJson({ $schema: "../schema/fixture.schema.json", feature: feature.feature, spec: feature.spec, status: feature.status, cases }),
     );
   }
   return files;

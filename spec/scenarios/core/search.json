@@ -1,0 +1,10 @@
+{
+  "name": "search",
+  "status": { "web": "pass", "ios": "n/a", "android": "n/a" },
+  "steps": [
+    { "do": "add", "title": "Buy milk" },
+    { "do": "add", "title": "Call mom" },
+    { "do": "search", "query": "milk" },
+    { "expect": "titles", "titles": ["Buy milk"] }
+  ]
+}

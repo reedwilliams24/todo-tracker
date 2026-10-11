@@ -22,7 +22,7 @@ pnpm test                 # web domain unit tests + the TS fixture runner (packa
 pnpm spec:check           # fixtures and generated files are up to date
 pnpm spec:parity          # web/iOS/Android parity matrix
 pnpm build
-pnpm --filter web e2e     # Playwright, incl. spec/scenarios/core.json
+pnpm --filter web e2e     # Playwright, incl. spec/scenarios/core/*.json
 (cd apps/android && ./gradlew :core:test :app:assembleDebug)  # Kotlin fixtures + APK
 ```
 
@@ -33,9 +33,10 @@ Mobile scenarios: `maestro test --include-tags spec -e APP_ID=… spec/scenarios
 ## Definition of done for a behavior change
 
 1. Update the rule in `spec/features/<feature>.md`.
-2. Add or change cases in `packages/spec/src/cases.ts`, change the code, and run `pnpm spec:record`. The diff in `spec/fixtures/` is the reviewable behavior change.
-3. For UI flows, add steps to `spec/scenarios/core.json`, put any new selectors in `spec/test-ids.json`, and run `pnpm spec:generate`. Use `TEST_IDS` in components; never hard-code test IDs.
-4. Every platform must pass the new fixtures and scenarios, or `spec/platforms.json` must mark it `missing` and link a follow-up ticket.
+2. Add or change cases in `packages/spec/src/features/<feature>.ts` (a new feature gets a new file there, with its own ops and `status`), change the code, and run `pnpm spec:record`. The diff in `spec/fixtures/` is the reviewable behavior change.
+3. For UI flows, add a scenario file in `spec/scenarios/core/`, put any new selectors in `spec/test-ids.json`, and run `pnpm spec:generate`. Use `TEST_IDS` in components; never hard-code test IDs.
+4. Every platform must pass the new fixtures and scenarios, or the feature's/scenario's `status` must mark it `missing` and the PR must link a follow-up ticket.
+   Native fixture ops go in their own file too: `apps/ios/TodoCore/Tests/TodoCoreTests/FixtureOps+<Feature>.swift` and `apps/android/core/src/test/kotlin/.../<Feature>FixtureOps.kt`, plus one line in the alphabetical registry. Keep shared lists (test IDs, step handlers, registries) one entry per line in alphabetical order so parallel PRs don't conflict; give a feature its own `<feature>Constants` op instead of adding to `constants`.
 5. All of the verify commands above pass.
 6. The PR includes Before/After media for each affected platform (`.github/pull_request_template.md`).
 
