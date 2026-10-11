@@ -26,8 +26,21 @@ The pure rules every client uses to keep its local list in step with the backend
    - **Ties go to the server**: an equal `updated_at` (against the local copy or the in-flight edit) takes the row.
 4. A winning row replaces the local todo in place, or is added at the top of the list if it is new (like a local add).
 5. The replaced todo keeps its device-local `reminder` as long as the row has a due date (a reminder needs one). If the row clears the due date, the reminder is dropped.
+6. Subtasks aren't a column yet, so the replaced todo also keeps its device-local `subtasks`.
 
 The echo of our own push (same `updated_at` and fields) therefore leaves the list unchanged.
+
+## Push (`planPush(before, after, tombstoned, userId, now)`)
+
+Every signed-in edit (`before` is the list before it, `after` the list the reducer produced) is pushed right away. `planPush` returns `{ todos, rows }`: the list to show and the rows to send.
+
+- A todo in `after` that isn't in `before` (an add) becomes a row.
+- A todo whose synced columns changed becomes a row. If its `updated_at` didn't move forward (an undo restored an older version), it is stamped `now` so it wins LWW on the server.
+- A change to `reminder` or `subtasks` alone, or a reorder, pushes nothing: those are device-local.
+- A todo in `before` that isn't in `after` becomes a tombstone with `deleted_at` = `updated_at` = `now`.
+- A todo that comes back after its tombstone was pushed (undo of a delete; its id is in `tombstoned`) gets a fresh `id` and `updated_at` = `now`, because a tombstone always wins.
+
+The client keeps the edit's todos as in-flight until the push answers. On success it applies the returned stored rows with `applyRemote(…, cursor: 0)` and leaves the cursor alone (rows from other devices may sit between the cursor and ours). On failure it calls `rollbackPush(current, before, rowIds)` and shows an error.
 
 ## Cursor (`advanceCursor(cursor, rows)`)
 

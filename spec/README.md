@@ -73,6 +73,7 @@ Actions (`do`):
 - `deleteSubtask {subtask}`
 - `expandSubtasks {title}`
 - `filter {filter}`
+- `forgetLocalTodos` (drop the signed-in account's local cache and cursor, keeping the session; the next load must come from the server)
 - `move {title, onto}` (drag a row onto another; web only, since Maestro can't long-press-drag)
 - `openStats`
 - `relaunch`

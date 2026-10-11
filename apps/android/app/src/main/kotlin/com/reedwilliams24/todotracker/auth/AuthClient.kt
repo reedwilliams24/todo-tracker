@@ -3,7 +3,9 @@ package com.reedwilliams24.todotracker.auth
 import android.content.Context
 import com.reedwilliams24.todotracker.BuildConfig
 import com.reedwilliams24.todotracker.core.AuthError
+import com.reedwilliams24.todotracker.core.SyncServer
 import com.reedwilliams24.todotracker.core.authErrorKind
+import com.reedwilliams24.todotracker.data.SupabaseSyncServer
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.OtpType
@@ -14,6 +16,7 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
+import io.github.jan.supabase.postgrest.Postgrest
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +35,9 @@ class AuthFailure(val kind: AuthError, cause: Throwable) : Exception(cause)
 interface AuthClient {
     /** Emits once the stored session is restored, then on every sign-in, sign-out and expiry. */
     val changes: Flow<AuthChange>
+
+    /** The todos backend, as the signed-in user. */
+    val sync: SyncServer
 
     suspend fun sendCode(email: String)
 
@@ -53,7 +59,9 @@ private class SupabaseAuthClient(context: Context) : AuthClient {
     private val client: SupabaseClient =
         createSupabaseClient(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY) {
             install(Auth) { sessionManager = EncryptedSessionManager(context) }
+            install(Postgrest)
         }
+    override val sync: SyncServer = SupabaseSyncServer(client)
     private var signingOut = false
 
     override val changes: Flow<AuthChange> =

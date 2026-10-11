@@ -148,6 +148,11 @@ export function MoveGuestTodosPrompt({ auth }: { auth: Auth }) {
         className={`${CARD} max-w-sm bg-background`}
       >
         <p className="font-medium">{t("auth.move.prompt", { count })}</p>
+        {auth.moveFailed && (
+          <p role="alert" data-testid={TEST_IDS.authMoveError} className="text-sm text-red-600 dark:text-red-400">
+            {t("auth.move.failed")}
+          </p>
+        )}
         <div className="flex justify-end gap-2">
           <button
             type="button"

@@ -221,6 +221,17 @@
         }
       }
     },
+    "auth.move.failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't move your todos. Check your connection and try again."
+          }
+        }
+      }
+    },
     "auth.move.move" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1427,6 +1438,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expand subtasks of \"%1$@\""
+          }
+        }
+      }
+    },
+    "sync.pushFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save your change. Check your connection and try again."
           }
         }
       }

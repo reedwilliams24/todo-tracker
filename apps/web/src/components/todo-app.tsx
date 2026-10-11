@@ -14,7 +14,7 @@ import {
   type TodoStorage,
 } from "@/domain";
 import { useT } from "@/hooks/use-t";
-import { useTodos } from "@/hooks/use-todos";
+import { useTodos, type SyncSetup } from "@/hooks/use-todos";
 import { useReminders } from "@/hooks/use-reminders";
 import { useSort } from "@/domain/react";
 import { localSortStorage } from "@/lib/storage";
@@ -25,7 +25,7 @@ import { StatsPanel } from "@/components/stats-panel";
 
 const FILTERS: TodoFilter[] = ["all", "active", "completed"];
 
-export function TodoApp({ storage }: { storage?: TodoStorage }) {
+export function TodoApp({ storage, sync }: { storage?: TodoStorage; sync?: SyncSetup | null }) {
   const {
     todos,
     hydrated,
@@ -43,7 +43,8 @@ export function TodoApp({ storage }: { storage?: TodoStorage }) {
     addSubtask,
     toggleSubtask,
     removeSubtask,
-  } = useTodos(storage);
+    pushFailed,
+  } = useTodos(storage, sync);
   const t = useT();
   const [sort, setSort] = useSort(localSortStorage);
   const [filter, setFilter] = useState<TodoFilter>("all");
@@ -342,6 +343,16 @@ export function TodoApp({ storage }: { storage?: TodoStorage }) {
           >
             {t("undo.action")}
           </button>
+        </div>
+      )}
+
+      {pushFailed && (
+        <div
+          role="alert"
+          data-testid={TEST_IDS.syncError}
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-xl bg-red-600 px-4 py-2 text-sm text-white shadow-lg"
+        >
+          {t("sync.pushFailed")}
         </div>
       )}
 

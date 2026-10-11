@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useState } from "react";
 import { addTodos } from "../list";
 import type { TodoStorage } from "../storage";
 import { INITIAL_TODO_STATE, reduceTodos, type TodoAction, type TodoState } from "../store";
-import type { TodoDraft } from "../types";
+import type { Todo, TodoDraft } from "../types";
 import { UNDO_TIMEOUT_MS } from "../undo";
 
 function reducer(state: TodoState, action: TodoAction): TodoState {
@@ -39,6 +39,9 @@ export function useTodos(storage: TodoStorage) {
     if (hydrated) void storage.save(todos);
   }, [storage, hydrated, todos]);
 
+  /** Swaps in a list computed elsewhere (sync), keeping the undo snapshot. */
+  const replace = useCallback((next: Todo[]) => dispatch({ type: "load", todos: next }), []);
+
   const addMany = useCallback((drafts: TodoDraft[]) => {
     const { created } = addTodos([], drafts);
     dispatch({ type: "prepend", todos: created });
@@ -71,6 +74,7 @@ export function useTodos(storage: TodoStorage) {
   return {
     todos,
     hydrated,
+    replace,
     addTodo,
     addMany,
     toggle,

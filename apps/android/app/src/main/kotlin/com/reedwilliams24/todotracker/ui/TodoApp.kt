@@ -375,6 +375,23 @@ fun TodoApp(viewModel: TodoViewModel, account: @Composable () -> Unit = {}, bann
             if (ui.hydrated) StatsPanel(todos, t)
         }
 
+        if (ui.pushFailed) {
+            Text(
+                t("sync.pushFailed"),
+                fontSize = FontSize.sm,
+                color = Palette.card,
+                modifier =
+                    Modifier.align(Alignment.BottomCenter)
+                        .imePadding()
+                        .padding(bottom = 72.dp, start = Spacing.s4, end = Spacing.s4)
+                        .clip(RoundedCornerShape(Radius.lg))
+                        .background(Palette.danger)
+                        .semantics { liveRegion = LiveRegionMode.Assertive }
+                        .testTag(TestIds.syncError)
+                        .padding(horizontal = Spacing.s4, vertical = Spacing.s2),
+            )
+        }
+
         ui.state.undoable?.let { entry ->
             Row(
                 Modifier.align(Alignment.BottomCenter)

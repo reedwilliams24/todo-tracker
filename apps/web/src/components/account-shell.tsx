@@ -5,10 +5,11 @@ import { AccountMenu, AuthBanner, MoveGuestTodosPrompt } from "@/components/acco
 import { AppHeader } from "@/components/app-header";
 import { TodoApp } from "@/components/todo-app";
 import { useAuth } from "@/hooks/use-auth";
-import { localGuestTodoMover } from "@/lib/account";
+import { serverGuestTodoMover } from "@/lib/account";
 import { createSupabaseAuthClient } from "@/lib/auth-client";
 import { accountTodoStorage, localTodoStorage } from "@/lib/storage";
 import { getSupabase, supabaseConfigured } from "@/lib/supabase";
+import { createSupabaseSyncServer } from "@/lib/sync-server";
 
 /** Header + list. Without Supabase config this is exactly the guest-only app. */
 export function AccountShell() {
@@ -24,20 +25,25 @@ export function AccountShell() {
 }
 
 function SignedInShell() {
-  const client = useMemo(() => {
-    const supabase = getSupabase();
-    return supabase ? createSupabaseAuthClient(supabase) : null;
-  }, []);
-  const auth = useAuth(client, localGuestTodoMover);
+  const supabase = useMemo(() => getSupabase(), []);
+  const client = useMemo(() => (supabase ? createSupabaseAuthClient(supabase) : null), [supabase]);
+  const server = useMemo(() => (supabase ? createSupabaseSyncServer(supabase) : null), [supabase]);
+  const mover = useMemo(() => serverGuestTodoMover(server!), [server]);
+  const auth = useAuth(client, mover);
   const { status, userId, movePrompt } = auth.state;
   const scope = status === "signedOut" || movePrompt !== null ? "guest" : `account:${userId}`;
+  const sessionUserId = auth.session?.userId ?? null;
+  const sync = useMemo(
+    () => (server && sessionUserId && scope !== "guest" ? { server, userId: sessionUserId } : null),
+    [server, sessionUserId, scope],
+  );
   return (
     <>
       <AppHeader account={<AccountMenu auth={auth} />} />
       {auth.ready && (
         <>
           <AuthBanner auth={auth} />
-          <TodoApp key={scope} storage={scope === "guest" ? localTodoStorage : accountTodoStorage} />
+          <TodoApp key={scope} storage={scope === "guest" ? localTodoStorage : accountTodoStorage} sync={sync} />
           <MoveGuestTodosPrompt auth={auth} />
         </>
       )}

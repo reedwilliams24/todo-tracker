@@ -117,6 +117,15 @@ async function run(page: Page, step: Step, ctx: Ctx) {
       return page.getByTestId(id("itemSubtasksToggle", s.title!)).click();
     case "filter":
       return page.getByTestId(id("filter", s.filter)).click();
+    case "forgetLocalTodos":
+      // Drop this device's account cache and cursor (not the session), so the list has to come from the server.
+      return page.evaluate(() => {
+        for (const key of Object.keys(localStorage)) {
+          if (key.startsWith("todo-tracker:account:") || key.startsWith("todo-tracker:sync-cursor:")) {
+            if (!key.endsWith(":owner")) localStorage.removeItem(key);
+          }
+        }
+      });
     case "move":
       return page.getByTestId(id("item", s.title!)).dragTo(page.getByTestId(id("item", s.onto!)));
     case "openStats":
