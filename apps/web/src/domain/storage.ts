@@ -4,7 +4,7 @@ export const STORAGE_KEY = "todo-tracker:todos:v1";
 
 export type MaybePromise<T> = T | Promise<T>;
 
-/** Platform storage for the todo list (localStorage on web, AsyncStorage on mobile). */
+/** Platform storage for the todo list (localStorage on web). */
 export type TodoStorage = {
   load(): MaybePromise<Todo[]>;
   save(todos: readonly Todo[]): MaybePromise<void>;
