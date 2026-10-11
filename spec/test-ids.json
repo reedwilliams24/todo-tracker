@@ -35,5 +35,10 @@
   "itemDelete": "todo-delete-{title}",
   "undoToast": "undo-toast",
   "undoLabel": "undo-toast-label",
-  "undoAction": "undo-toast-action"
+  "undoAction": "undo-toast-action",
+  "statsToggle": "stats-toggle",
+  "statsTotal": "stat-total",
+  "statsCurrent": "stat-current",
+  "statsLongest": "stat-longest",
+  "statsChart": "stats-chart"
 }

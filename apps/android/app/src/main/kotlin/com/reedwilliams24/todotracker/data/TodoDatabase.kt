@@ -1,6 +1,7 @@
 package com.reedwilliams24.todotracker.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -25,6 +26,7 @@ data class TodoEntity(
     val dueDate: String?,
     val createdAt: String,
     val updatedAt: String,
+    val completedAt: String? = null,
 ) {
     fun toTodo() = Todo(
         id = id,
@@ -35,6 +37,7 @@ data class TodoEntity(
         dueDate = dueDate,
         createdAt = createdAt,
         updatedAt = updatedAt,
+        completedAt = completedAt,
     )
 
     companion object {
@@ -48,6 +51,7 @@ data class TodoEntity(
             dueDate = todo.dueDate,
             createdAt = todo.createdAt,
             updatedAt = todo.updatedAt,
+            completedAt = todo.completedAt,
         )
     }
 }
@@ -70,7 +74,7 @@ interface TodoDao {
     }
 }
 
-@Database(entities = [TodoEntity::class], version = 1)
+@Database(entities = [TodoEntity::class], version = 2, autoMigrations = [AutoMigration(from = 1, to = 2)])
 abstract class TodoDatabase : RoomDatabase() {
     abstract fun todos(): TodoDao
 

@@ -8,6 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import com.reedwilliams24.todotracker.core.STATS_DAYS
+import com.reedwilliams24.todotracker.core.computeStats
+import java.time.Instant
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -250,6 +255,8 @@ fun TodoApp(viewModel: TodoViewModel) {
                     .semantics { liveRegion = LiveRegionMode.Polite }
                     .testTag(TestIds.remaining),
             )
+
+            if (ui.hydrated) StatsPanel(todos)
         }
 
         ui.state.undoable?.let { entry ->
@@ -413,6 +420,78 @@ private fun SelectableItem(todo: Todo, selection: Selection) {
                 .clip(CircleShape)
                 .background(badgeBg)
                 .padding(horizontal = Spacing.s2, vertical = Spacing.s0_5),
+        )
+    }
+}
+
+@Composable
+private fun StatsPanel(todos: List<Todo>) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    val stats = remember(todos) { computeStats(todos, Instant.now()) }
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.lg))
+            .border(1.dp, Palette.border, RoundedCornerShape(Radius.lg))
+            .background(Palette.card),
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clickable(role = Role.Button, onClickLabel = if (open) "Hide stats" else "Show stats") { open = !open }
+                .testTag(TestIds.statsToggle)
+                .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text("Stats", fontSize = FontSize.sm, fontWeight = FontWeight.Medium, color = Palette.foreground)
+            Text(if (open) "Hide" else "Show", fontSize = FontSize.xs, color = Palette.muted)
+        }
+        if (open) {
+            Column(
+                Modifier.padding(start = Spacing.s4, end = Spacing.s4, bottom = Spacing.s4),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+            ) {
+                Row(Modifier.fillMaxWidth()) {
+                    StatValue("Completed", stats.totalCompleted.toString(), TestIds.statsTotal, Modifier.weight(1f))
+                    StatValue("Current streak", "${stats.currentStreak}d", TestIds.statsCurrent, Modifier.weight(1f))
+                    StatValue("Longest streak", "${stats.longestStreak}d", TestIds.statsLongest, Modifier.weight(1f))
+                }
+                val max = maxOf(1, stats.perDay.maxOf { it.count })
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .semantics { contentDescription = "Completed per day, last $STATS_DAYS days" }
+                        .testTag(TestIds.statsChart),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    stats.perDay.forEach { day ->
+                        Box(
+                            Modifier
+                                .weight(1f)
+                                .fillMaxHeight(if (day.count == 0) 0.04f else day.count.toFloat() / max)
+                                .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
+                                .background(if (day.count == 0) Palette.border else Palette.foreground)
+                                .semantics { contentDescription = "${day.date}: ${day.count} completed" },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatValue(label: String, value: String, testId: String, modifier: Modifier) {
+    Column(modifier) {
+        Text(label, fontSize = FontSize.xs, color = Palette.muted)
+        Text(
+            value,
+            fontSize = FontSize.lg,
+            fontWeight = FontWeight.SemiBold,
+            color = Palette.foreground,
+            modifier = Modifier.testTag(testId),
         )
     }
 }

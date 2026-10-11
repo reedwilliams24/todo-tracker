@@ -3,6 +3,7 @@ import {
   bulkToggle,
   cleanTitle,
   clearCompletedInList,
+  computeStats,
   coerceDrafts,
   countCompleted,
   countRemaining,
@@ -32,6 +33,7 @@ import {
   sortByDue,
   sortByPriority,
   sortTodos,
+  STATS_DAYS,
   STORAGE_KEY,
   toDateKey,
   toggleTodo,
@@ -80,6 +82,7 @@ export const OPS: Record<string, (given: Given) => unknown> = {
     defaultPriority: DEFAULT_PRIORITY,
     priorityOrder: PRIORITY_ORDER,
     emptyForm: EMPTY_TODO_FORM,
+    statsDays: STATS_DAYS,
   }),
   isValidTitle: (g) => isValidTitle(g.title),
   isValidDueDate: (g) => isValidDueDate(g.value),
@@ -108,6 +111,7 @@ export const OPS: Record<string, (given: Given) => unknown> = {
     for (const step of g.steps as Step[]) state = applyStep(state, step);
     return { todos: state.todos, undoLabel: state.undoable?.label ?? null };
   },
+  computeStats: (g) => computeStats(g.todos, new Date(g.now), g.days ?? STATS_DAYS, g.timeZone),
   parseStoredTodos: (g) => parseStoredTodos(g.raw),
   serializeTodos: (g) => JSON.parse(serializeTodos(g.todos)),
   parseTranscript: (g) => parseTranscript(g.transcript, new Date(g.now)),

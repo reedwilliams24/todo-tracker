@@ -1,0 +1,46 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: stats
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Stretch"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Stretch"
+- tapOn:
+    id: "todo-toggle-Stretch"
+- scrollUntilVisible:
+    element:
+      id: "stats-toggle"
+- tapOn:
+    id: "stats-toggle"
+- assertVisible:
+    id: "stat-total"
+    text: "1"
+- assertVisible:
+    id: "stat-current"
+    text: "1d"
+- assertVisible:
+    id: "stat-longest"
+    text: "1d"
+- runFlow: relaunch.yaml
+- scrollUntilVisible:
+    element:
+      id: "stats-toggle"
+- tapOn:
+    id: "stats-toggle"
+- assertVisible:
+    id: "stat-total"
+    text: "1"
+- assertVisible:
+    id: "stat-current"
+    text: "1d"
+- assertVisible:
+    id: "stat-longest"
+    text: "1d"

@@ -200,7 +200,8 @@
             "priority": "high",
             "createdAt": "2026-01-01T09:00:00.000Z",
             "updatedAt": "2026-01-05T10:00:00.000Z",
-            "notes": "2% organic"
+            "notes": "2% organic",
+            "completedAt": "2026-01-05T10:00:00.000Z"
           },
           {
             "id": "b",
@@ -348,7 +349,8 @@
             "priority": "high",
             "createdAt": "2026-01-01T09:00:00.000Z",
             "updatedAt": "2026-01-05T10:00:00.000Z",
-            "notes": "2% organic"
+            "notes": "2% organic",
+            "completedAt": "2026-01-05T10:00:00.000Z"
           },
           {
             "id": "b",
@@ -365,7 +367,8 @@
             "priority": "low",
             "createdAt": "2026-01-03T09:00:00.000Z",
             "updatedAt": "2026-01-05T10:00:00.000Z",
-            "dueDate": "2026-01-06"
+            "dueDate": "2026-01-06",
+            "completedAt": "2026-01-05T10:00:00.000Z"
           }
         ],
         "undoLabel": "Completed 2 todos"
