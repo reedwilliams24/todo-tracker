@@ -243,3 +243,34 @@ test.describe("spec scenarios", () => {
     });
   }
 });
+
+test.describe("realtime", () => {
+  test.skip(!AUTH, "needs the local Supabase stack (pnpm e2e:auth)");
+
+  test("an add on one device appears on another without a reload", async ({ browser }) => {
+    const a = await browser.newContext();
+    const pageA = await a.newPage();
+    await pageA.goto("/");
+    const ctx: Ctx = { emails: new Map() };
+    await run(pageA, { do: "signIn", email: "realtime@example.com" }, ctx);
+    await expect(pageA.getByTestId(id("authAccount"))).toBeVisible();
+
+    // The second device is the same account in a separate browser context (its own tab, socket and cache).
+    const b = await browser.newContext({ storageState: await a.storageState() });
+    const pageB = await b.newPage();
+    await pageB.goto("/");
+    await expect(pageB.getByTestId(id("authAccount"))).toBeVisible();
+    await expect(pageB.getByTestId(id("empty"))).toBeVisible();
+    let reloads = 0;
+    pageB.on("load", () => reloads++);
+
+    await run(pageA, { do: "type", text: "Buy milk" }, ctx);
+    await run(pageA, { do: "submit" }, ctx);
+    await expect.poll(() => visibleTitles(pageA)).toEqual(["Buy milk"]);
+
+    await expect.poll(() => visibleTitles(pageB), { timeout: 10_000 }).toEqual(["Buy milk"]);
+    expect(reloads).toBe(0);
+    await a.close();
+    await b.close();
+  });
+});

@@ -9,6 +9,7 @@ import com.reedwilliams24.todotracker.core.AuthEvent
 import com.reedwilliams24.todotracker.core.AuthState
 import com.reedwilliams24.todotracker.core.AuthStatus
 import com.reedwilliams24.todotracker.core.INITIAL_AUTH_STATE
+import com.reedwilliams24.todotracker.core.RealtimeTransport
 import com.reedwilliams24.todotracker.core.SyncServer
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.guestToRows
@@ -47,6 +48,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     /** The todos backend; null in a guest-only build. */
     val syncServer: SyncServer? = client?.sync
+    val realtime: RealtimeTransport? = client?.realtime
     private val prefs = application.getSharedPreferences("todo-tracker", Context.MODE_PRIVATE)
     private var verifying = false
 

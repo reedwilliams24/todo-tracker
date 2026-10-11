@@ -24,6 +24,9 @@ final class TodoViewModel {
     private(set) var pushFailed = false
     private var sync: SyncEngine?
     private var syncUserId: String?
+    private var realtime: RealtimeConnection?
+    /// The live connection while the account list syncs over Realtime; nil for the guest list.
+    private(set) var connection: ConnectionState?
     private var pushFailedTimer: Task<Void, Never>?
 
     init(
@@ -47,15 +50,28 @@ final class TodoViewModel {
         reminders?.sync(state.todos)
     }
 
-    /// Signed in: syncs the shown (account) list with `server` as `userId`; nil stops syncing (spec/features/sync.md).
-    func useSync(_ server: (any SyncServer)?, userId: String?) {
+    /// Signed in: syncs the shown (account) list with `server` as `userId`, live over `realtime`; nil stops syncing
+    /// (spec/features/sync.md, spec/features/realtime.md).
+    func useSync(_ server: (any SyncServer)?, userId: String?, realtime transport: (any RealtimeTransport)? = nil) {
         let key = server == nil ? nil : userId
         guard key != syncUserId else { return }
+        realtime?.disconnect()
         sync?.close()
         syncUserId = key
         guard let server, let userId = key else {
             sync = nil
+            realtime = nil
+            connection = nil
             return
+        }
+        if let transport {
+            let live = RealtimeConnection(transport: transport)
+            live.onStateChange = { [weak self] in self?.connection = $0 }
+            realtime = live
+            connection = live.state
+        } else {
+            realtime = nil
+            connection = nil
         }
         let defaults = defaults
         sync = SyncEngine(
@@ -65,7 +81,20 @@ final class TodoViewModel {
             current: { [weak self] in self?.state.todos ?? [] },
             replace: { [weak self] in self?.replaceTodos($0) },
             onPushFailed: { [weak self] in self?.showPushFailed() }, now: now)
-        pull()
+        resume()
+    }
+
+    /// Foreground (`scenePhase` `.active`): reconnects, which pulls, when the list is live; else just pulls.
+    func resume() {
+        guard let realtime, let sync, let userId = syncUserId else { return pull() }
+        realtime.connect(
+            RealtimeTarget(
+                userId: userId, pull: { try await sync.pull() }, applyRemote: { sync.applyRemote($0) }))
+    }
+
+    /// Background (`scenePhase` `.background`): closes the Realtime socket.
+    func suspend() {
+        realtime?.disconnect()
     }
 
     /// Pulls the account list's changes since the cursor; no-op while signed out.
