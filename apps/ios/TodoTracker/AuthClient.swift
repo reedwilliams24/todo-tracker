@@ -21,13 +21,13 @@ struct AuthFailure: Error {
 
 /// Email-code sign-in and the persisted session (supabase-swift keeps it in the Keychain).
 protocol AuthClient: Sendable {
+    /// The todos backend, as the signed-in user.
+    var sync: any SyncServer { get }
     /// Emits the restored session first, then every sign-in, sign-out and expiry.
     func changes() -> AsyncStream<AuthChange>
     func sendCode(email: String) async throws
     func verifyCode(email: String, code: String) async throws -> AuthSession
     func signOut() async
-    /// The todos backend, as the signed-in user.
-    var sync: any SyncServer { get }
 }
 
 enum SupabaseConfig {
