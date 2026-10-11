@@ -8,6 +8,8 @@ enum TestID {
     static let formDueDate = "todo-form-due-date"
     static let formSubmit = "todo-form-submit"
     static func filter(_ filter: TodoFilter) -> String { "todo-filter-\(filter.rawValue)" }
+    static let sort = "todo-sort"
+    static func sortOption(_ sort: TodoSort) -> String { "todo-sort-\(sort.rawValue)" }
     static let clearCompleted = "todo-clear-completed"
     static let list = "todo-list"
     static let empty = "todo-empty"
@@ -17,6 +19,7 @@ enum TestID {
     static func itemTitle(_ title: String) -> String { "todo-title-\(title)" }
     static let itemEditInput = "todo-edit-input"
     static func itemDueDate(_ title: String) -> String { "todo-due-\(title)" }
+    static func itemOverdue(_ title: String) -> String { "todo-overdue-\(title)" }
     static func itemPriority(_ title: String) -> String { "todo-priority-\(title)" }
     static func itemDelete(_ title: String) -> String { "todo-delete-\(title)" }
     static let undoToast = "undo-toast"

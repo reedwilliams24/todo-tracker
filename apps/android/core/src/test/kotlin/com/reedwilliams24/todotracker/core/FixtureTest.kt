@@ -100,6 +100,12 @@ private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
     "filterTodos" -> encode(filterTodos(g.todos(), TodoFilter.fromKey(g.str("filter"))))
     "searchTodos" -> encode(searchTodos(g.todos(), g.str("query")))
     "sortByPriority" -> encode(sortByPriority(g.todos()))
+    "sortByDue" -> encode(sortByDue(g.todos()))
+    "sortTodos" -> encode(sortTodos(g.todos(), g["sort"]?.jsonPrimitive?.content?.let(TodoSort::fromKey) ?: TodoSort.PRIORITY))
+    "isOverdue" -> JsonPrimitive(
+        isOverdue(TodoJson.decodeFromJsonElement(Todo.serializer(), g.getValue("todo")), g.local("now")),
+    )
+    "toDateKey" -> JsonPrimitive(toDateKey(g.local("now")))
     "countRemaining" -> JsonPrimitive(countRemaining(g.todos()))
     "addTodos" -> addTodos(g.todos(), g.drafts("drafts"), g.instant("now")).let {
         buildJsonObject {
