@@ -61,8 +61,11 @@ struct TodoRowView: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
                             .background(Theme.foreground.opacity(0.05), in: Capsule())
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
                     }
                 }
+                .layoutPriority(1)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(tags.map { "#\($0)" }.joined(separator: " "))
                 .accessibilityIdentifier(TestID.itemTags(todo.title))
@@ -82,6 +85,9 @@ struct TodoRowView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
                 .background(colors.bg, in: Capsule())
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+                .layoutPriority(1)
                 .accessibilityIdentifier(TestID.itemPriority(todo.title))
 
             Button(action: onRemove) {
