@@ -17,6 +17,8 @@ data class TodoRow(
     @SerialName("due_date") val dueDate: String? = null,
     val recurrence: Recurrence? = null,
     @SerialName("completed_at") val completedAt: String? = null,
+    /** The checklist (REED-10), in order; null when the todo has none. */
+    val subtasks: List<Subtask>? = null,
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String,
     /** Tombstone: set when the todo was deleted. */
@@ -42,6 +44,7 @@ val SYNC_COLUMNS: List<String> =
         "due_date",
         "recurrence",
         "completed_at",
+        "subtasks",
         "created_at",
         "updated_at",
         "deleted_at",
@@ -60,6 +63,7 @@ fun toRow(todo: Todo, userId: String, deletedAt: Instant? = null): TodoRow =
         dueDate = todo.dueDate,
         recurrence = todo.recurrence,
         completedAt = todo.completedAt,
+        subtasks = todo.subtasks?.takeIf { it.isNotEmpty() },
         createdAt = todo.createdAt,
         updatedAt = todo.updatedAt,
         deletedAt = deletedAt?.let(::timestamp),
@@ -78,6 +82,7 @@ fun fromRow(row: TodoRow): Todo =
         createdAt = row.createdAt,
         updatedAt = row.updatedAt,
         completedAt = row.completedAt,
+        subtasks = row.subtasks?.takeIf { it.isNotEmpty() },
     )
 
 /**
@@ -102,7 +107,6 @@ fun applyRemote(local: List<Todo>, inFlight: List<Todo>, rows: List<TodoRow>, cu
         if (current != null && current.updatedAt > row.updatedAt) continue
         var incoming = fromRow(row)
         if (current?.reminder != null && incoming.dueDate != null) incoming = incoming.copy(reminder = current.reminder)
-        if (current?.subtasks != null) incoming = incoming.copy(subtasks = current.subtasks)
         if (index >= 0) todos[index] = incoming else todos.add(0, incoming)
     }
     return todos

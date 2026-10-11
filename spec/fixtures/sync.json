@@ -23,6 +23,7 @@
           "due_date",
           "recurrence",
           "completed_at",
+          "subtasks",
           "created_at",
           "updated_at",
           "deleted_at",
@@ -45,7 +46,19 @@
           "dueDate": "2026-02-01",
           "reminder": "1d",
           "recurrence": "monthly",
-          "completedAt": "2026-01-05T10:00:00.000Z"
+          "completedAt": "2026-01-05T10:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Transfer money",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Email receipt",
+              "completed": true
+            }
+          ]
         },
         "userId": "6a1f1c2e-0000-4000-8000-000000000001"
       },
@@ -60,6 +73,18 @@
           "due_date": "2026-02-01",
           "recurrence": "monthly",
           "completed_at": "2026-01-05T10:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Transfer money",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Email receipt",
+              "completed": true
+            }
+          ],
           "created_at": "2026-01-05T09:00:00.000Z",
           "updated_at": "2026-01-05T10:00:00.000Z"
         },
@@ -99,7 +124,8 @@
           "due_date",
           "notes",
           "recurrence",
-          "server_seq"
+          "server_seq",
+          "subtasks"
         ]
       }
     },
@@ -134,7 +160,8 @@
           "due_date",
           "notes",
           "recurrence",
-          "server_seq"
+          "server_seq",
+          "subtasks"
         ]
       }
     },
@@ -152,6 +179,18 @@
           "due_date": "2026-02-01",
           "recurrence": "monthly",
           "completed_at": "2026-01-05T10:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Transfer money",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Email receipt",
+              "completed": false
+            }
+          ],
           "created_at": "2026-01-05T09:00:00.000Z",
           "updated_at": "2026-01-05T10:00:00.000Z",
           "deleted_at": null,
@@ -168,7 +207,19 @@
         "notes": "Before the 5th",
         "dueDate": "2026-02-01",
         "recurrence": "monthly",
-        "completedAt": "2026-01-05T10:00:00.000Z"
+        "completedAt": "2026-01-05T10:00:00.000Z",
+        "subtasks": [
+          {
+            "id": "s1",
+            "title": "Transfer money",
+            "completed": true
+          },
+          {
+            "id": "s2",
+            "title": "Email receipt",
+            "completed": false
+          }
+        ]
       }
     },
     {
@@ -185,6 +236,73 @@
           "due_date": null,
           "recurrence": null,
           "completed_at": null,
+          "subtasks": null,
+          "created_at": "2026-01-05T09:00:00.000Z",
+          "updated_at": "2026-01-05T09:00:00.000Z",
+          "deleted_at": null,
+          "server_seq": 6
+        }
+      },
+      "then": {
+        "id": "a",
+        "title": "Todo a",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "toRow: an empty checklist becomes null",
+      "op": "toRow",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "subtasks": []
+        },
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001"
+      },
+      "then": {
+        "row": {
+          "id": "a",
+          "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "created_at": "2026-01-05T09:00:00.000Z",
+          "updated_at": "2026-01-05T09:00:00.000Z"
+        },
+        "nulls": [
+          "completed_at",
+          "deleted_at",
+          "due_date",
+          "notes",
+          "recurrence",
+          "server_seq",
+          "subtasks"
+        ]
+      }
+    },
+    {
+      "name": "fromRow: an empty checklist is left out",
+      "op": "fromRow",
+      "given": {
+        "row": {
+          "id": "a",
+          "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+          "title": "Todo a",
+          "notes": null,
+          "completed": false,
+          "priority": "medium",
+          "due_date": null,
+          "recurrence": null,
+          "completed_at": null,
+          "subtasks": [],
           "created_at": "2026-01-05T09:00:00.000Z",
           "updated_at": "2026-01-05T09:00:00.000Z",
           "deleted_at": null,
@@ -243,6 +361,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T11:00:00.000Z",
             "deleted_at": null,
@@ -328,6 +447,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T11:00:00.000Z",
             "deleted_at": null,
@@ -405,6 +525,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": null,
@@ -482,6 +603,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": null,
@@ -559,6 +681,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": "2026-01-05T10:00:00.000Z",
@@ -628,6 +751,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": "2026-01-05T09:00:00.000Z",
@@ -690,6 +814,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": "2026-01-05T10:00:00.000Z",
@@ -742,6 +867,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": "2026-01-05T10:00:00.000Z",
@@ -819,6 +945,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T11:00:00.000Z",
             "deleted_at": null,
@@ -834,6 +961,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T11:00:00.000Z",
             "deleted_at": "2026-01-05T11:00:00.000Z",
@@ -849,6 +977,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T11:00:00.000Z",
             "deleted_at": null,
@@ -926,6 +1055,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T11:00:00.000Z",
             "deleted_at": null,
@@ -995,6 +1125,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": null,
@@ -1057,6 +1188,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": null,
@@ -1111,6 +1243,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T11:00:00.000Z",
             "deleted_at": null,
@@ -1165,6 +1298,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": null,
@@ -1210,6 +1344,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": null,
@@ -1225,6 +1360,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T11:00:00.000Z",
             "deleted_at": null,
@@ -1272,6 +1408,7 @@
             "due_date": "2026-02-02",
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": null,
@@ -1321,6 +1458,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": null,
@@ -1340,7 +1478,7 @@
       ]
     },
     {
-      "name": "applyRemote: keeps the device's subtasks (they aren't synced)",
+      "name": "applyRemote: subtasks: a newer row replaces the checklist",
       "op": "applyRemote",
       "given": {
         "inFlight": [],
@@ -1352,11 +1490,11 @@
             "completed": false,
             "priority": "medium",
             "createdAt": "2026-01-05T09:00:00.000Z",
-            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
             "subtasks": [
               {
                 "id": "s1",
-                "title": "Step",
+                "title": "Milk",
                 "completed": false
               }
             ]
@@ -1366,13 +1504,101 @@
           {
             "id": "a",
             "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
-            "title": "Renamed",
+            "title": "Todo a",
             "notes": null,
             "completed": false,
             "priority": "medium",
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Eggs",
+                "completed": false
+              }
+            ],
+            "created_at": "2026-01-05T09:00:00.000Z",
+            "updated_at": "2026-01-05T11:00:00.000Z",
+            "deleted_at": null,
+            "server_seq": 6
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T11:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Milk",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Eggs",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "applyRemote: subtasks: an older row keeps the local checklist",
+      "op": "applyRemote",
+      "given": {
+        "inFlight": [],
+        "cursor": 5,
+        "local": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Eggs",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "id": "a",
+            "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+            "title": "Todo a",
+            "notes": null,
+            "completed": false,
+            "priority": "medium",
+            "due_date": null,
+            "recurrence": null,
+            "completed_at": null,
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": false
+              }
+            ],
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T10:00:00.000Z",
             "deleted_at": null,
@@ -1383,18 +1609,161 @@
       "then": [
         {
           "id": "a",
-          "title": "Renamed",
+          "title": "Todo a",
           "completed": false,
           "priority": "medium",
           "createdAt": "2026-01-05T09:00:00.000Z",
-          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "updatedAt": "2026-01-05T11:00:00.000Z",
           "subtasks": [
             {
               "id": "s1",
-              "title": "Step",
+              "title": "Milk",
+              "completed": true
+            },
+            {
+              "id": "s2",
+              "title": "Eggs",
               "completed": false
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "applyRemote: subtasks: a newer row without subtasks clears the checklist",
+      "op": "applyRemote",
+      "given": {
+        "inFlight": [],
+        "cursor": 5,
+        "local": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "id": "a",
+            "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+            "title": "Todo a",
+            "notes": null,
+            "completed": false,
+            "priority": "medium",
+            "due_date": null,
+            "recurrence": null,
+            "completed_at": null,
+            "subtasks": null,
+            "created_at": "2026-01-05T09:00:00.000Z",
+            "updated_at": "2026-01-05T11:00:00.000Z",
+            "deleted_at": null,
+            "server_seq": 6
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T11:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "applyRemote: subtasks: a newer in-flight toggle is kept",
+      "op": "applyRemote",
+      "given": {
+        "inFlight": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": true
+              }
+            ],
+            "completedAt": "2026-01-05T11:00:00.000Z"
+          }
+        ],
+        "cursor": 5,
+        "local": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T11:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": true
+              }
+            ],
+            "completedAt": "2026-01-05T11:00:00.000Z"
+          }
+        ],
+        "rows": [
+          {
+            "id": "a",
+            "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+            "title": "Todo a",
+            "notes": null,
+            "completed": false,
+            "priority": "medium",
+            "due_date": null,
+            "recurrence": null,
+            "completed_at": null,
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": false
+              }
+            ],
+            "created_at": "2026-01-05T09:00:00.000Z",
+            "updated_at": "2026-01-05T10:00:00.000Z",
+            "deleted_at": null,
+            "server_seq": 6
+          }
+        ]
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Todo a",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T11:00:00.000Z",
+          "subtasks": [
+            {
+              "id": "s1",
+              "title": "Milk",
+              "completed": true
+            }
+          ],
+          "completedAt": "2026-01-05T11:00:00.000Z"
         }
       ]
     },
@@ -1416,6 +1785,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": null,
@@ -1431,6 +1801,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": null,
@@ -1446,6 +1817,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": "2026-01-05T10:00:00.000Z",
@@ -1488,6 +1860,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": null,
@@ -1503,6 +1876,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": null,
@@ -1528,6 +1902,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": null,
@@ -1562,6 +1937,7 @@
             "due_date": null,
             "recurrence": null,
             "completed_at": null,
+            "subtasks": null,
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-05T09:00:00.000Z",
             "deleted_at": null,
@@ -1918,7 +2294,19 @@
             "dueDate": "2026-02-01",
             "reminder": "1d",
             "recurrence": "monthly",
-            "completedAt": "2026-01-05T10:00:00.000Z"
+            "completedAt": "2026-01-05T10:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Transfer money",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Email receipt",
+                "completed": true
+              }
+            ]
           },
           {
             "id": "b",
@@ -1944,6 +2332,18 @@
             "due_date": "2026-02-01",
             "recurrence": "monthly",
             "completed_at": "2026-01-05T10:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Transfer money",
+                "completed": true
+              },
+              {
+                "id": "s2",
+                "title": "Email receipt",
+                "completed": true
+              }
+            ],
             "created_at": "2026-01-05T09:00:00.000Z",
             "updated_at": "2026-01-06T12:00:00.000Z"
           },
@@ -1968,7 +2368,8 @@
             "due_date",
             "notes",
             "recurrence",
-            "server_seq"
+            "server_seq",
+            "subtasks"
           ]
         }
       ]
@@ -2015,7 +2416,8 @@
             "due_date",
             "notes",
             "recurrence",
-            "server_seq"
+            "server_seq",
+            "subtasks"
           ]
         },
         {
@@ -2034,7 +2436,8 @@
             "due_date",
             "notes",
             "recurrence",
-            "server_seq"
+            "server_seq",
+            "subtasks"
           ]
         }
       ]
@@ -2169,7 +2572,8 @@
               "due_date",
               "notes",
               "recurrence",
-              "server_seq"
+              "server_seq",
+              "subtasks"
             ]
           }
         ]
@@ -2279,7 +2683,8 @@
               "due_date",
               "notes",
               "recurrence",
-              "server_seq"
+              "server_seq",
+              "subtasks"
             ]
           }
         ]
@@ -2373,7 +2778,8 @@
               "due_date",
               "notes",
               "recurrence",
-              "server_seq"
+              "server_seq",
+              "subtasks"
             ]
           }
         ]
@@ -2470,7 +2876,7 @@
       }
     },
     {
-      "name": "planPush: a reminder or subtask change alone pushes nothing",
+      "name": "planPush: a reminder change alone pushes nothing",
       "op": "planPush",
       "given": {
         "tombstoned": [],
@@ -2496,11 +2902,152 @@
             "createdAt": "2026-01-05T09:00:00.000Z",
             "updatedAt": "2026-01-05T09:00:00.000Z",
             "dueDate": "2026-02-01",
-            "reminder": "1h",
+            "reminder": "1h"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-02-01",
+            "reminder": "1h"
+          }
+        ],
+        "rows": []
+      }
+    },
+    {
+      "name": "planPush: subtasks: a checklist change is stamped now and pushed",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
             "subtasks": [
               {
                 "id": "s1",
-                "title": "Step",
+                "title": "Milk",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": true
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-06T12:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": true
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "row": {
+              "id": "a",
+              "user_id": "6a1f1c2e-0000-4000-8000-000000000001",
+              "title": "Todo a",
+              "completed": false,
+              "priority": "medium",
+              "subtasks": [
+                {
+                  "id": "s1",
+                  "title": "Milk",
+                  "completed": true
+                }
+              ],
+              "created_at": "2026-01-05T09:00:00.000Z",
+              "updated_at": "2026-01-06T12:00:00.000Z"
+            },
+            "nulls": [
+              "completed_at",
+              "deleted_at",
+              "due_date",
+              "notes",
+              "recurrence",
+              "server_seq"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "planPush: subtasks: an equal checklist pushes nothing",
+      "op": "planPush",
+      "given": {
+        "tombstoned": [],
+        "userId": "6a1f1c2e-0000-4000-8000-000000000001",
+        "now": "2026-01-06T12:00:00.000Z",
+        "before": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
+                "completed": false
+              }
+            ]
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "title": "Todo a",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "subtasks": [
+              {
+                "id": "s1",
+                "title": "Milk",
                 "completed": false
               }
             ]
@@ -2516,12 +3063,10 @@
             "priority": "medium",
             "createdAt": "2026-01-05T09:00:00.000Z",
             "updatedAt": "2026-01-05T09:00:00.000Z",
-            "dueDate": "2026-02-01",
-            "reminder": "1h",
             "subtasks": [
               {
                 "id": "s1",
-                "title": "Step",
+                "title": "Milk",
                 "completed": false
               }
             ]
@@ -2586,7 +3131,8 @@
               "due_date",
               "notes",
               "recurrence",
-              "server_seq"
+              "server_seq",
+              "subtasks"
             ]
           }
         ]
@@ -2666,7 +3212,8 @@
               "due_date",
               "notes",
               "recurrence",
-              "server_seq"
+              "server_seq",
+              "subtasks"
             ]
           }
         ]
@@ -2744,7 +3291,8 @@
               "due_date",
               "notes",
               "recurrence",
-              "server_seq"
+              "server_seq",
+              "subtasks"
             ]
           }
         ]
