@@ -47,6 +47,7 @@ struct TodoFormView: View {
             .buttonStyle(UndimmedButtonStyle())
             .disabled(!canAdd)
             .opacity(canAdd ? 1 : 0.4)
+            .accessibilityLabel("Add todo")
             .accessibilityIdentifier(TestID.formSubmit)
         }
         .padding(12)

@@ -44,13 +44,14 @@ struct TodoRowView: View {
                         .font(.system(size: 16))
                         .foregroundStyle(Theme.foreground)
                         .strikethrough(todo.completed)
-                        .opacity(todo.completed ? 0.5 : 1)
+                        .opacity(todo.completed ? 0.7 : 1)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Edit \"\(todo.title)\"")
+                .accessibilityHint("Opens the title for editing")
                 .accessibilityIdentifier(TestID.itemTitle(todo.title))
             }
 
