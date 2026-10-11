@@ -1,5 +1,5 @@
 {
-  "$comment": "Shared test-ID registry. Source of truth for UI selectors on every platform: web uses data-testid, React Native testID, SwiftUI accessibilityIdentifier, Compose testTag. `{title}` placeholders are filled with the todo's title. Regenerate platform code with `pnpm spec:generate`.",
+  "$comment": "Shared test-ID registry. Source of truth for UI selectors on every platform: web uses data-testid, SwiftUI accessibilityIdentifier, Compose testTag. `{title}` placeholders are filled with the todo's title. Regenerate platform code with `pnpm spec:generate`.",
   "bulkBar": "todo-bulk-bar",
   "bulkDelete": "todo-bulk-delete",
   "bulkDeleteCancel": "todo-bulk-delete-cancel",
