@@ -6,13 +6,14 @@ The pure rules every client uses to keep its local list in step with the backend
 
 ## Row
 
-- **Columns** (`syncConstants.columns`, in this order): `id`, `user_id`, `title`, `notes`, `completed`, `priority`, `due_date`, `recurrence`, `completed_at`, `created_at`, `updated_at`, `deleted_at`, `server_seq`.
+- **Columns** (`syncConstants.columns`, in this order): `id`, `user_id`, `title`, `notes`, `completed`, `priority`, `due_date`, `recurrence`, `completed_at`, `subtasks`, `created_at`, `updated_at`, `deleted_at`, `server_seq`.
 - **Timestamps** use the Todo format, UTC ISO-8601 with milliseconds and `Z` (`2026-01-05T09:00:00.000Z`). The server must return them in that form, because `updated_at` is compared as a string.
 - `deleted_at` is the tombstone: non-null means the todo was deleted. `server_seq` is assigned by the server on every write and is strictly increasing. It is `null` on rows the client builds.
+- `subtasks` is the REED-10 checklist as one ordered JSON array of `{ id, title, completed }`, or `null` when the todo has none. The whole list is one field of the row, so it follows the same last-writer-wins rule as `title` or `completed`: there is no per-subtask merge.
 - `reminder` is **not** a column. It stays a per-device notification setting (see Apply).
-- **`toRow(todo, userId, deletedAt?)`**: camelCase todo fields map to the snake_case columns. Unset optional fields (`notes`, `due_date`, `recurrence`, `completed_at`) become `null`; every column is always present, so a push can clear a field. `deleted_at` is `deletedAt` when given (a delete), else `null`. `server_seq` is `null`.
-- **`fromRow(row)`**: the reverse. `null` columns are left out of the todo. `user_id`, `deleted_at` and `server_seq` are dropped.
-- Fixtures can't hold `null` values, so row results are written as `{ row, nulls }`: `row` has the non-null columns and `nulls` lists the null ones, sorted. Together they always name all 13 columns.
+- **`toRow(todo, userId, deletedAt?)`**: camelCase todo fields map to the snake_case columns. Unset optional fields (`notes`, `due_date`, `recurrence`, `completed_at`, and `subtasks` when missing or empty) become `null`; every column is always present, so a push can clear a field. `deleted_at` is `deletedAt` when given (a delete), else `null`. `server_seq` is `null`.
+- **`fromRow(row)`**: the reverse. `null` columns, and an empty `subtasks` array, are left out of the todo. `user_id`, `deleted_at` and `server_seq` are dropped.
+- Fixtures can't hold `null` values, so row results are written as `{ row, nulls }`: `row` has the non-null columns and `nulls` lists the null ones, sorted. Together they always name all 14 columns.
 
 ## Apply (`applyRemote(local, inFlight, rows, cursor)`)
 
@@ -26,7 +27,6 @@ The pure rules every client uses to keep its local list in step with the backend
    - **Ties go to the server**: an equal `updated_at` (against the local copy or the in-flight edit) takes the row.
 4. A winning row replaces the local todo in place, or is added at the top of the list if it is new (like a local add).
 5. The replaced todo keeps its device-local `reminder` as long as the row has a due date (a reminder needs one). If the row clears the due date, the reminder is dropped.
-6. Subtasks aren't a column yet, so the replaced todo also keeps its device-local `subtasks`.
 
 The echo of our own push (same `updated_at` and fields) therefore leaves the list unchanged.
 
@@ -36,7 +36,7 @@ Every signed-in edit (`before` is the list before it, `after` the list the reduc
 
 - A todo in `after` that isn't in `before` (an add) becomes a row.
 - A todo whose synced columns changed becomes a row. If its `updated_at` didn't move forward (an undo restored an older version), it is stamped `now` so it wins LWW on the server.
-- A change to `reminder` or `subtasks` alone, or a reorder, pushes nothing: those are device-local.
+- A change to `reminder` alone, or a reorder, pushes nothing: those are device-local. A change to `subtasks` is a synced column change and pushes the row.
 - A todo in `before` that isn't in `after` becomes a tombstone with `deleted_at` = `updated_at` = `now`.
 - A todo that comes back after its tombstone was pushed (undo of a delete; its id is in `tombstoned`) gets a fresh `id` and `updated_at` = `now`, because a tombstone always wins.
 

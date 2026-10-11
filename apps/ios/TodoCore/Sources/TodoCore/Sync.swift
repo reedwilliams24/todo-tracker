@@ -11,6 +11,8 @@ public struct TodoRow: Codable, Equatable, Hashable, Sendable {
     public var dueDate: String?
     public var recurrence: Recurrence?
     public var completedAt: String?
+    /// The checklist (REED-10), in order; nil when the todo has none.
+    public var subtasks: [Subtask]?
     public var createdAt: String
     public var updatedAt: String
     /// Tombstone: set when the todo was deleted.
@@ -28,6 +30,7 @@ public struct TodoRow: Codable, Equatable, Hashable, Sendable {
         dueDate: String? = nil,
         recurrence: Recurrence? = nil,
         completedAt: String? = nil,
+        subtasks: [Subtask]? = nil,
         createdAt: String,
         updatedAt: String,
         deletedAt: String? = nil,
@@ -42,6 +45,7 @@ public struct TodoRow: Codable, Equatable, Hashable, Sendable {
         self.dueDate = dueDate
         self.recurrence = recurrence
         self.completedAt = completedAt
+        self.subtasks = subtasks
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.deletedAt = deletedAt
@@ -58,6 +62,7 @@ public struct TodoRow: Codable, Equatable, Hashable, Sendable {
         case dueDate = "due_date"
         case recurrence
         case completedAt = "completed_at"
+        case subtasks
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case deletedAt = "deleted_at"
@@ -76,6 +81,7 @@ public struct TodoRow: Codable, Equatable, Hashable, Sendable {
         try container.encode(dueDate, forKey: .dueDate)
         try container.encode(recurrence, forKey: .recurrence)
         try container.encode(completedAt, forKey: .completedAt)
+        try container.encode(subtasks, forKey: .subtasks)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
         try container.encode(deletedAt, forKey: .deletedAt)
@@ -97,6 +103,7 @@ public func toRow(_ todo: Todo, userId: String, deletedAt: Date? = nil) -> TodoR
         dueDate: todo.dueDate,
         recurrence: todo.recurrence,
         completedAt: todo.completedAt,
+        subtasks: todo.subtasks?.isEmpty == false ? todo.subtasks : nil,
         createdAt: todo.createdAt,
         updatedAt: todo.updatedAt,
         deletedAt: deletedAt.map(Timestamp.iso),
@@ -115,7 +122,8 @@ public func fromRow(_ row: TodoRow) -> Todo {
         recurrence: row.recurrence,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
-        completedAt: row.completedAt
+        completedAt: row.completedAt,
+        subtasks: row.subtasks?.isEmpty == false ? row.subtasks : nil
     )
 }
 
@@ -137,7 +145,6 @@ public func applyRemote(_ local: [Todo], inFlight: [Todo], rows: [TodoRow], curs
         if let current, current.updatedAt > row.updatedAt { continue }
         var incoming = fromRow(row)
         if let reminder = current?.reminder, incoming.dueDate != nil { incoming.reminder = reminder }
-        if let subtasks = current?.subtasks { incoming.subtasks = subtasks }
         if let index { todos[index] = incoming } else { todos.insert(incoming, at: 0) }
     }
     return todos

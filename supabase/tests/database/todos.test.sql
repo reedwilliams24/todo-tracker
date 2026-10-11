@@ -2,7 +2,7 @@
 -- Run with `supabase test db`.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(47);
+select plan(51);
 
 -- ------------------------------------------------------------------ fixtures
 
@@ -31,7 +31,7 @@ $$;
 select has_table('public', 'todos', 'todos table exists');
 select columns_are('public', 'todos', array[
   'id', 'user_id', 'title', 'notes', 'completed', 'priority', 'due_date', 'recurrence',
-  'completed_at', 'created_at', 'updated_at', 'deleted_at', 'server_seq'], 'todos has the typed columns');
+  'completed_at', 'subtasks', 'created_at', 'updated_at', 'deleted_at', 'server_seq'], 'todos has the typed columns');
 select col_is_pk('public', 'todos', array['user_id', 'id'], 'primary key is (user_id, id)');
 select has_index('public', 'todos', 'todos_user_id_server_seq_idx', array['user_id', 'server_seq'],
   'pull index on (user_id, server_seq)');
@@ -171,6 +171,9 @@ reset role;
 
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
 select throws_ok($$ select public.push_todos('{}') $$, '22023', null, 'push_todos rejects a non-array');
+select throws_ok($$ select public.push_todos(jsonb_build_array(
+    pg_temp.todo('bad', 'Bad', '2026-01-01T10:00:00.000Z') || '{"subtasks": {"id": "s1"}}')) $$,
+  '23514', null, 'push_todos rejects subtasks that are not an array');
 select throws_ok($$ select public.push_todos(jsonb_build_array(pg_temp.todo('bad', 'Bad', '2026-01-01T10:00:00Z'))) $$,
   '23514', null, 'push_todos rejects a timestamp without milliseconds');
 select throws_ok($$ select public.push_todos(jsonb_build_array(pg_temp.todo('bad', 'Bad', '2026-01-01T10:00:00.000+01:00'))) $$,
@@ -188,6 +191,24 @@ reset role;
 select is(public.purge_todo_tombstones(), 2::bigint, 'purge deletes tombstones older than 30 days');
 select is((select array_agg(id order by id) from public.todos where user_id = '00000000-0000-0000-0000-00000000000a'),
   array['a2', 'a4'], 'purge keeps live todos and recent tombstones');
+
+-- ------------------------------------------------------------------ subtasks
+
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000a');
+select is((select subtasks from public.push_todos(jsonb_build_array(
+    pg_temp.todo('st', 'Groceries', '2026-06-01T10:00:00.000Z')
+      || '{"subtasks": [{"id": "s1", "title": "Milk", "completed": true}, {"id": "s2", "title": "Eggs", "completed": false}]}'))),
+  '[{"id": "s1", "title": "Milk", "completed": true}, {"id": "s2", "title": "Eggs", "completed": false}]'::jsonb,
+  'push stores subtasks in order and returns them');
+select is((select subtasks from public.push_todos(jsonb_build_array(
+    pg_temp.todo('st', 'Groceries', '2026-06-01T09:00:00.000Z')
+      || '{"subtasks": [{"id": "s1", "title": "Milk", "completed": false}]}'))),
+  '[{"id": "s1", "title": "Milk", "completed": true}, {"id": "s2", "title": "Eggs", "completed": false}]'::jsonb,
+  'an older push does not overwrite subtasks');
+select is((select subtasks from public.push_todos(jsonb_build_array(
+    pg_temp.todo('st', 'Groceries', '2026-06-01T11:00:00.000Z')))),
+  null, 'a newer push without subtasks clears them');
+reset role;
 
 select case
   when exists (select 1 from pg_extension where extname = 'pg_cron') then
