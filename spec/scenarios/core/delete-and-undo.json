@@ -1,0 +1,14 @@
+{
+  "name": "delete-and-undo",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "do": "add", "title": "Buy milk" },
+    { "do": "add", "title": "Call mom" },
+    { "do": "delete", "title": "Buy milk" },
+    { "expect": "titles", "titles": ["Call mom"] },
+    { "expect": "undo", "label": "Deleted todo" },
+    { "do": "undo" },
+    { "expect": "titles", "titles": ["Buy milk", "Call mom"] },
+    { "expect": "undo", "label": null }
+  ]
+}

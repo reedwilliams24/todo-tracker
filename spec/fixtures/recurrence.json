@@ -2,7 +2,24 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "recurrence",
   "spec": "features/recurrence.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
+    {
+      "name": "constants",
+      "op": "recurrenceConstants",
+      "given": {},
+      "then": {
+        "recurrences": [
+          "daily",
+          "weekly",
+          "monthly"
+        ]
+      }
+    },
     {
       "name": "nextOccurrence: daily rolls over a month",
       "op": "nextOccurrence",

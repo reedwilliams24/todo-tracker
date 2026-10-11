@@ -1,6 +1,6 @@
 # Quick add shorthand
 
-Fixtures: [`../fixtures/quick-add.json`](../fixtures/quick-add.json). Scenario: `quick-add-shorthand` in [`../scenarios/core.json`](../scenarios/core.json).
+Fixtures: [`../fixtures/quick-add.json`](../fixtures/quick-add.json). Scenario: [`../scenarios/core/quick-add-shorthand.json`](../scenarios/core/quick-add-shorthand.json).
 
 The add form's title field accepts shorthand such as `call mom tomorrow 5pm #family !p1`. While typing, the form shows a live preview (`quickAddPreview`, with the parsed title in `quickAddPreviewTitle`) whenever the input has a priority, due date or tag. Submitting adds the parsed draft.
 

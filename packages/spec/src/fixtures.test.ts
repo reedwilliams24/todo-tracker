@@ -19,7 +19,7 @@ const validateTodo = ajv.getSchema("todo.schema.json")!;
 const files = readdirSync(FIXTURES_DIR).filter((file) => file.endsWith(".json"));
 
 describe("spec fixtures", () => {
-  it("are up to date with packages/spec/src/cases.ts", () => {
+  it("are up to date with packages/spec/src/features", () => {
     for (const [path, content] of renderFixtures()) expect(readFileSync(path, "utf8"), path).toBe(content);
   });
 

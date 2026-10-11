@@ -1,10 +1,14 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ROOT, readJson, SPEC_DIR } from "./paths";
+import { loadScenarios, ROOT, readJson, SPEC_DIR, toJson } from "./paths";
 
 /** Generates platform test-ID constants from spec/test-ids.json. Run with --check in CI. */
 const ids = readJson<Record<string, string>>(join(SPEC_DIR, "test-ids.json"));
-const entries = Object.entries(ids).filter(([key]) => !key.startsWith("$"));
+const entries = Object.entries(ids)
+  .filter(([key]) => !key.startsWith("$"))
+  .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+/** test-ids.json is kept in key order so selectors added by parallel PRs land in different places. */
+const sortedIds = toJson({ ...Object.fromEntries(Object.entries(ids).filter(([key]) => key.startsWith("$"))), ...Object.fromEntries(entries) });
 const HEADER = "Generated from spec/test-ids.json by `pnpm spec:generate`. Do not edit.";
 
 function placeholders(pattern: string): string[] {
@@ -20,7 +24,6 @@ function tsEntry([key, pattern]: [string, string]): string {
 
 
 type Step = Record<string, unknown> & { do?: string; expect?: string };
-type Scenario = { name: string; platforms?: string[]; steps: Step[] };
 
 function id(key: string, value = ""): string {
   const pattern = ids[key];
@@ -42,10 +45,6 @@ function maestroStep(step: Step): string[] {
     title?: string | null;
   };
   switch (step.do) {
-    case "type":
-      return [...tap(id("formTitle")), `- inputText: ${q(s.text)}`];
-    case "submit":
-      return ["- hideKeyboard", ...tap(id("formSubmit"))];
     case "add":
       return [
         ...tap(id("formTitle")),
@@ -57,10 +56,20 @@ function maestroStep(step: Step): string[] {
         ...tap(id("formSubmit")),
         ...visible(id("item", s.title!)),
       ];
-    case "toggle":
-      return tap(id("itemToggle", s.title!));
+    case "bulkDelete":
+      return [...tap(id("bulkDelete")), ...tap(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel"))];
+    case "bulkToggle":
+      return tap(id("bulkToggle"));
+    case "clearCompleted":
+      return tap(id("clearCompleted"));
     case "delete":
       return tap(id("itemDelete", s.title!));
+    case "filter":
+      return tap(id("filter", s.filter));
+    case "openStats":
+      return [`- scrollUntilVisible:`, `    element:`, `      id: ${q(id("statsToggle"))}`, ...tap(id("statsToggle"))];
+    case "relaunch":
+      return ["- runFlow: relaunch.yaml"];
     case "rename":
       return [
         ...tap(id("itemTitle", s.from)),
@@ -68,85 +77,79 @@ function maestroStep(step: Step): string[] {
         `- inputText: ${q(s.to)}`,
         "- pressKey: Enter",
       ];
-    case "filter":
-      return tap(id("filter", s.filter));
-    case "sort":
-      return tap(id("sortOption", s.sort));
     case "search":
       return [...tap(id("search")), `- inputText: ${q(s.query)}`, "- hideKeyboard"];
-    case "clearCompleted":
-      return tap(id("clearCompleted"));
-    case "undo":
-      return tap(id("undoAction"));
-    case "openStats":
-      return [`- scrollUntilVisible:`, `    element:`, `      id: ${q(id("statsToggle"))}`, ...tap(id("statsToggle"))];
-    case "relaunch":
-      return ["- runFlow: relaunch.yaml"];
-    case "selectMode":
-      return tap(id("selectMode"));
     case "select":
       return tap(id("itemSelect", s.title!));
     case "selectAll":
       return tap(id("selectAll"));
-    case "bulkToggle":
-      return tap(id("bulkToggle"));
-    case "bulkDelete":
-      return [...tap(id("bulkDelete")), ...tap(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel"))];
+    case "selectMode":
+      return tap(id("selectMode"));
+    case "sort":
+      return tap(id("sortOption", s.sort));
+    case "submit":
+      return ["- hideKeyboard", ...tap(id("formSubmit"))];
+    case "toggle":
+      return tap(id("itemToggle", s.title!));
+    case "type":
+      return [...tap(id("formTitle")), `- inputText: ${q(s.text)}`];
+    case "undo":
+      return tap(id("undoAction"));
   }
   switch (step.expect) {
-    case "empty":
-      return visible(id("empty"));
-    case "titles":
-      return s.titles!.length === 0 ? visible(id("empty")) : s.titles!.flatMap((title) => visible(id("item", title)));
-    case "remaining":
-      return visible(id("remaining"), [`    text: ${q(s.text)}`]);
+    case "clearCompleted":
+      return visible(id("clearCompleted"), [`    text: ${q(s.text)}`]);
     case "completed":
       return visible(id("itemToggle", s.title!), [`    checked: ${s.value}`]);
-    case "quickAddPreview":
-      return s.title === null
-        ? [`- assertNotVisible:`, `    id: ${q(id("quickAddPreview"))}`]
-        : visible(id("quickAddPreviewTitle"), [`    text: ${q(s.title)}`]);
-    case "priority":
-      return visible(id("itemPriority", s.title!), [`    text: ${q(capitalize(s.priority!))}`]);
     case "dueDate":
       return visible(id("itemDueDate", s.title!), [`    text: ${q(s.dueDate)}`]);
-    case "recurrence":
-      return visible(id("itemRecurrence", s.title!), [`    text: ${q(s.text)}`]);
+    case "empty":
+      return visible(id("empty"));
     case "overdue":
       return step.value
         ? visible(id("itemOverdue", s.title!))
         : [`- assertNotVisible:`, `    id: ${q(id("itemOverdue", s.title!))}`];
+    case "priority":
+      return visible(id("itemPriority", s.title!), [`    text: ${q(capitalize(s.priority!))}`]);
+    case "quickAddPreview":
+      return s.title === null
+        ? [`- assertNotVisible:`, `    id: ${q(id("quickAddPreview"))}`]
+        : visible(id("quickAddPreviewTitle"), [`    text: ${q(s.title)}`]);
+    case "recurrence":
+      return visible(id("itemRecurrence", s.title!), [`    text: ${q(s.text)}`]);
+    case "remaining":
+      return visible(id("remaining"), [`    text: ${q(s.text)}`]);
+    case "selected":
+      return visible(id("selectedCount"), [`    text: ${q(s.text)}`]);
     case "stats":
       return [
         ...visible(id("statsTotal"), [`    text: ${q(s.total)}`]),
         ...visible(id("statsCurrent"), [`    text: ${q(s.current)}`]),
         ...visible(id("statsLongest"), [`    text: ${q(s.longest)}`]),
       ];
+    case "titles":
+      return s.titles!.length === 0 ? visible(id("empty")) : s.titles!.flatMap((title) => visible(id("item", title)));
     case "undo":
       return s.label === null
         ? [`- assertNotVisible:`, `    id: ${q(id("undoToast"))}`]
         : visible(id("undoLabel"), [`    text: ${q(s.label)}`]);
-    case "selected":
-      return visible(id("selectedCount"), [`    text: ${q(s.text)}`]);
-    case "clearCompleted":
-      return visible(id("clearCompleted"), [`    text: ${q(s.text)}`]);
   }
   throw new Error(`Unknown step ${JSON.stringify(step)}`);
 }
 
 function maestroFlows(): Record<string, string> {
-  const { scenarios } = readJson<{ scenarios: Scenario[] }>(join(SPEC_DIR, "scenarios/core.json"));
   const flows: Record<string, string> = {};
-  for (const scenario of scenarios) {
-    if (scenario.platforms && !scenario.platforms.includes("mobile")) continue;
+  for (const scenario of loadScenarios()) {
+    if (scenario.status.ios === "n/a" && scenario.status.android === "n/a") continue;
     const body = ["- runFlow: launch.yaml", ...scenario.steps.flatMap(maestroStep)];
     flows[`spec/scenarios/maestro/${scenario.name}.yaml`] =
-      `# Generated from spec/scenarios/core.json by \`pnpm spec:generate\`. Do not edit.\nappId: \${APP_ID}\nname: ${scenario.name}\ntags:\n  - spec\n---\n${body.join("\n")}\n`;
+      `# Generated from spec/scenarios/core/${scenario.file} by \`pnpm spec:generate\`. Do not edit.\nappId: \${APP_ID}\nname: ${scenario.name}\ntags:\n  - spec\n---\n${body.join("\n")}\n`;
   }
   return flows;
 }
 
 const outputs: Record<string, string> = {
+  "spec/test-ids.json": sortedIds,
   "apps/web/src/domain/test-ids.ts": `// ${HEADER}\n\nexport const TEST_IDS = {\n${entries.map(tsEntry).join("\n")}\n} as const;\n`,
   ...maestroFlows(),
 };
@@ -165,7 +168,7 @@ for (const [relative, content] of Object.entries(outputs)) {
   else writeFileSync(path, content);
 }
 if (check && stale) {
-  console.error("Generated test IDs are out of date. Run `pnpm spec:generate`.");
+  console.error("Generated files are out of date (or spec/test-ids.json is not sorted). Run `pnpm spec:generate`.");
   process.exit(1);
 }
 console.log(check ? "generated files up to date" : `wrote ${stale} file(s)`);
