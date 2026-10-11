@@ -25,13 +25,14 @@ final class FixtureTests: XCTestCase {
         .appendingPathComponent("../../../spec/fixtures")
         .standardizedFileURL
 
-    static let features = ["todo", "list", "undo", "storage", "voice"]
+    static let features = ["todo", "list", "undo", "storage", "voice", "tags"]
 
     func testTodo() throws { try runFixtures("todo") }
     func testList() throws { try runFixtures("list") }
     func testUndo() throws { try runFixtures("undo") }
     func testStorage() throws { try runFixtures("storage") }
     func testVoice() throws { try runFixtures("voice") }
+    func testTags() throws { try runFixtures("tags") }
 
     /// A new fixture file must get a test above, or it would silently never run on iOS.
     func testEveryFixtureFileIsCovered() throws {
