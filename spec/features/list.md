@@ -5,7 +5,7 @@ Fixtures: [`../fixtures/list.json`](../fixtures/list.json).
 ## Rules
 
 - **Order of storage**: new todos are prepended, in the order they were drafted (`addTodos`).
-- **Display sort** (`sortTodos(todos, sort)`, used everywhere todos are shown). `sort` is `priority` (default) or `due`, chosen in the UI's sort control; the choice is not persisted.
+- **Display sort** (`sortTodos(todos, sort)`): `sort` is `priority` (default), `due` or `manual`, chosen in the UI's sort control and persisted (see [storage](storage.md)).
   - `priority` (`sortByPriority`):
     1. Active before completed.
     2. Priority high → medium → low.
@@ -16,6 +16,11 @@ Fixtures: [`../fixtures/list.json`](../fixtures/list.json).
     2. Due date ascending; undated todos after dated ones.
     3. Priority high → medium → low.
     4. `createdAt` ascending (older first).
+  - `manual`: storage order, unchanged.
+- **Reorder** (`moveVisibleTodo(todos, visibleIds, id, targetId)`): moves `id` into `targetId`'s slot within the rows currently shown (`visibleIds`, in display order) and writes that display order back to storage order. Todos that are not shown keep their storage slots. Unknown ids, or dropping a row on itself, change nothing. `reorderTodos(todos, from, to)` is the index-based helper; out-of-range indexes change nothing.
+- Reordering switches the sort to `manual` so the new order is what the user sees. It is not undoable and keeps any pending undo (reducer action `reorder`).
+- Reordering is disabled while a search query is active.
+- **UI**: web drags a row (HTML drag and drop) onto another row; iOS and Android long-press a row and drag it. Web shortcuts: `/` focuses search (unless typing in a field), `Esc` clears and blurs search, `Enter` in the form adds.
 - **Filter**: `all | active | completed`.
 - **Search**: case-insensitive substring match on title or notes. The query is trimmed; a blank query matches everything. Search applies after the status filter.
 - **Remaining**: number of todos that are not completed. Shown as `1 task remaining` / `N tasks remaining`.

@@ -181,6 +181,44 @@
           "updatedAt": "2026-01-05T09:00:00.000Z"
         }
       ]
+    },
+    {
+      "name": "sort preference key",
+      "op": "sortStorageKey",
+      "given": {},
+      "then": "todo-tracker:sort:v1"
+    },
+    {
+      "name": "parseStoredSort: manual",
+      "op": "parseStoredSort",
+      "given": {
+        "raw": "manual"
+      },
+      "then": "manual"
+    },
+    {
+      "name": "parseStoredSort: priority",
+      "op": "parseStoredSort",
+      "given": {
+        "raw": "priority"
+      },
+      "then": "priority"
+    },
+    {
+      "name": "parseStoredSort: missing falls back to priority",
+      "op": "parseStoredSort",
+      "given": {
+        "raw": null
+      },
+      "then": "priority"
+    },
+    {
+      "name": "parseStoredSort: unknown falls back to priority",
+      "op": "parseStoredSort",
+      "given": {
+        "raw": "bogus"
+      },
+      "then": "priority"
     }
   ]
 }

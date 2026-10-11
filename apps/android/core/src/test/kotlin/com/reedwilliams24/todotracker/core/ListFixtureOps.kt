@@ -44,5 +44,7 @@ internal val listOps: Map<String, Op> = mapOf(
     "toggleInList" to { g: JsonObject -> encode(toggleInList(g.todos(), g.str("id"), g.instant("now"))) },
     "removeFromList" to { g: JsonObject -> encode(removeFromList(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content })) },
     "clearCompletedInList" to { g: JsonObject -> encode(clearCompletedInList(g.todos())) },
+    "moveVisibleTodo" to { g: JsonObject -> encode(moveVisibleTodo(g.todos(), g.strings("visibleIds"), g.str("id"), g.str("targetId"))) },
+    "reorderTodos" to { g: JsonObject -> encode(reorderTodos(g.todos(), g.getValue("fromIndex").jsonPrimitive.int, g.getValue("toIndex").jsonPrimitive.int)) },
     "bulkToggle" to { g: JsonObject -> encode(bulkToggle(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content }, g.instant("now"))) },
 )

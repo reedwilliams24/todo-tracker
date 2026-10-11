@@ -52,12 +52,12 @@ enum class TodoFilter {
 }
 
 enum class TodoSort {
-    PRIORITY, DUE;
+    PRIORITY, DUE, MANUAL;
 
     val key: String get() = name.lowercase()
 
     companion object {
-        fun fromKey(key: String): TodoSort = entries.firstOrNull { it.key == key } ?: PRIORITY
+        fun fromKey(key: String?): TodoSort = entries.firstOrNull { it.key == key } ?: PRIORITY
     }
 }
 
