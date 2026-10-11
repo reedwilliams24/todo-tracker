@@ -25,6 +25,7 @@ pnpm spec:check           # fixtures and generated files are up to date
 pnpm spec:parity          # web/iOS/Android parity matrix
 pnpm build
 pnpm --filter web e2e     # Playwright, incl. spec/scenarios/core/*.json
+pnpm --filter web e2e:auth  # signed-in scenarios + two-device sync; needs `pnpm exec supabase start`
 (cd apps/android && ./gradlew :core:test :app:assembleDebug)  # Kotlin fixtures + APK
 ```
 

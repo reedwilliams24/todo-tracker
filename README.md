@@ -129,7 +129,8 @@ CI builds have none, so they stay guest-only. The URL and key are public; never 
 `apps/ios/Config/Supabase.{dev,prod}.xcconfig` and `apps/android/config/supabase-{dev,prod}.properties`;
 they come from the Management API (`GET /v1/projects/{ref}/api-keys`, the `sb_publishable_` key).
 Android debug builds allow cleartext HTTP to `10.0.2.2`/`localhost` only, for the local stack. Web e2e
-against the local stack: `pnpm --filter web e2e:auth` (reads codes from Mailpit).
+against the local stack: `pnpm --filter web e2e:auth` (reads codes from Mailpit). It includes the two-device
+sync suite (`apps/web/e2e/two-device.spec.ts`) and runs on PRs as the `e2e-sync-web` CI job.
 
 #### Migrations on hosted projects
 

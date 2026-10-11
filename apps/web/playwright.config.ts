@@ -25,7 +25,7 @@ if (auth) process.env.E2E_MAILPIT_URL = serverEnv.E2E_MAILPIT_URL;
 
 export default defineConfig({
   testDir: "./e2e",
-  testMatch: auth ? "scenarios.spec.ts" : undefined,
+  testMatch: auth ? ["scenarios.spec.ts", "two-device.spec.ts"] : undefined,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
