@@ -1,8 +1,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { androidTable, androidXml, swiftTable, xcstrings } from "./native-catalogs";
 import { loadScenarios, ROOT, readJson, SPEC_DIR, toJson } from "./paths";
 
-/** Generates platform test-ID constants from spec/test-ids.json. Run with --check in CI. */
+/** Generates platform test-ID constants, message catalogs and Maestro flows from spec/. Run with --check in CI. */
 const ids = readJson<Record<string, string>>(join(SPEC_DIR, "test-ids.json"));
 const entries = Object.entries(ids)
   .filter(([key]) => !key.startsWith("$"))
@@ -152,9 +153,34 @@ function maestroFlows(): Record<string, string> {
   return flows;
 }
 
+const messages = Object.entries(readJson<Record<string, string>>(join(SPEC_DIR, "i18n/en.json"))).filter(
+  ([key]) => !key.startsWith("$"),
+);
+const I18N_HEADER = "Generated from spec/i18n/en.json by `pnpm spec:generate`. Do not edit.";
+
+function catalogs(): Record<string, string> {
+  return {
+    "apps/web/src/domain/i18n/en.ts": `// ${I18N_HEADER}\n\nexport const en = {\n${messages
+      .map(([key, value]) => `  ${q(key)}: ${q(value)},`)
+      .join(
+        "\n",
+      )}\n} as const;\n\nexport type MessageKey = keyof typeof en;\nexport type Messages = Record<MessageKey, string>;\n`,
+    "apps/android/app/src/main/res/values/messages.xml": androidXml(messages, I18N_HEADER),
+    "apps/android/app/src/main/kotlin/com/reedwilliams24/todotracker/ui/Messages.kt": androidTable(
+      messages,
+      "com.reedwilliams24.todotracker",
+      "com.reedwilliams24.todotracker.ui",
+      I18N_HEADER,
+    ),
+    "apps/ios/TodoTracker/Localizable.xcstrings": xcstrings(messages),
+    "apps/ios/TodoTracker/Messages.swift": swiftTable(messages, I18N_HEADER),
+  };
+}
+
 const outputs: Record<string, string> = {
   "spec/test-ids.json": sortedIds,
   "apps/web/src/domain/test-ids.ts": `// ${HEADER}\n\nexport const TEST_IDS = {\n${entries.map(tsEntry).join("\n")}\n} as const;\n`,
+  ...catalogs(),
   ...maestroFlows(),
 };
 

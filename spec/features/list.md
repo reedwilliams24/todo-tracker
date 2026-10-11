@@ -23,7 +23,7 @@ Fixtures: [`../fixtures/list.json`](../fixtures/list.json).
 - **UI**: web drags a row (HTML drag and drop) onto another row; iOS and Android long-press a row and drag it. Web shortcuts: `/` focuses search (unless typing in a field), `Esc` clears and blurs search, `Enter` in the form adds.
 - **Filter**: `all | active | completed`.
 - **Search**: case-insensitive substring match on title or notes. The query is trimmed; a blank query matches everything. Search applies after the status filter.
-- **Remaining**: number of todos that are not completed. Shown as `1 task remaining` / `N tasks remaining`.
+- **Remaining**: number of todos that are not completed. Shown with the `list.remaining` message (`1 task remaining` / `N tasks remaining`; see [localization](localization.md)).
 - **Delete** removes by id; unknown ids are ignored. **Clear completed** removes every completed todo.
 - **Completed count** (`countCompleted`): number of completed todos. The clear button reads `Clear completed (N)` and only shows when N > 0.
 - **Bulk toggle** (`bulkToggle`): if any selected todo is active, every selected todo becomes complete; if all are already complete, they all become active. Unknown ids are ignored and unselected todos are untouched (their `updatedAt` too).

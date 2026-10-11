@@ -1,16 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useT } from "@/hooks/use-t";
 import {
   EMPTY_TODO_FORM,
-  REMINDER_LABELS,
   REMINDER_OFFSETS,
   hasQuickAddMeta,
   isValidTitle,
   parseQuickAdd,
   quickAddToDraft,
   RECURRENCES,
-  RECURRENCE_LABELS,
   TEST_IDS,
   type ReminderOffset,
   type Recurrence,
@@ -21,6 +20,7 @@ import {
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
+  const t = useT();
   const [form, setForm] = useState(EMPTY_TODO_FORM);
   const { title, priority, dueDate, reminder, recurrence } = form;
   const parsed = useMemo(() => parseQuickAdd(title), [title]);
@@ -43,17 +43,17 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         <input
           value={title}
           onChange={(event) => setForm((f) => ({ ...f, title: event.target.value }))}
-          placeholder="What needs doing? e.g. call mom tomorrow #family !p1"
-          aria-label="Todo title"
+          placeholder={t("form.title.placeholder")}
+          aria-label={t("form.title.label")}
           data-testid={TEST_IDS.formTitle}
           className="flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50"
         />
         <select
           value={priority}
           onChange={(event) => setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))}
-          aria-label="Priority"
+          aria-label={t("form.priority.label")}
           data-testid={TEST_IDS.formPriority}
-          className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm capitalize dark:border-white/15"
+          className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
         >
           {PRIORITIES.map((option) => (
             <option
@@ -62,7 +62,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
               data-testid={TEST_IDS.formPriorityOption(option)}
               className="text-foreground"
             >
-              {option}
+              {t(`priority.${option}`)}
             </option>
           ))}
         </select>
@@ -70,7 +70,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           type="date"
           value={dueDate}
           onChange={(event) => setForm((f) => ({ ...f, dueDate: event.target.value }))}
-          aria-label="Due date"
+          aria-label={t("form.dueDate.label")}
           data-testid={TEST_IDS.formDueDate}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
         />
@@ -78,11 +78,11 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           value={reminder}
           disabled={!dueDate}
           onChange={(event) => setForm((f) => ({ ...f, reminder: event.target.value as ReminderOffset | "" }))}
-          aria-label="Reminder"
+          aria-label={t("form.reminder.label")}
           data-testid={TEST_IDS.formReminder}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm disabled:opacity-40 dark:border-white/15"
         >
-          <option value="">No reminder</option>
+          <option value="">{t("reminder.none")}</option>
           {REMINDER_OFFSETS.map((option) => (
             <option
               key={option}
@@ -90,23 +90,23 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
               data-testid={TEST_IDS.formReminderOption(option)}
               className="text-foreground"
             >
-              {REMINDER_LABELS[option]}
+              {t(`reminder.${option}`)}
             </option>
           ))}
         </select>
         <select
           value={recurrence}
           onChange={(event) => setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))}
-          aria-label="Repeat"
+          aria-label={t("form.recurrence.label")}
           data-testid={TEST_IDS.formRecurrence}
           className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
         >
           <option value="" className="text-foreground">
-            No repeat
+            {t("recurrence.none")}
           </option>
           {RECURRENCES.map((option) => (
             <option key={option} value={option} className="text-foreground">
-              {RECURRENCE_LABELS[option]}
+              {t(`recurrence.${option}`)}
             </option>
           ))}
         </select>
@@ -116,19 +116,19 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
           disabled={!canAdd}
           className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
         >
-          Add
+          {t("form.add")}
         </button>
       </div>
       {hasQuickAddMeta(parsed) && (
         <p className="flex flex-wrap gap-x-3 px-2 text-xs opacity-70" data-testid={TEST_IDS.quickAddPreview}>
           <span>
-            Will add:{" "}
+            {t("quickAdd.willAdd")}{" "}
             <strong className="font-medium" data-testid={TEST_IDS.quickAddPreviewTitle}>
               {parsed.title || "…"}
             </strong>
           </span>
-          {parsed.dueDate && <span>Due {parsed.dueDate}</span>}
-          {parsed.priority && <span className="capitalize">{parsed.priority} priority</span>}
+          {parsed.dueDate && <span>{t("quickAdd.due", { date: parsed.dueDate })}</span>}
+          {parsed.priority && <span>{t("quickAdd.priority", { priority: t(`priority.${parsed.priority}`) })}</span>}
           {parsed.tags.map((tag) => (
             <span key={tag}>#{tag}</span>
           ))}

@@ -47,11 +47,11 @@ final class TodoViewModel {
     var completedCount: Int { countCompleted(state.todos) }
     var selected: [String] { visibleTodos.map(\.id).filter(selectedIds.contains) }
     var allVisibleSelected: Bool { !visibleTodos.isEmpty && selected.count == visibleTodos.count }
-    var remainingText: String { "\(remaining) \(remaining == 1 ? "task" : "tasks") remaining" }
+    var remainingText: String { t("list.remaining", ["count": remaining]) }
     var undoLabel: String? { state.undoable?.label }
     var stats: TodoStats { computeStats(state.todos, now: now()) }
     var emptyText: String {
-        state.todos.isEmpty ? "No todos yet. Add your first one above." : "No \(filter.rawValue) todos."
+        state.todos.isEmpty ? t("list.empty") : t("list.emptyFiltered", ["filter": filter.rawValue])
     }
 
     func add(_ draft: TodoDraft) {

@@ -1,0 +1,37 @@
+# Generated from spec/scenarios/core/pluralized-remaining.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: pluralized-remaining
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- assertVisible:
+    id: "todo-remaining"
+    text: "0 tasks remaining"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- assertVisible:
+    id: "todo-remaining"
+    text: "1 task remaining"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Call mom"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Call mom"
+- assertVisible:
+    id: "todo-remaining"
+    text: "2 tasks remaining"
+- tapOn:
+    id: "todo-toggle-Buy milk"
+- assertVisible:
+    id: "todo-remaining"
+    text: "1 task remaining"

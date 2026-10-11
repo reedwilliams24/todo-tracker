@@ -11,6 +11,8 @@ plugins {
 spotless {
     kotlin {
         target("**/src/**/*.kt")
+        // Written by `pnpm spec:generate`; spec:check compares it byte-for-byte.
+        targetExclude("app/src/main/kotlin/com/reedwilliams24/todotracker/ui/Messages.kt")
         ktfmt().kotlinlangStyle().configure { it.setMaxWidth(120) }
     }
     kotlinGradle {

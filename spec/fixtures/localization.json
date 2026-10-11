@@ -1,0 +1,521 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "localization",
+  "spec": "features/localization.md",
+  "status": {
+    "web": "pass",
+    "ios": "n/a",
+    "android": "n/a"
+  },
+  "cases": [
+    {
+      "name": "messages: the English catalog",
+      "op": "messages",
+      "given": {},
+      "then": {
+        "app.title": "Todo Tracker",
+        "app.tagline.web": "Local-first tasks, stored in your browser.",
+        "app.tagline.mobile": "A tiny local-first todo list.",
+        "form.title.placeholder": "What needs doing? e.g. tomorrow !p1 #tag",
+        "form.title.label": "Todo title",
+        "form.priority.label": "Priority",
+        "form.dueDate.label": "Due date",
+        "form.dueDate.placeholder": "YYYY-MM-DD",
+        "form.add": "Add",
+        "form.add.label": "Add todo",
+        "priority.low": "Low",
+        "priority.medium": "Medium",
+        "priority.high": "High",
+        "filter.label": "Filter todos",
+        "filter.all": "All",
+        "filter.active": "Active",
+        "filter.completed": "Completed",
+        "sort.label": "Sort",
+        "sort.ariaLabel": "Sort todos",
+        "sort.priority": "Priority",
+        "sort.due": "Due date",
+        "sort.manual": "Manual",
+        "search.placeholder": "Search todos…",
+        "search.placeholder.web": "Search todos…  ( / )",
+        "search.label": "Search todos",
+        "search.clear": "Clear search",
+        "list.label": "Todos",
+        "list.loading": "Loading…",
+        "list.empty": "No todos yet. Add your first one above.",
+        "list.emptyFiltered": "No {filter} todos.",
+        "list.noMatch": "No {filter} todos match “{query}”.",
+        "list.noMatchAll": "No todos match “{query}”.",
+        "list.remaining": "{count, plural, one {# task remaining} other {# tasks remaining}}",
+        "list.clearCompleted": "Clear completed ({count})",
+        "select.enter": "Select",
+        "select.done": "Done",
+        "select.all": "Select all",
+        "select.none": "Select none",
+        "select.count": "{count} selected",
+        "select.item": "Select \"{title}\"",
+        "bulk.label": "Bulk actions",
+        "bulk.toggle": "Toggle complete",
+        "bulk.delete": "Delete",
+        "bulk.cancel": "Cancel",
+        "bulk.confirm": "Delete {count, plural, one {# todo} other {# todos}}?",
+        "item.markComplete": "Mark \"{title}\" as complete",
+        "item.markActive": "Mark \"{title}\" as active",
+        "item.edit": "Edit \"{title}\"",
+        "item.editTitle": "Edit title",
+        "item.dragHint": "Long-press and drag to reorder",
+        "item.editHint": "Double-click to edit",
+        "item.editA11yHint": "Opens the title for editing",
+        "item.editClickLabel": "open the title for editing",
+        "item.delete": "Delete \"{title}\"",
+        "quickAdd.willAdd": "Will add:",
+        "quickAdd.due": "Due {date}",
+        "quickAdd.priority": "{priority} priority",
+        "item.due": "Due {date}",
+        "item.overdue": "Overdue, was due {date}",
+        "item.overdueBadge": "Overdue · ",
+        "stats.title": "Stats",
+        "stats.show": "Show",
+        "stats.hide": "Hide",
+        "stats.showA11y": "Show stats",
+        "stats.hideA11y": "Hide stats",
+        "stats.showsHint": "Shows stats",
+        "stats.hidesHint": "Hides stats",
+        "stats.completed": "Completed",
+        "stats.currentStreak": "Current streak",
+        "stats.longestStreak": "Longest streak",
+        "stats.days": "{count}d",
+        "stats.chart": "Completed per day, last {days} days",
+        "stats.day": "{date}: {count} completed",
+        "form.recurrence.label": "Repeat",
+        "recurrence.none": "No repeat",
+        "recurrence.daily": "Daily",
+        "recurrence.weekly": "Weekly",
+        "recurrence.monthly": "Monthly",
+        "form.reminder.label": "Reminder",
+        "reminder.none": "No reminder",
+        "reminder.at": "When due",
+        "reminder.1h": "1 hour before",
+        "reminder.1d": "1 day before",
+        "reminder.blocked": "Notifications are blocked in this browser.",
+        "item.reminder": "Reminder {label}",
+        "item.recurrence": "↻ {label}",
+        "item.repeats.daily": "Repeats daily",
+        "item.repeats.weekly": "Repeats weekly",
+        "item.repeats.monthly": "Repeats monthly",
+        "theme.label": "Theme",
+        "theme.light": "Light",
+        "theme.dark": "Dark",
+        "theme.system": "System",
+        "voice.label": "Voice capture",
+        "voice.speak": "Speak your todos",
+        "voice.stop": "Stop and add",
+        "voice.addThese": "Add these",
+        "voice.listening": "Listening… I'll add your todos once you stop talking.",
+        "voice.adding": "Adding…",
+        "voice.unsupported": "This browser has no speech recognition, so type what you would say instead.",
+        "voice.transcript": "Transcript",
+        "voice.transcript.placeholder": "e.g. remind me to buy milk and then call the dentist tomorrow, also file taxes asap",
+        "voice.empty": "No tasks found in that transcript.",
+        "voice.added": "Added {count, plural, one {{first}} other {# todos}}",
+        "voice.undo": "Undo",
+        "undo.action": "Undo"
+      }
+    },
+    {
+      "name": "resolveLocale: exact tag",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "en"
+        ]
+      },
+      "then": "en"
+    },
+    {
+      "name": "resolveLocale: region falls back to its language",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "en-US"
+        ]
+      },
+      "then": "en"
+    },
+    {
+      "name": "resolveLocale: first supported tag wins",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "fr-CA",
+          "en-GB"
+        ]
+      },
+      "then": "en"
+    },
+    {
+      "name": "resolveLocale: underscore separator",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "EN_us"
+        ]
+      },
+      "then": "en"
+    },
+    {
+      "name": "resolveLocale: unsupported falls back to English",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "fr",
+          "de-DE"
+        ]
+      },
+      "then": "en"
+    },
+    {
+      "name": "resolveLocale: empty list falls back to English",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": []
+      },
+      "then": "en"
+    },
+    {
+      "name": "resolveLocale: blank tags are skipped",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "",
+          "en"
+        ]
+      },
+      "then": "en"
+    },
+    {
+      "name": "resolveLocale: exact match beats language match",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "pt-BR"
+        ],
+        "supported": [
+          "en",
+          "pt",
+          "pt-BR"
+        ]
+      },
+      "then": "pt-BR"
+    },
+    {
+      "name": "resolveLocale: language match against a regional catalog",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "pt-PT"
+        ],
+        "supported": [
+          "en",
+          "pt-BR"
+        ]
+      },
+      "then": "pt-BR"
+    },
+    {
+      "name": "resolveLocale: matching is case-insensitive",
+      "op": "resolveLocale",
+      "given": {
+        "preferred": [
+          "DE"
+        ],
+        "supported": [
+          "en",
+          "de"
+        ]
+      },
+      "then": "de"
+    },
+    {
+      "name": "formatMessage: plain text",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "Add",
+        "params": {}
+      },
+      "then": "Add"
+    },
+    {
+      "name": "formatMessage: named parameter",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "Delete {title}",
+        "params": {
+          "title": "Buy milk"
+        }
+      },
+      "then": "Delete Buy milk"
+    },
+    {
+      "name": "formatMessage: missing parameter stays literal",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "Delete {title}",
+        "params": {}
+      },
+      "then": "Delete {title}"
+    },
+    {
+      "name": "formatMessage: number parameter",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "Page {n}",
+        "params": {
+          "n": 3
+        }
+      },
+      "then": "Page 3"
+    },
+    {
+      "name": "formatMessage: plural one",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{count, plural, one {# task} other {# tasks}} remaining",
+        "params": {
+          "count": 1
+        }
+      },
+      "then": "1 task remaining"
+    },
+    {
+      "name": "formatMessage: plural other",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{count, plural, one {# task} other {# tasks}} remaining",
+        "params": {
+          "count": 2
+        }
+      },
+      "then": "2 tasks remaining"
+    },
+    {
+      "name": "formatMessage: plural zero is other in English",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{count, plural, one {# task} other {# tasks}} remaining",
+        "params": {
+          "count": 0
+        }
+      },
+      "then": "0 tasks remaining"
+    },
+    {
+      "name": "formatMessage: # uses grouping separators",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{count, plural, one {# task} other {# tasks}}",
+        "params": {
+          "count": 1234567
+        }
+      },
+      "then": "1,234,567 tasks"
+    },
+    {
+      "name": "formatMessage: exact match beats category",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{count, plural, =0 {Nothing left} one {# left} other {# left}}",
+        "params": {
+          "count": 0
+        }
+      },
+      "then": "Nothing left"
+    },
+    {
+      "name": "formatMessage: missing count is 0",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{count, plural, one {# todo} other {# todos}}",
+        "params": {}
+      },
+      "then": "0 todos"
+    },
+    {
+      "name": "formatMessage: string count",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{count, plural, one {# todo} other {# todos}}",
+        "params": {
+          "count": "1"
+        }
+      },
+      "then": "1 todo"
+    },
+    {
+      "name": "formatMessage: missing branch falls back to other",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{count, plural, =5 {five} other {#}}",
+        "params": {
+          "count": 1
+        }
+      },
+      "then": "1"
+    },
+    {
+      "name": "formatMessage: parameters inside a branch",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "Added {count, plural, one {{first}} other {# todos}}",
+        "params": {
+          "count": 1,
+          "first": "Buy milk"
+        }
+      },
+      "then": "Added Buy milk"
+    },
+    {
+      "name": "formatMessage: two plurals",
+      "op": "formatMessage",
+      "given": {
+        "locale": "en",
+        "message": "{a, plural, one {# cat} other {# cats}} and {b, plural, one {# dog} other {# dogs}}",
+        "params": {
+          "a": 1,
+          "b": 3
+        }
+      },
+      "then": "1 cat and 3 dogs"
+    },
+    {
+      "name": "translate: list.remaining {\"count\":0}",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "list.remaining",
+        "params": {
+          "count": 0
+        }
+      },
+      "then": "0 tasks remaining"
+    },
+    {
+      "name": "translate: list.remaining {\"count\":1}",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "list.remaining",
+        "params": {
+          "count": 1
+        }
+      },
+      "then": "1 task remaining"
+    },
+    {
+      "name": "translate: list.remaining {\"count\":2}",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "list.remaining",
+        "params": {
+          "count": 2
+        }
+      },
+      "then": "2 tasks remaining"
+    },
+    {
+      "name": "translate: list.emptyFiltered {\"filter\":\"completed\"}",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "list.emptyFiltered",
+        "params": {
+          "filter": "completed"
+        }
+      },
+      "then": "No completed todos."
+    },
+    {
+      "name": "translate: item.delete {\"title\":\"Buy milk\"}",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "item.delete",
+        "params": {
+          "title": "Buy milk"
+        }
+      },
+      "then": "Delete \"Buy milk\""
+    },
+    {
+      "name": "translate: voice.added {\"count\":1,\"first\":\"Buy milk\"}",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "voice.added",
+        "params": {
+          "count": 1,
+          "first": "Buy milk"
+        }
+      },
+      "then": "Added Buy milk"
+    },
+    {
+      "name": "translate: voice.added {\"count\":3,\"first\":\"Buy milk\"}",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "voice.added",
+        "params": {
+          "count": 3,
+          "first": "Buy milk"
+        }
+      },
+      "then": "Added 3 todos"
+    },
+    {
+      "name": "translate: priority.high {}",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "priority.high",
+        "params": {}
+      },
+      "then": "High"
+    },
+    {
+      "name": "translate: unsupported locale formats as English",
+      "op": "translate",
+      "given": {
+        "locale": "fr",
+        "key": "list.remaining",
+        "params": {
+          "count": 1
+        }
+      },
+      "then": "1 task remaining"
+    },
+    {
+      "name": "translate: unknown key renders as the key",
+      "op": "translate",
+      "given": {
+        "locale": "en",
+        "key": "nope.missing",
+        "params": {}
+      },
+      "then": "nope.missing"
+    }
+  ]
+}

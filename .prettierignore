@@ -10,3 +10,4 @@ spec/fixtures/
 spec/scenarios/maestro/
 spec/test-ids.json
 apps/web/src/domain/test-ids.ts
+apps/web/src/domain/i18n/en.ts

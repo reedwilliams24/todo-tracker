@@ -12,25 +12,29 @@ struct StatsPanelView: View {
                 open.toggle()
             } label: {
                 HStack {
-                    Text("Stats")
+                    Text(t("stats.title"))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Theme.foreground)
                     Spacer()
-                    Text(open ? "Hide" : "Show")
+                    Text(t(open ? "stats.hide" : "stats.show"))
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.muted)
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityHint(open ? "Hides stats" : "Shows stats")
+            .accessibilityHint(t(open ? "stats.hidesHint" : "stats.showsHint"))
             .accessibilityIdentifier(TestID.statsToggle)
 
             if open {
                 HStack(alignment: .top) {
-                    value("Completed", "\(stats.totalCompleted)", id: TestID.statsTotal)
-                    value("Current streak", "\(stats.currentStreak)d", id: TestID.statsCurrent)
-                    value("Longest streak", "\(stats.longestStreak)d", id: TestID.statsLongest)
+                    value(t("stats.completed"), "\(stats.totalCompleted)", id: TestID.statsTotal)
+                    value(
+                        t("stats.currentStreak"), t("stats.days", ["count": stats.currentStreak]),
+                        id: TestID.statsCurrent)
+                    value(
+                        t("stats.longestStreak"), t("stats.days", ["count": stats.longestStreak]),
+                        id: TestID.statsLongest)
                 }
                 chart
             }
@@ -60,12 +64,12 @@ struct StatsPanelView: View {
                     .fill(day.count == 0 ? Theme.border : Theme.foreground)
                     .frame(maxWidth: .infinity)
                     .frame(height: day.count == 0 ? 3 : 64 * CGFloat(day.count) / CGFloat(peak))
-                    .accessibilityLabel("\(day.date): \(day.count) completed")
+                    .accessibilityLabel(t("stats.day", ["date": day.date, "count": day.count]))
             }
         }
         .frame(height: 64, alignment: .bottom)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Completed per day, last \(statsDays) days")
+        .accessibilityLabel(t("stats.chart", ["days": statsDays]))
         .accessibilityIdentifier(TestID.statsChart)
     }
 }

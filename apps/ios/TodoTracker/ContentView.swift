@@ -12,11 +12,11 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .top, spacing: 16) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Todo Tracker")
+                        Text(t("app.title"))
                             .font(.system(size: 24, weight: .semibold))
                             .foregroundStyle(Theme.foreground)
                             .accessibilityAddTraits(.isHeader)
-                        Text("A tiny local-first todo list.")
+                        Text(t("app.tagline.mobile"))
                             .font(.system(size: 14))
                             .foregroundStyle(Theme.muted)
                     }
@@ -62,7 +62,7 @@ struct ContentView: View {
                 Button {
                     storedTheme = option.rawValue
                 } label: {
-                    Text(option.label)
+                    Text(t("theme.\(option.rawValue)"))
                         .font(.system(size: 12))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
                         .padding(.horizontal, 10)
@@ -77,7 +77,7 @@ struct ContentView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Theme")
+        .accessibilityLabel(t("theme.label"))
         .accessibilityIdentifier(TestID.themeToggle)
     }
 
@@ -105,7 +105,7 @@ struct ContentView: View {
                 Button {
                     model.filter = option
                 } label: {
-                    Text(option.rawValue.capitalized)
+                    Text(t("filter.\(option.rawValue)"))
                         .font(.system(size: 14))
                         .lineLimit(1)
                         .fixedSize()
@@ -120,13 +120,13 @@ struct ContentView: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Filter todos")
+        .accessibilityLabel(t("filter.label"))
     }
 
     private var toolbarActions: some View {
         HStack(spacing: 16) {
             if !model.state.todos.isEmpty {
-                Button(model.selecting ? "Done" : "Select", action: model.toggleSelectMode)
+                Button(t(model.selecting ? "select.done" : "select.enter"), action: model.toggleSelectMode)
                     .buttonStyle(.plain)
                     .font(.system(size: 14))
                     .lineLimit(1)
@@ -135,7 +135,7 @@ struct ContentView: View {
                     .accessibilityIdentifier(TestID.selectMode)
             }
             if model.completedCount > 0, !model.selecting {
-                Button("Clear completed (\(model.completedCount))", action: model.clearCompleted)
+                Button(t("list.clearCompleted", ["count": model.completedCount]), action: model.clearCompleted)
                     .buttonStyle(.plain)
                     .font(.system(size: 14))
                     .lineLimit(1)
@@ -148,7 +148,7 @@ struct ContentView: View {
 
     private var sortControl: some View {
         HStack(spacing: 4) {
-            Text("Sort")
+            Text(t("sort.label"))
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.muted)
                 .padding(.trailing, 4)
@@ -157,7 +157,7 @@ struct ContentView: View {
                 Button {
                     model.sort = option
                 } label: {
-                    Text(option == .due ? "Due date" : option.rawValue.capitalized)
+                    Text(t("sort.\(option.rawValue)"))
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground.opacity(0.7))
                         .padding(.horizontal, 12)
@@ -170,7 +170,7 @@ struct ContentView: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Sort todos")
+        .accessibilityLabel(t("sort.ariaLabel"))
         .accessibilityIdentifier(TestID.sort)
     }
 
@@ -179,14 +179,15 @@ struct ContentView: View {
         return Group {
             if model.confirmingDelete {
                 HStack(spacing: 12) {
-                    Text("Delete \(count) \(count == 1 ? "todo" : "todos")?")
+                    Text(t("bulk.confirm", ["count": count]))
                         .font(.system(size: 14, weight: .medium))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .foregroundStyle(Theme.foreground)
                     Spacer(minLength: 0)
-                    actionButton("Cancel", id: TestID.bulkDeleteCancel) { model.confirmingDelete = false }
-                    actionButton("Delete", id: TestID.bulkDeleteConfirm, danger: true, action: model.deleteSelected)
+                    actionButton(t("bulk.cancel"), id: TestID.bulkDeleteCancel) { model.confirmingDelete = false }
+                    actionButton(
+                        t("bulk.delete"), id: TestID.bulkDeleteConfirm, danger: true, action: model.deleteSelected)
                 }
             } else {
                 ViewThatFits(in: .horizontal) {
@@ -209,19 +210,19 @@ struct ContentView: View {
         .padding(.vertical, 8)
         .cardStyle()
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Bulk actions")
+        .accessibilityLabel(t("bulk.label"))
         .accessibilityIdentifier(TestID.bulkBar)
     }
 
     private func bulkSelectionControls(_ count: Int) -> some View {
         HStack(spacing: 12) {
-            Text("\(count) selected")
+            Text(t("select.count", ["count": count]))
                 .font(.system(size: 14))
                 .lineLimit(1)
                 .fixedSize()
                 .foregroundStyle(Theme.muted)
                 .accessibilityIdentifier(TestID.selectedCount)
-            Button(model.allVisibleSelected ? "Select none" : "Select all", action: model.toggleSelectAll)
+            Button(t(model.allVisibleSelected ? "select.none" : "select.all"), action: model.toggleSelectAll)
                 .buttonStyle(.plain)
                 .font(.system(size: 14))
                 .lineLimit(1)
@@ -234,8 +235,8 @@ struct ContentView: View {
     private func bulkActionButtons(_ count: Int) -> some View {
         HStack(spacing: 12) {
             actionButton(
-                "Toggle complete", id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
-            actionButton("Delete", id: TestID.bulkDelete, enabled: count > 0, danger: true) {
+                t("bulk.toggle"), id: TestID.bulkToggle, enabled: count > 0, action: model.toggleSelectedComplete)
+            actionButton(t("bulk.delete"), id: TestID.bulkDelete, enabled: count > 0, danger: true) {
                 model.confirmingDelete = true
             }
         }
@@ -310,7 +311,7 @@ struct ContentView: View {
                     .foregroundStyle(Theme.card)
                     .accessibilityIdentifier(TestID.undoLabel)
                 Button(action: model.undo) {
-                    Text("Undo")
+                    Text(t("undo.action"))
                         .font(.system(size: 14, weight: .semibold))
                         .underline()
                         .foregroundStyle(Theme.card)

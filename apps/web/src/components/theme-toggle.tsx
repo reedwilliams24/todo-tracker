@@ -1,15 +1,17 @@
 "use client";
 
-import { TEST_IDS, THEME_LABELS, THEME_PREFERENCES, type ThemePreference } from "@/domain";
+import { TEST_IDS, THEME_PREFERENCES, type ThemePreference } from "@/domain";
+import { useT } from "@/hooks/use-t";
 import { useTheme } from "@/hooks/use-theme";
 
 export function ThemeToggle() {
+  const t = useT();
   const { preference, setPreference } = useTheme();
 
   return (
     <div
       role="radiogroup"
-      aria-label="Theme"
+      aria-label={t("theme.label")}
       data-testid={TEST_IDS.themeToggle}
       className="flex rounded-lg border border-black/10 text-xs dark:border-white/15"
     >
@@ -27,7 +29,7 @@ export function ThemeToggle() {
               selected ? "bg-foreground text-background" : "opacity-70 hover:opacity-100"
             }`}
           >
-            {THEME_LABELS[option]}
+            {t(`theme.${option}`)}
           </button>
         );
       })}

@@ -24,7 +24,7 @@ test("adds a todo", async ({ page }) => {
 
   const item = page.getByRole("listitem").filter({ hasText: "Buy milk" });
   await expect(item).toBeVisible();
-  await expect(item).toContainText("high");
+  await expect(item).toContainText("High");
   await expect(page.getByLabel("Todo title")).toHaveValue("");
   await expect(page.getByText("1 task remaining")).toBeVisible();
 });
@@ -189,6 +189,16 @@ test("undo restores deleted and completed todos in their original position", asy
   await expect(page.getByRole("listitem")).toHaveCount(3);
 });
 
+test("copy comes from the shared catalog with pluralised remaining count", async ({ page }) => {
+  await expect(page.getByText("0 tasks remaining")).toBeVisible();
+  await page.getByLabel("Todo title").fill("One");
+  await page.getByRole("button", { name: "Add" }).click();
+  await expect(page.getByText("1 task remaining")).toBeVisible();
+  await page.getByLabel("Todo title").fill("Two");
+  await page.getByRole("button", { name: "Add" }).click();
+  await expect(page.getByText("2 tasks remaining")).toBeVisible();
+});
+
 test("reminder option is tied to a due date and shown on the todo", async ({ page }) => {
   const reminder = page.getByLabel("Reminder");
   await expect(reminder).toBeDisabled();
@@ -233,12 +243,12 @@ test("quick-add shorthand previews and applies due date, priority", async ({ pag
   const preview = page.getByTestId(TEST_IDS.quickAddPreview);
   await expect(preview).toContainText("Will add: call mom");
   await expect(preview).toContainText("Due 20");
-  await expect(preview).toContainText("high priority");
+  await expect(preview).toContainText("High priority");
   await expect(preview).toContainText("#family");
   await page.getByRole("button", { name: "Add" }).click();
   const item = page.getByRole("listitem").filter({ hasText: "call mom" });
   await expect(item).toBeVisible();
-  await expect(item).toContainText("high");
+  await expect(item).toContainText("High");
   await expect(item).toContainText(/\d{4}-\d{2}-\d{2}/);
   await expect(preview).toBeHidden();
 });

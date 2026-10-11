@@ -14,15 +14,15 @@ spec/
 
 ## Commands
 
-| Command                                                               | What it does                                                                                          |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `pnpm --filter @todo/spec test`                                       | TypeScript fixture runner + schema validation                                                         |
-| `pnpm spec:record`                                                    | Re-records `fixtures/*.json` from `packages/spec/src/features/*.ts` and the current TS implementation |
-| `pnpm spec:generate`                                                  | Regenerates `apps/web/src/domain/test-ids.ts` and `scenarios/maestro/*.yaml`                          |
-| `pnpm spec:check`                                                     | Fails if fixtures or generated files are stale                                                        |
-| `pnpm spec:parity`                                                    | Prints the parity matrix from each fixture's and scenario's `status`                                  |
-| `pnpm --filter web e2e`                                               | Runs `scenarios/core/*.json` (and the older web-only specs) with Playwright                           |
-| `maestro test --include-tags spec -e APP_ID=… spec/scenarios/maestro` | Runs the scenarios on a device or emulator (see below)                                                |
+| Command                                                               | What it does                                                                                                                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm --filter @todo/spec test`                                       | TypeScript fixture runner + schema validation                                                                                                           |
+| `pnpm spec:record`                                                    | Re-records `fixtures/*.json` from `packages/spec/src/features/*.ts` and the current TS implementation                                                   |
+| `pnpm spec:generate`                                                  | Regenerates `apps/web/src/domain/test-ids.ts`, `scenarios/maestro/*.yaml` and the message catalogs from `i18n/en.json` (see `features/localization.md`) |
+| `pnpm spec:check`                                                     | Fails if fixtures or generated files are stale                                                                                                          |
+| `pnpm spec:parity`                                                    | Prints the parity matrix from each fixture's and scenario's `status`                                                                                    |
+| `pnpm --filter web e2e`                                               | Runs `scenarios/core/*.json` (and the older web-only specs) with Playwright                                                                             |
+| `maestro test --include-tags spec -e APP_ID=… spec/scenarios/maestro` | Runs the scenarios on a device or emulator (see below)                                                                                                  |
 
 ## Fixtures
 
@@ -54,7 +54,7 @@ Swift and Kotlin load the same files; nothing is copied or regenerated per platf
 
 - **iOS (XCTest)**: `apps/ios/TodoCore` is a Swift package whose `FixtureTests` resolve `spec/fixtures` from `#filePath`. Each test decodes each file, switches on `op`, calls the Swift implementation, encodes the result with `JSONEncoder` (`.sortedKeys`), applies normalization, and compares with `then` decoded as `JSONValue`. One `XCTContext.runActivity` per case gives per-case reporting.
 - **Android (JUnit 5)**: point `sourceSets.test.resources.srcDir("../../spec/fixtures")` at the folder. A `@TestFactory` returns one `DynamicTest` per case, dispatches on `op` to the Kotlin implementation, serializes with kotlinx.serialization (`explicitNulls = false`), normalizes, and asserts JSON equality.
-- An unknown `op` must **fail**, not skip, so a new fixture can't silently pass on a platform that doesn't implement it. Update the feature's `status` when a platform starts passing it.
+- An unknown `op` must **fail**, not skip, so a new fixture can't silently pass on a platform that doesn't implement it. Update the feature's `status` when a platform starts passing it. A fixture whose `status` is `n/a` for a platform is skipped there.
 
 ## UI scenarios
 

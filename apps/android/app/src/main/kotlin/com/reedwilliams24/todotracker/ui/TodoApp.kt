@@ -106,7 +106,6 @@ import com.reedwilliams24.todotracker.core.isValidDueDate
 import com.reedwilliams24.todotracker.core.isValidTitle
 import com.reedwilliams24.todotracker.core.parseQuickAdd
 import com.reedwilliams24.todotracker.core.quickAddToDraft
-import com.reedwilliams24.todotracker.core.remainingLabel
 import com.reedwilliams24.todotracker.core.sortTodos
 import java.time.Instant
 
@@ -120,6 +119,7 @@ fun TodoApp(viewModel: TodoViewModel) {
     val visible = remember(todos, filter, ui.sort) { sortTodos(filterTodos(todos, filter), ui.sort) }
     val visibleIds by rememberUpdatedState(visible.map { it.id })
     val remaining = countRemaining(todos)
+    val t = rememberTranslator()
     val completedCount = countCompleted(todos)
     var selecting by rememberSaveable { mutableStateOf(false) }
     var selectedIds by remember { mutableStateOf(emptySet<String>()) }
@@ -172,15 +172,15 @@ fun TodoApp(viewModel: TodoViewModel) {
             ) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s1)) {
                     Text(
-                        "Todo Tracker",
+                        t("app.title"),
                         fontSize = FontSize.xl2,
                         fontWeight = FontWeight.SemiBold,
                         color = Palette.foreground,
                         modifier = Modifier.semantics { heading() },
                     )
-                    Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
+                    Text(t("app.tagline.mobile"), fontSize = FontSize.sm, color = Palette.muted)
                 }
-                ThemeToggle(theme, onSelect = viewModel::setTheme)
+                ThemeToggle(theme, t, onSelect = viewModel::setTheme)
             }
 
             val context = LocalContext.current
@@ -189,6 +189,7 @@ fun TodoApp(viewModel: TodoViewModel) {
                     viewModel.syncReminders()
                 }
             TodoForm(
+                t,
                 onAdd = viewModel::add,
                 onPickReminder = {
                     if (
@@ -207,13 +208,13 @@ fun TodoApp(viewModel: TodoViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
-                    Modifier.selectableGroup().semantics { contentDescription = "Filter todos" },
+                    Modifier.selectableGroup().semantics { contentDescription = t("filter.label") },
                     horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
                 ) {
                     TodoFilter.entries.forEach { option ->
                         val selected = filter == option
                         Text(
-                            option.key.replaceFirstChar(Char::uppercase),
+                            t("filter.${option.key}"),
                             fontSize = FontSize.sm,
                             color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
                             modifier =
@@ -227,13 +228,13 @@ fun TodoApp(viewModel: TodoViewModel) {
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
                     if (todos.isNotEmpty()) {
-                        LinkText(if (selecting) "Done" else "Select", TestIds.selectMode) {
+                        LinkText(t(if (selecting) "select.done" else "select.enter"), TestIds.selectMode) {
                             if (selecting) exitSelectMode() else selecting = true
                         }
                     }
                     if (completedCount > 0 && !selecting) {
                         LinkText(
-                            "Clear completed ($completedCount)",
+                            t("list.clearCompleted", "count" to completedCount),
                             TestIds.clearCompleted,
                             onClick = viewModel::clearCompleted,
                         )
@@ -242,12 +243,12 @@ fun TodoApp(viewModel: TodoViewModel) {
             }
 
             Row(
-                Modifier.selectableGroup().semantics { contentDescription = "Sort todos" }.testTag(TestIds.sort),
+                Modifier.selectableGroup().semantics { contentDescription = t("sort.ariaLabel") }.testTag(TestIds.sort),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
             ) {
                 Text(
-                    "Sort",
+                    t("sort.label"),
                     fontSize = FontSize.sm,
                     color = Palette.muted,
                     modifier = Modifier.padding(end = Spacing.s1),
@@ -256,9 +257,9 @@ fun TodoApp(viewModel: TodoViewModel) {
                     val selected = ui.sort == option
                     Text(
                         when (option) {
-                            TodoSort.DUE -> "Due date"
-                            TodoSort.MANUAL -> "Manual"
-                            TodoSort.PRIORITY -> "Priority"
+                            TodoSort.DUE -> t("sort.due")
+                            TodoSort.MANUAL -> t("sort.manual")
+                            TodoSort.PRIORITY -> t("sort.priority")
                         },
                         fontSize = FontSize.sm,
                         color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
@@ -274,6 +275,7 @@ fun TodoApp(viewModel: TodoViewModel) {
 
             if (selecting) {
                 BulkBar(
+                    t = t,
                     count = selected.size,
                     allSelected = allVisibleSelected,
                     confirmingDelete = confirmingDelete,
@@ -295,11 +297,10 @@ fun TodoApp(viewModel: TodoViewModel) {
 
             Box(Modifier.weight(1f)) {
                 when {
-                    !ui.hydrated -> EmptyText("Loading…", Modifier)
+                    !ui.hydrated -> EmptyText(t("list.loading"), Modifier)
                     visible.isEmpty() ->
                         EmptyText(
-                            if (todos.isEmpty()) "No todos yet. Add your first one above."
-                            else "No ${filter.key} todos.",
+                            if (todos.isEmpty()) t("list.empty") else t("list.emptyFiltered", "filter" to filter.key),
                             Modifier.testTag(TestIds.empty),
                         )
                     else ->
@@ -312,6 +313,7 @@ fun TodoApp(viewModel: TodoViewModel) {
                                 val dragging = draggingId == todo.id
                                 TodoItem(
                                     todo,
+                                    t,
                                     onToggle = viewModel::toggle,
                                     onRename = viewModel::rename,
                                     onRemove = viewModel::remove,
@@ -332,7 +334,7 @@ fun TodoApp(viewModel: TodoViewModel) {
                                                 if (dragging) Modifier.shadow(6.dp, RoundedCornerShape(Radius.lg))
                                                 else Modifier
                                             )
-                                            .semantics { contentDescription = "Long-press and drag to reorder" }
+                                            .semantics { contentDescription = t("item.dragHint") }
                                             .pointerInput(todo.id) {
                                                 detectDragGesturesAfterLongPress(
                                                     onDragStart = {
@@ -357,13 +359,13 @@ fun TodoApp(viewModel: TodoViewModel) {
             }
 
             Text(
-                remainingLabel(remaining),
+                t("list.remaining", "count" to remaining),
                 fontSize = FontSize.xs,
                 color = Palette.muted,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }.testTag(TestIds.remaining),
             )
 
-            if (ui.hydrated) StatsPanel(todos)
+            if (ui.hydrated) StatsPanel(todos, t)
         }
 
         ui.state.undoable?.let { entry ->
@@ -386,7 +388,7 @@ fun TodoApp(viewModel: TodoViewModel) {
                     modifier = Modifier.testTag(TestIds.undoLabel),
                 )
                 Text(
-                    "Undo",
+                    t("undo.action"),
                     fontSize = FontSize.sm,
                     fontWeight = FontWeight.SemiBold,
                     color = Palette.card,
@@ -401,6 +403,7 @@ fun TodoApp(viewModel: TodoViewModel) {
     }
 }
 
+/** UI copy for the device's preferred locales (spec/features/localization.md). */
 @Composable
 private fun LinkText(label: String, tag: String, onClick: () -> Unit) {
     Text(
@@ -437,6 +440,7 @@ private fun ActionButton(
 
 @Composable
 private fun BulkBar(
+    t: Translator,
     count: Int,
     allSelected: Boolean,
     confirmingDelete: Boolean,
@@ -451,7 +455,7 @@ private fun BulkBar(
             .clip(RoundedCornerShape(Radius.lg))
             .border(1.dp, Palette.border, RoundedCornerShape(Radius.lg))
             .background(Palette.card)
-            .semantics { contentDescription = "Bulk actions" }
+            .semantics { contentDescription = t("bulk.label") }
             .testTag(TestIds.bulkBar)
             .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
@@ -459,30 +463,30 @@ private fun BulkBar(
     ) {
         if (confirmingDelete) {
             Text(
-                "Delete $count ${if (count == 1) "todo" else "todos"}?",
+                t("bulk.confirm", "count" to count),
                 fontSize = FontSize.sm,
                 fontWeight = FontWeight.Medium,
                 color = Palette.foreground,
                 modifier = Modifier.weight(1f),
             )
-            ActionButton("Cancel", TestIds.bulkDeleteCancel, onClick = onCancelDelete)
-            ActionButton("Delete", TestIds.bulkDeleteConfirm, danger = true, onClick = onConfirmDelete)
+            ActionButton(t("bulk.cancel"), TestIds.bulkDeleteCancel, onClick = onCancelDelete)
+            ActionButton(t("bulk.delete"), TestIds.bulkDeleteConfirm, danger = true, onClick = onConfirmDelete)
         } else {
             Text(
-                "$count selected",
+                t("select.count", "count" to count),
                 fontSize = FontSize.sm,
                 color = Palette.muted,
                 modifier = Modifier.testTag(TestIds.selectedCount),
             )
             Text(
-                if (allSelected) "Select none" else "Select all",
+                t(if (allSelected) "select.none" else "select.all"),
                 fontSize = FontSize.sm,
                 color = Palette.foreground,
                 modifier =
                     Modifier.weight(1f).clickable(role = Role.Button, onClick = onSelectAll).testTag(TestIds.selectAll),
             )
-            ActionButton("Toggle complete", TestIds.bulkToggle, enabled = count > 0, onClick = onToggle)
-            ActionButton("Delete", TestIds.bulkDelete, enabled = count > 0, danger = true, onClick = onDelete)
+            ActionButton(t("bulk.toggle"), TestIds.bulkToggle, enabled = count > 0, onClick = onToggle)
+            ActionButton(t("bulk.delete"), TestIds.bulkDelete, enabled = count > 0, danger = true, onClick = onDelete)
         }
     }
 }
@@ -490,7 +494,7 @@ private fun BulkBar(
 private data class Selection(val selected: Boolean, val onSelect: (String) -> Unit)
 
 @Composable
-private fun SelectableItem(todo: Todo, selection: Selection) {
+private fun SelectableItem(todo: Todo, t: Translator, selection: Selection) {
     Row(
         Modifier.fillMaxWidth()
             .clip(RoundedCornerShape(Radius.lg))
@@ -511,7 +515,7 @@ private fun SelectableItem(todo: Todo, selection: Selection) {
                 .clip(CircleShape)
                 .border(1.5.dp, Palette.foreground, CircleShape)
                 .background(if (selection.selected) Palette.foreground else Palette.card)
-                .semantics { contentDescription = "Select \"${todo.title}\"" }
+                .semantics { contentDescription = t("select.item", "title" to todo.title) }
                 .testTag(TestIds.itemSelect(todo.title)),
             contentAlignment = Alignment.Center,
         ) {
@@ -538,7 +542,7 @@ private fun SelectableItem(todo: Todo, selection: Selection) {
 }
 
 @Composable
-private fun StatsPanel(todos: List<Todo>) {
+private fun StatsPanel(todos: List<Todo>, t: Translator) {
     var open by rememberSaveable { mutableStateOf(false) }
     val stats = remember(todos) { computeStats(todos, Instant.now()) }
     Column(
@@ -549,13 +553,15 @@ private fun StatsPanel(todos: List<Todo>) {
     ) {
         Row(
             Modifier.fillMaxWidth()
-                .clickable(role = Role.Button, onClickLabel = if (open) "Hide stats" else "Show stats") { open = !open }
+                .clickable(role = Role.Button, onClickLabel = t(if (open) "stats.hideA11y" else "stats.showA11y")) {
+                    open = !open
+                }
                 .testTag(TestIds.statsToggle)
                 .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("Stats", fontSize = FontSize.sm, fontWeight = FontWeight.Medium, color = Palette.foreground)
-            Text(if (open) "Hide" else "Show", fontSize = FontSize.xs, color = Palette.muted)
+            Text(t("stats.title"), fontSize = FontSize.sm, fontWeight = FontWeight.Medium, color = Palette.foreground)
+            Text(t(if (open) "stats.hide" else "stats.show"), fontSize = FontSize.xs, color = Palette.muted)
         }
         if (open) {
             Column(
@@ -563,15 +569,30 @@ private fun StatsPanel(todos: List<Todo>) {
                 verticalArrangement = Arrangement.spacedBy(Spacing.s3),
             ) {
                 Row(Modifier.fillMaxWidth()) {
-                    StatValue("Completed", stats.totalCompleted.toString(), TestIds.statsTotal, Modifier.weight(1f))
-                    StatValue("Current streak", "${stats.currentStreak}d", TestIds.statsCurrent, Modifier.weight(1f))
-                    StatValue("Longest streak", "${stats.longestStreak}d", TestIds.statsLongest, Modifier.weight(1f))
+                    StatValue(
+                        t("stats.completed"),
+                        stats.totalCompleted.toString(),
+                        TestIds.statsTotal,
+                        Modifier.weight(1f),
+                    )
+                    StatValue(
+                        t("stats.currentStreak"),
+                        t("stats.days", "count" to stats.currentStreak),
+                        TestIds.statsCurrent,
+                        Modifier.weight(1f),
+                    )
+                    StatValue(
+                        t("stats.longestStreak"),
+                        t("stats.days", "count" to stats.longestStreak),
+                        TestIds.statsLongest,
+                        Modifier.weight(1f),
+                    )
                 }
                 val max = maxOf(1, stats.perDay.maxOf { it.count })
                 Row(
                     Modifier.fillMaxWidth()
                         .height(64.dp)
-                        .semantics { contentDescription = "Completed per day, last $STATS_DAYS days" }
+                        .semantics { contentDescription = t("stats.chart", "days" to STATS_DAYS) }
                         .testTag(TestIds.statsChart),
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.Bottom,
@@ -582,7 +603,9 @@ private fun StatsPanel(todos: List<Todo>) {
                                 .fillMaxHeight(if (day.count == 0) 0.04f else day.count.toFloat() / max)
                                 .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
                                 .background(if (day.count == 0) Palette.border else Palette.foreground)
-                                .semantics { contentDescription = "${day.date}: ${day.count} completed" }
+                                .semantics {
+                                    contentDescription = t("stats.day", "date" to day.date, "count" to day.count)
+                                }
                         )
                     }
                 }
@@ -606,18 +629,18 @@ private fun StatValue(label: String, value: String, testId: String, modifier: Mo
 }
 
 @Composable
-private fun ThemeToggle(preference: ThemePreference, onSelect: (ThemePreference) -> Unit) {
+private fun ThemeToggle(preference: ThemePreference, t: Translator, onSelect: (ThemePreference) -> Unit) {
     Row(
         Modifier.clip(RoundedCornerShape(Radius.md))
             .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
             .selectableGroup()
-            .semantics { contentDescription = "Theme" }
+            .semantics { contentDescription = t("theme.label") }
             .testTag(TestIds.themeToggle)
     ) {
         THEME_PREFERENCES.forEach { option ->
             val selected = option == preference
             Text(
-                option.label,
+                t("theme.${option.key}"),
                 fontSize = FontSize.xs,
                 color = if (selected) Palette.card else Palette.foreground.copy(alpha = 0.7f),
                 modifier =
@@ -700,7 +723,7 @@ private fun Field(
 }
 
 @Composable
-private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
+private fun TodoForm(t: Translator, onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
@@ -732,12 +755,12 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
         Field(
             value = title,
             onValueChange = { title = it },
-            placeholder = "What needs doing? e.g. tomorrow !p1 #tag",
+            placeholder = t("form.title.placeholder"),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { submit() }),
             modifier =
                 Modifier.fillMaxWidth()
-                    .semantics { contentDescription = "Todo title" }
+                    .semantics { contentDescription = t("form.title.label") }
                     .testTag(TestIds.formTitle)
                     .padding(horizontal = Spacing.s2, vertical = Spacing.s2),
         )
@@ -746,13 +769,13 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                 Modifier.clip(RoundedCornerShape(Radius.md))
                     .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
                     .selectableGroup()
-                    .semantics { contentDescription = "Priority" }
+                    .semantics { contentDescription = t("form.priority.label") }
                     .testTag(TestIds.formPriority)
             ) {
                 listOf(TodoPriority.LOW, TodoPriority.MEDIUM, TodoPriority.HIGH).forEach { option ->
                     val selected = option == priority
                     Text(
-                        option.key.replaceFirstChar(Char::uppercase),
+                        t("priority.${option.key}"),
                         fontSize = FontSize.sm,
                         color = if (selected) Palette.card else Palette.foreground,
                         modifier =
@@ -766,13 +789,13 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
             Field(
                 value = dueDate,
                 onValueChange = { dueDate = it },
-                placeholder = "YYYY-MM-DD",
+                placeholder = t("form.dueDate.placeholder"),
                 style = inputStyle().copy(fontSize = FontSize.sm),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 modifier =
                     Modifier.weight(1f)
                         .border(1.dp, if (dateOk) Palette.border else Palette.danger, RoundedCornerShape(Radius.md))
-                        .semantics { contentDescription = "Due date" }
+                        .semantics { contentDescription = t("form.dueDate.label") }
                         .testTag(TestIds.formDueDate)
                         .padding(horizontal = Spacing.s2, vertical = Spacing.s1_5),
             )
@@ -784,10 +807,11 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                 .clip(RoundedCornerShape(Radius.md))
                 .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
                 .selectableGroup()
-                .semantics { contentDescription = "Reminder" }
+                .semantics { contentDescription = t("form.reminder.label") }
                 .testTag(TestIds.formReminder)
         ) {
-            (listOf("" to "No reminder") + REMINDER_OFFSETS.map { it.key to it.label }).forEach { (key, label) ->
+            (listOf("" to t("reminder.none")) + REMINDER_OFFSETS.map { it.key to t("reminder.${it.key}") }).forEach {
+                (key, label) ->
                 val selected = key == reminder
                 Text(
                     label,
@@ -811,10 +835,11 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
             Modifier.clip(RoundedCornerShape(Radius.md))
                 .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
                 .selectableGroup()
-                .semantics { contentDescription = "Repeat" }
+                .semantics { contentDescription = t("form.recurrence.label") }
                 .testTag(TestIds.formRecurrence)
         ) {
-            (listOf("" to "No repeat") + RECURRENCES.map { it.key to it.label }).forEach { (key, label) ->
+            (listOf("" to t("recurrence.none")) + RECURRENCES.map { it.key to t("recurrence.${it.key}") }).forEach {
+                (key, label) ->
                 val selected = key == recurrence
                 Text(
                     label,
@@ -834,7 +859,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(Spacing.s0_5),
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-                    Text("Will add:", fontSize = FontSize.xs, color = Palette.muted)
+                    Text(t("quickAdd.willAdd"), fontSize = FontSize.xs, color = Palette.muted)
                     Text(
                         parsed.title.ifEmpty { "…" },
                         fontSize = FontSize.xs,
@@ -845,14 +870,14 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                 }
                 val meta =
                     listOfNotNull(
-                        parsed.dueDate?.let { "Due $it" },
-                        parsed.priority?.let { "${it.key.replaceFirstChar(Char::uppercase)} priority" },
+                        parsed.dueDate?.let { t("quickAdd.due", "date" to it) },
+                        parsed.priority?.let { t("quickAdd.priority", "priority" to t("priority.${it.key}")) },
                     ) + parsed.tags.map { "#$it" }
                 if (meta.isNotEmpty()) Text(meta.joinToString("  ·  "), fontSize = FontSize.xs, color = Palette.muted)
             }
         }
         Text(
-            "Add",
+            t("form.add"),
             fontSize = FontSize.sm,
             fontWeight = FontWeight.Medium,
             color = Palette.card,
@@ -862,7 +887,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                     .clip(RoundedCornerShape(Radius.md))
                     .background(Palette.foreground)
                     .clickable(enabled = canAdd, role = Role.Button) { submit() }
-                    .semantics { contentDescription = "Add todo" }
+                    .semantics { contentDescription = t("form.add.label") }
                     .testTag(TestIds.formSubmit)
                     .padding(horizontal = Spacing.s4, vertical = Spacing.s2),
         )
@@ -872,6 +897,7 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
 @Composable
 private fun TodoItem(
     todo: Todo,
+    t: Translator,
     onToggle: (String) -> Unit,
     onRename: (String, String) -> Unit,
     onRemove: (String) -> Unit,
@@ -879,7 +905,7 @@ private fun TodoItem(
     modifier: Modifier = Modifier,
 ) {
     if (selection != null) {
-        SelectableItem(todo, selection)
+        SelectableItem(todo, t, selection)
         return
     }
     var editing by remember { mutableStateOf(false) }
@@ -920,7 +946,8 @@ private fun TodoItem(
                 .background(if (todo.completed) Palette.foreground else Palette.card)
                 .toggleable(value = todo.completed, role = Role.Checkbox) { onToggle(todo.id) }
                 .semantics {
-                    contentDescription = "Mark \"${todo.title}\" as ${if (todo.completed) "active" else "complete"}"
+                    contentDescription =
+                        t(if (todo.completed) "item.markActive" else "item.markComplete", "title" to todo.title)
                 }
                 .testTag(TestIds.itemToggle(todo.title)),
             contentAlignment = Alignment.Center,
@@ -948,7 +975,7 @@ private fun TodoItem(
                                 false
                             }
                         }
-                        .semantics { contentDescription = "Edit title" }
+                        .semantics { contentDescription = t("item.editTitle") }
                         .testTag(TestIds.itemEditInput)
                         .padding(vertical = Spacing.s1),
             )
@@ -963,8 +990,8 @@ private fun TodoItem(
                 modifier =
                     Modifier.weight(1f)
                         .alpha(if (todo.completed) 0.7f else 1f)
-                        .clickable(role = Role.Button, onClickLabel = "open the title for editing") { editing = true }
-                        .semantics { contentDescription = "Edit \"${todo.title}\"" }
+                        .clickable(role = Role.Button, onClickLabel = t("item.editClickLabel")) { editing = true }
+                        .semantics { contentDescription = t("item.edit", "title" to todo.title) }
                         .testTag(TestIds.itemTitle(todo.title)),
             )
         }
@@ -973,13 +1000,13 @@ private fun TodoItem(
             val color = if (overdue) Palette.danger else Palette.muted
             Row(
                 Modifier.semantics(mergeDescendants = true) {
-                    contentDescription = if (overdue) "Overdue, was due $it" else "Due $it"
+                    contentDescription = t(if (overdue) "item.overdue" else "item.due", "date" to it)
                 },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (overdue) {
                     Text(
-                        "Overdue · ",
+                        t("item.overdueBadge"),
                         fontSize = FontSize.xs,
                         fontWeight = FontWeight.Medium,
                         color = color,
@@ -997,19 +1024,21 @@ private fun TodoItem(
 
         todo.reminder?.let {
             Text(
-                it.label,
+                t("reminder.${it.key}"),
                 fontSize = FontSize.xs,
                 color = Palette.muted,
                 maxLines = 1,
                 modifier =
-                    Modifier.semantics { contentDescription = "Reminder ${it.label.lowercase()}" }
+                    Modifier.semantics {
+                            contentDescription = t("item.reminder", "label" to t("reminder.${it.key}").lowercase())
+                        }
                         .testTag(TestIds.itemReminder(todo.title)),
             )
         }
 
         todo.recurrence?.let {
             Text(
-                "↻ ${it.label}",
+                t("item.recurrence", "label" to t("recurrence.${it.key}")),
                 fontSize = FontSize.xs,
                 color = Palette.muted,
                 modifier = Modifier.testTag(TestIds.itemRecurrence(todo.title)),
@@ -1018,7 +1047,7 @@ private fun TodoItem(
 
         val (badgeBg, badgeText) = Palette.priority(todo.priority)
         Text(
-            todo.priority.key.replaceFirstChar(Char::uppercase),
+            t("priority.${todo.priority.key}"),
             fontSize = FontSize.xs,
             color = badgeText,
             modifier =
@@ -1034,7 +1063,7 @@ private fun TodoItem(
             color = Palette.muted,
             modifier =
                 Modifier.clickable(role = Role.Button) { onRemove(todo.id) }
-                    .semantics { contentDescription = "Delete \"${todo.title}\"" }
+                    .semantics { contentDescription = t("item.delete", "title" to todo.title) }
                     .testTag(TestIds.itemDelete(todo.title))
                     .padding(horizontal = Spacing.s1_5, vertical = Spacing.s0_5),
         )

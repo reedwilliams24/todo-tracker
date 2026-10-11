@@ -39,7 +39,7 @@ struct TodoRowView: View {
                         }
                     }
                     .frame(width: 20, height: 20)
-                    .accessibilityLabel("Select \"\(todo.title)\"")
+                    .accessibilityLabel(t("select.item", ["title": todo.title]))
                     .accessibilityValue(selection.selected ? "1" : "0")
                     .accessibilityAddTraits(.isToggle)
                     .accessibilityIdentifier(TestID.itemSelect(todo.title))
@@ -75,17 +75,18 @@ struct TodoRowView: View {
 
     private var row: some View {
         HStack(spacing: 10) {
+            let toggleLabel = t(todo.completed ? "item.markActive" : "item.markComplete", ["title": todo.title])
             Toggle(
-                "Mark \"\(todo.title)\" as \(todo.completed ? "active" : "complete")",
+                toggleLabel,
                 isOn: Binding(get: { todo.completed }, set: { _ in onToggle() })
             )
             .toggleStyle(CheckboxToggleStyle())
-            .accessibilityLabel("Mark \"\(todo.title)\" as \(todo.completed ? "active" : "complete")")
+            .accessibilityLabel(toggleLabel)
             .accessibilityIdentifier(TestID.itemToggle(todo.title))
 
             VStack(alignment: .leading, spacing: 2) {
                 if editing {
-                    TextField("Edit title", text: $draftTitle)
+                    TextField(t("item.editTitle"), text: $draftTitle)
                         .font(.system(size: 16))
                         .foregroundStyle(Theme.foreground)
                         .padding(.vertical, 4)
@@ -96,7 +97,7 @@ struct TodoRowView: View {
                             if !focused { commit() }
                         }
                         .onAppear { editFocused = true }
-                        .accessibilityLabel("Edit title")
+                        .accessibilityLabel(t("item.editTitle"))
                         .accessibilityIdentifier(TestID.itemEditInput)
                 } else {
                     Button {
@@ -113,8 +114,8 @@ struct TodoRowView: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Edit \"\(todo.title)\"")
-                    .accessibilityHint("Opens the title for editing")
+                    .accessibilityLabel(t("item.edit", ["title": todo.title]))
+                    .accessibilityHint(t("item.editA11yHint"))
                     .accessibilityIdentifier(TestID.itemTitle(todo.title))
                 }
 
@@ -123,7 +124,7 @@ struct TodoRowView: View {
                         if let dueDate = todo.dueDate {
                             HStack(spacing: 0) {
                                 if overdue {
-                                    Text("Overdue · ")
+                                    Text(t("item.overdueBadge"))
                                         .font(.system(size: 12, weight: .medium))
                                         .accessibilityIdentifier(TestID.itemOverdue(todo.title))
                                 }
@@ -136,10 +137,10 @@ struct TodoRowView: View {
                             .fixedSize(horizontal: true, vertical: false)
                             .layoutPriority(1)
                             .accessibilityElement(children: .contain)
-                            .accessibilityLabel(overdue ? "Overdue, was due \(dueDate)" : "Due \(dueDate)")
+                            .accessibilityLabel(t(overdue ? "item.overdue" : "item.due", ["date": dueDate]))
                         }
                         if let recurrence = todo.recurrence {
-                            Text("↻ \(recurrence.label)")
+                            Text(t("item.recurrence", ["label": t("recurrence.\(recurrence.rawValue)")]))
                                 .font(.system(size: 12))
                                 .foregroundStyle(Theme.muted)
                                 .lineLimit(1)
@@ -147,12 +148,12 @@ struct TodoRowView: View {
                                 .accessibilityIdentifier(TestID.itemRecurrence(todo.title))
                         }
                         if let reminder = todo.reminder {
-                            Text(reminder.label)
+                            Text(t("reminder.\(reminder.rawValue)"))
                                 .font(.system(size: 12))
                                 .foregroundStyle(Theme.muted)
                                 .lineLimit(1)
                                 .fixedSize()
-                                .accessibilityHint("Reminder")
+                                .accessibilityHint(t("form.reminder.label"))
                                 .accessibilityIdentifier(TestID.itemReminder(todo.title))
                         }
                     }
@@ -161,7 +162,7 @@ struct TodoRowView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             let colors = Theme.priority(todo.priority)
-            Text(todo.priority.rawValue.capitalized)
+            Text(t("priority.\(todo.priority.rawValue)"))
                 .font(.system(size: 12))
                 .foregroundStyle(colors.text)
                 .padding(.horizontal, 8)
@@ -179,7 +180,7 @@ struct TodoRowView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Delete \"\(todo.title)\"")
+            .accessibilityLabel(t("item.delete", ["title": todo.title]))
             .accessibilityIdentifier(TestID.itemDelete(todo.title))
         }
         .padding(.horizontal, 12)

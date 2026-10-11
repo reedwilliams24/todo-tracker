@@ -14,32 +14,35 @@ struct TodoFormView: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
             TextField(
-                "What needs doing?", text: $form.title,
-                prompt: Text("What needs doing? e.g. tomorrow !p1 #tag").foregroundStyle(Theme.muted)
+                t("form.title.placeholder"), text: $form.title,
+                prompt: Text(t("form.title.placeholder")).foregroundStyle(Theme.muted)
             )
             .font(.system(size: 16))
             .foregroundStyle(Theme.foreground)
             .padding(8)
             .submitLabel(.done)
             .onSubmit(submit)
-            .accessibilityLabel("Todo title")
+            .accessibilityLabel(t("form.title.label"))
             .accessibilityIdentifier(TestID.formTitle)
             HStack(spacing: 8) {
                 priorityPicker
-                TextField("YYYY-MM-DD", text: $form.dueDate, prompt: Text("YYYY-MM-DD").foregroundStyle(Theme.muted))
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.foreground)
-                    .keyboardType(.numbersAndPunctuation)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Theme.Radius.md)
-                            .stroke(dateOk ? Theme.border : Theme.danger, lineWidth: 1)
-                    )
-                    .accessibilityLabel("Due date")
-                    .accessibilityIdentifier(TestID.formDueDate)
+                TextField(
+                    t("form.dueDate.placeholder"), text: $form.dueDate,
+                    prompt: Text(t("form.dueDate.placeholder")).foregroundStyle(Theme.muted)
+                )
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.foreground)
+                .keyboardType(.numbersAndPunctuation)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.Radius.md)
+                        .stroke(dateOk ? Theme.border : Theme.danger, lineWidth: 1)
+                )
+                .accessibilityLabel(t("form.dueDate.label"))
+                .accessibilityIdentifier(TestID.formDueDate)
             }
             reminderPicker
             recurrencePicker
@@ -49,7 +52,7 @@ struct TodoFormView: View {
                 QuickAddPreview(parse: preview)
             }
             Button(action: submit) {
-                Text("Add")
+                Text(t("form.add"))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.card)
                     .padding(.horizontal, 16)
@@ -59,7 +62,7 @@ struct TodoFormView: View {
             .buttonStyle(UndimmedButtonStyle())
             .disabled(!canAdd)
             .opacity(canAdd ? 1 : 0.4)
-            .accessibilityLabel("Add todo")
+            .accessibilityLabel(t("form.add.label"))
             .accessibilityIdentifier(TestID.formSubmit)
         }
         .padding(12)
@@ -73,7 +76,7 @@ struct TodoFormView: View {
                 Button {
                     form.priority = option
                 } label: {
-                    Text(option.rawValue.capitalized)
+                    Text(t("priority.\(option.rawValue)"))
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground)
                         .padding(.horizontal, 10)
@@ -88,7 +91,7 @@ struct TodoFormView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Priority")
+        .accessibilityLabel(t("form.priority.label"))
         .accessibilityIdentifier(TestID.formPriority)
     }
 
@@ -103,7 +106,7 @@ struct TodoFormView: View {
                     form.reminder = key
                     if !key.isEmpty { onPickReminder() }
                 } label: {
-                    Text(ReminderOffset(rawValue: key)?.label ?? "No reminder")
+                    Text(t(key.isEmpty ? "reminder.none" : "reminder.\(key)"))
                         .font(.system(size: 12))
                         .lineLimit(1)
                         .foregroundStyle(selected ? Theme.card : Theme.foreground)
@@ -122,7 +125,7 @@ struct TodoFormView: View {
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.4)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Reminder")
+        .accessibilityLabel(t("form.reminder.label"))
         .accessibilityIdentifier(TestID.formReminder)
     }
 
@@ -133,7 +136,7 @@ struct TodoFormView: View {
                 Button {
                     form.recurrence = option?.rawValue ?? ""
                 } label: {
-                    Text(option?.label ?? "No repeat")
+                    Text(option.map { t("recurrence.\($0.rawValue)") } ?? t("recurrence.none"))
                         .font(.system(size: 14))
                         .foregroundStyle(selected ? Theme.card : Theme.foreground)
                         .padding(.horizontal, 10)
@@ -148,7 +151,7 @@ struct TodoFormView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Repeat")
+        .accessibilityLabel(t("form.recurrence.label"))
         .accessibilityIdentifier(TestID.formRecurrence)
     }
 
@@ -167,8 +170,10 @@ private struct QuickAddPreview: View {
 
     private var meta: String {
         var parts: [String] = []
-        if let dueDate = parse.dueDate { parts.append("Due \(dueDate)") }
-        if let priority = parse.priority { parts.append("\(priority.rawValue.capitalized) priority") }
+        if let dueDate = parse.dueDate { parts.append(t("quickAdd.due", ["date": dueDate])) }
+        if let priority = parse.priority {
+            parts.append(t("quickAdd.priority", ["priority": t("priority.\(priority.rawValue)")]))
+        }
         parts += parse.tags.map { "#\($0)" }
         return parts.joined(separator: "  ·  ")
     }
@@ -176,7 +181,7 @@ private struct QuickAddPreview: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
-                Text("Will add:")
+                Text(t("quickAdd.willAdd"))
                     .foregroundStyle(Theme.muted)
                 Text(parse.title.isEmpty ? "…" : parse.title)
                     .fontWeight(.medium)
