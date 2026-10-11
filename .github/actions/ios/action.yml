@@ -1,5 +1,5 @@
 name: Setup iOS
-description: xcodegen, cached DerivedData/SwiftPM, and a booted iPhone Simulator (exports SIMULATOR_UDID)
+description: xcodegen, cached DerivedData/SwiftPM, and the pinned Swift packages (apps/ios/Package.resolved). Boots no Simulator.
 
 runs:
   using: composite
@@ -11,14 +11,15 @@ runs:
         path: |
           apps/ios/build
           apps/ios/TodoCore/.build
-        key: xcode-${{ runner.os }}-${{ hashFiles('apps/ios/**/*.swift', 'apps/ios/project.yml', 'apps/ios/TodoCore/Package.swift') }}
+        key: xcode-${{ runner.os }}-${{ hashFiles('apps/ios/**/*.swift', 'apps/ios/project.yml', 'apps/ios/TodoCore/Package.swift', 'apps/ios/Package.resolved') }}
         restore-keys: xcode-${{ runner.os }}-
     - run: xcodegen generate
       shell: bash
       working-directory: apps/ios
-    - name: Pick and boot an iPhone Simulator
+    - name: Pin Swift packages to Package.resolved
       shell: bash
+      working-directory: apps/ios
       run: |
-        udid=$(xcrun simctl list devices available -j | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
-        echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
-        xcrun simctl boot "$udid" || true
+        dir=TodoTracker.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+        mkdir -p "$dir"
+        cp Package.resolved "$dir/Package.resolved"
