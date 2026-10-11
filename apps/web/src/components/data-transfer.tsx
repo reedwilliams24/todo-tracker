@@ -12,7 +12,7 @@ import {
   type ImportMode,
   type ImportResult,
   type Todo,
-} from "@todo/shared";
+} from "@/domain";
 
 type DataTransferProps = {
   todos: readonly Todo[];

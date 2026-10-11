@@ -1,6 +1,6 @@
 # Import / export
 
-Fixtures: [`../fixtures/transfer.json`](../fixtures/transfer.json). Reference implementation: `packages/shared/src/transfer.ts`.
+Fixtures: [`../fixtures/transfer.json`](../fixtures/transfer.json). Reference implementation: `apps/web/src/domain/transfer.ts`.
 
 ## Export
 
