@@ -7,14 +7,10 @@
 #     [x] Restrict deletions
 #     [x] Block force pushes
 #     [x] Require status checks to pass
-#           checks: lint, typecheck, test, spec, build, e2e, android, ios
+#           checks: lint, typecheck, spec, build, unit-tests-web, unit-tests-android, unit-tests-ios, build-ios
+#           (e2e-tests-* run on main only and are NOT required)
 #           [ ] Require branches to be up to date before merging   (the queue does this)
-#     [x] Require merge queue
-#           Merge method: Squash
-#           Build concurrency: 5
-#           Minimum / maximum group size: 1 / 5, wait 1 minute
-#           Status check timeout: 60 minutes
-#           [ ] Require all queue entries to pass required checks  (only the merge group's run)
+#     (Require merge queue is only offered to organization-owned repos; not available here.)
 #   Then delete the old classic protection rule under Settings → Branches so the
 #   two don't fight (the classic rule's "up to date" requirement would still block).
 #
