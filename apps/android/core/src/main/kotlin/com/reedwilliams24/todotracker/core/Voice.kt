@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-// Port of packages/shared/src/voice.ts. JS `String.replace(regex)` without /g replaces only the
+// Port of apps/web/src/domain/voice.ts. JS `String.replace(regex)` without /g replaces only the
 // first match, hence replaceFirst below.
 
 private val I = setOf(RegexOption.IGNORE_CASE)

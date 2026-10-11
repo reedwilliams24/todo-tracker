@@ -8,7 +8,7 @@ import {
   toTodoDraft,
   type TodoDraft,
   type TodoPriority,
-} from "@todo/shared";
+} from "@/domain";
 
 const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 

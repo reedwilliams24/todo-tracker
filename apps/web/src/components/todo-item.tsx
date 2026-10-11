@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { isValidTitle, TEST_IDS, type Todo } from "@todo/shared";
+import { isValidTitle, TEST_IDS, type Todo } from "@/domain";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
   high: "bg-red-500/15 text-red-600 dark:text-red-400",

@@ -1,7 +1,7 @@
 import SwiftUI
 import TodoCore
 
-/// Mirrors apps/mobile/src/theme.ts (Tailwind scale, 1 unit = 4pt).
+/// Tailwind scale tokens matching apps/web (1 unit = 4pt).
 enum Theme {
     static let background = Color(red: 0xF7 / 255, green: 0xF7 / 255, blue: 0xF5 / 255)
     static let card = Color.white

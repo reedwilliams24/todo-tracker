@@ -1,7 +1,8 @@
 # todo-tracker
 
-A todo tracker for web, iOS and Android — shared domain logic lives in a
-workspace package so all clients stay in sync.
+A todo tracker for web, iOS and Android. Each client implements the domain
+logic natively (TypeScript, Swift, Kotlin), and all three are checked against
+the same conformance fixtures in [`spec/`](spec/README.md).
 
 ## Try the latest build
 
@@ -11,33 +12,30 @@ Every merge to `main` ships automatically to the platforms it touches
 | Changed paths | What deploys |
 | --- | --- |
 | `apps/web/**` only | Web → Vercel production ([`deploy-web.yml`](.github/workflows/deploy-web.yml)) |
-| `apps/mobile/**` only | Mobile alpha → EAS build; Android APK to Firebase App Distribution, iOS via EAS internal ([`deploy-mobile.yml`](.github/workflows/deploy-mobile.yml)) |
-| `packages/shared/**` or root config (`package.json`, lockfile, workspace) | Both |
+| Root config (`package.json`, lockfile, workspace) | Web |
 
 - **Web:** https://todo-tracker.vercel.app <!-- replace with the production URL Vercel assigns after the first deploy -->
-- **Android alpha:** ask the owner to add your email to the `alpha` tester group in Firebase App Distribution; you'll get an invite email with the install link, and new builds notify you automatically.
-- **iOS alpha:** register your device with `eas device:create` (owner runs it, or shares the QR link), then install from the build link in the "Mobile alpha" workflow run / EAS dashboard.
+- **Android / iOS:** no alpha channel yet. Build from [`apps/android`](apps/android/README.md) or [`apps/ios`](apps/ios/README.md); CI uploads a debug APK on every run.
 
-Both workflows are inert until their repository secrets/variables are set (web:
-`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, var `VERCEL_ENABLED=true`;
-mobile: `EXPO_TOKEN`, `FIREBASE_ANDROID_APP_ID`, `FIREBASE_SERVICE_ACCOUNT`, var
-`MOBILE_ALPHA_ENABLED=true`). Check the Actions tab to confirm a merge only triggered
-the workflow(s) for the platform it changed.
+The web workflow is inert until its repository secrets/variables are set
+(`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, var `VERCEL_ENABLED=true`).
 
 ## Structure
 
 ```
-apps/web        Next.js 15 (App Router) + Tailwind web client
-apps/mobile     Expo (React Native) iOS + Android client
-packages/shared platform-agnostic types, todo logic, storage contract and
-                the `useTodos` hook (@todo/shared, @todo/shared/react)
+apps/web        Next.js 15 (App Router) + Tailwind web client; src/domain
+                holds its todo logic, storage contract and `useTodos` hook
+apps/ios        Swift / SwiftUI app (SwiftData)
+apps/android    Kotlin / Jetpack Compose app (Room)
+packages/spec   fixture recorder, TS fixture runner and parity matrix
+spec            language-neutral rules, fixtures, test IDs and UI scenarios
 ```
 
-Storage is local-first: todos persist to `localStorage` on web and
-`AsyncStorage` on mobile, so there is no backend or database to run yet. Both
-adapters implement the `TodoStorage` interface from `@todo/shared`; swapping in
-an API later means adding another adapter (`apps/web/src/lib/storage.ts`,
-`apps/mobile/src/lib/storage.ts`) and keeping `@todo/shared` unchanged.
+Storage is local-first: todos persist to `localStorage` on web, SwiftData on
+iOS and Room on Android, so there is no backend or database to run yet. On web
+the adapter implements the `TodoStorage` interface from `apps/web/src/domain`;
+swapping in an API later means adding another adapter next to
+`apps/web/src/lib/storage.ts`.
 
 ## Voice input
 
@@ -48,7 +46,7 @@ also assigns each todo a priority, calibrated against your open todos; a due
 date is only set if you actually said one.
 
 Parsing uses a local [Ollama](https://ollama.com) model, with a regex parser in
-`@todo/shared` as the fallback whenever Ollama is unreachable or returns
+`apps/web/src/domain/voice.ts` as the fallback whenever Ollama is unreachable or returns
 nothing — so the feature works with no setup, just less accurately.
 
 ```bash
@@ -76,14 +74,9 @@ pnpm dev          # web app on http://localhost:3000
 
 ### Mobile
 
-```bash
-pnpm --filter mobile start      # Expo dev server
-pnpm --filter mobile ios        # iOS simulator (macOS + Xcode)
-pnpm --filter mobile android    # Android emulator / device
-```
-
-From the dev server you can also scan the QR code with
-[Expo Go](https://expo.dev/go). Voice input is web-only for now.
+See [`apps/android/README.md`](apps/android/README.md) (Gradle, emulator) and
+[`apps/ios/README.md`](apps/ios/README.md) (Xcode, Simulator). Voice input is
+web-only for now.
 
 ## Checks
 
@@ -118,8 +111,8 @@ Linear ticket's name as a link, followed by `Fixes REED-n`.
 Production: _not yet deployed — URL goes here after the first `main` deploy._
 
 `.github/workflows/deploy-web.yml` deploys `apps/web` with the Vercel CLI: production on every push to
-`main`, a preview (commented on the PR) for pull requests. It only runs when `apps/web/**`,
-`packages/shared/**`, or the root package/lockfile/workspace config change — mobile-only changes skip it.
+`main`, a preview (commented on the PR) for pull requests. It only runs when `apps/web/**` or the root
+package/lockfile/workspace config change, so native-only changes skip it.
 Vercel's own Git integration is disabled in `vercel.json` so the workflow is the single deploy path.
 
 One-time setup (nothing is committed):

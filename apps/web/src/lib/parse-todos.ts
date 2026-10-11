@@ -1,5 +1,5 @@
-import type { Todo, TodoDraft } from "@todo/shared";
-import { coerceDrafts, parseTranscript } from "@todo/shared";
+import type { Todo, TodoDraft } from "@/domain";
+import { coerceDrafts, parseTranscript } from "@/domain";
 
 export type ParseResult = {
   todos: TodoDraft[];

@@ -8,7 +8,7 @@ import {
   sortTodos,
   TEST_IDS,
   type TodoFilter,
-} from "@todo/shared";
+} from "@/domain";
 import { useTodos } from "@/hooks/use-todos";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";

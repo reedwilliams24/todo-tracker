@@ -1,8 +1,8 @@
 # Todo Tracker for Android
 
-A native Kotlin / Jetpack Compose app that replaces the Expo app on Android (REED-27). Package: `com.reedwilliams24.todotracker`, min SDK 26.
+A native Kotlin / Jetpack Compose app that replaced the Expo app on Android (REED-27). Package: `com.reedwilliams24.todotracker`, min SDK 26.
 
-- `core/`: the domain logic ported from `packages/shared`, as a pure JVM module. `FixtureTest` runs every case in `spec/fixtures` and fails on unknown ops. `TestIdsTest` checks `TestIds` against `spec/test-ids.json`.
+- `core/`: the domain logic ported from `apps/web/src/domain`, as a pure JVM module. `FixtureTest` runs every case in `spec/fixtures` and fails on unknown ops. `TestIdsTest` checks `TestIds` against `spec/test-ids.json`.
 - `app/`: Compose UI, `TodoViewModel` (drives `reduceTodos` and the 5 s undo timer), and Room storage. One row per todo, with `position` keeping storage order.
 
 ```bash

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import type { Todo, TodoDraft } from "@todo/shared";
+import type { Todo, TodoDraft } from "@/domain";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { parseTodosFromTranscript, type ParseResult } from "@/lib/parse-todos";
 
