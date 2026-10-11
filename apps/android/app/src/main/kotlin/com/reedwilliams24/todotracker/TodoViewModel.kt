@@ -125,7 +125,7 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onLost(network: Network) {
-                viewModelScope.launch { setOnline(connectivity.activeNetwork != null) }
+                viewModelScope.launch { setOnline(false) }
             }
         }
 
