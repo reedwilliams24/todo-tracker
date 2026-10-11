@@ -201,6 +201,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.web == 'true' || needs.changes.outputs.supabase == 'true'
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io # public.ecr.aws throttles runners (see db-tests-supabase)
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup # installs the pinned supabase CLI
