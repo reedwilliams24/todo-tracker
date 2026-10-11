@@ -11,6 +11,7 @@ import com.reedwilliams24.todotracker.core.addTodos
 import com.reedwilliams24.todotracker.core.reduceTodos
 import com.reedwilliams24.todotracker.data.TodoDatabase
 import com.reedwilliams24.todotracker.data.TodoRepository
+import com.reedwilliams24.todotracker.reminders.ReminderScheduler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +27,7 @@ data class TodoUiState(val state: TodoState = TodoState(), val hydrated: Boolean
 /** Android counterpart of `useTodos`: drives the shared reducer and persists after hydration. */
 class TodoViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = TodoRepository(TodoDatabase.get(application).todos())
+    private val reminders = ReminderScheduler(application)
     private val saveLock = Mutex()
     private var undoTimer: Job? = null
 
@@ -36,7 +38,13 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val stored = repository.load()
             _ui.update { TodoUiState(reduceTodos(it.state, TodoAction.Load(stored)), hydrated = true) }
+            syncReminders()
         }
+    }
+
+    /** Re-plans notifications, e.g. after the user grants notification permission. */
+    fun syncReminders() {
+        if (_ui.value.hydrated) reminders.sync(_ui.value.state.todos)
     }
 
     fun add(draft: TodoDraft) = dispatch(TodoAction.Prepend(addTodos(emptyList(), listOf(draft)).created))
@@ -51,7 +59,10 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         if (!before.hydrated) return
         val next = reduceTodos(before.state, action)
         _ui.value = before.copy(state = next)
-        if (next.todos !== before.state.todos) persist(next)
+        if (next.todos !== before.state.todos) {
+            persist(next)
+            syncReminders()
+        }
         if (next.undoable !== before.state.undoable) scheduleUndoExpiry(next)
     }
 

@@ -1,0 +1,577 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "reminders",
+  "spec": "features/reminders.md",
+  "cases": [
+    {
+      "name": "reminderAt: at",
+      "op": "reminderAt",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-05-10",
+          "reminder": "at"
+        }
+      },
+      "then": "2026-05-10T09:00:00"
+    },
+    {
+      "name": "reminderAt: 1h",
+      "op": "reminderAt",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-05-10",
+          "reminder": "1h"
+        }
+      },
+      "then": "2026-05-10T08:00:00"
+    },
+    {
+      "name": "reminderAt: 1d",
+      "op": "reminderAt",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-05-10",
+          "reminder": "1d"
+        }
+      },
+      "then": "2026-05-09T09:00:00"
+    },
+    {
+      "name": "reminderAt: 1d on the 1st falls on the previous month",
+      "op": "reminderAt",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-03-01",
+          "reminder": "1d"
+        }
+      },
+      "then": "2026-02-28T09:00:00"
+    },
+    {
+      "name": "reminderAt: no reminder",
+      "op": "reminderAt",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-05-10"
+        }
+      },
+      "then": null
+    },
+    {
+      "name": "reminderAt: no due date",
+      "op": "reminderAt",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "reminder": "at"
+        }
+      },
+      "then": null
+    },
+    {
+      "name": "describeReminder: at",
+      "op": "describeReminder",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Pay rent",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-05-10",
+          "reminder": "at"
+        }
+      },
+      "then": "Due today: Pay rent"
+    },
+    {
+      "name": "describeReminder: 1h",
+      "op": "describeReminder",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Pay rent",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-05-10",
+          "reminder": "1h"
+        }
+      },
+      "then": "Due in 1 hour: Pay rent"
+    },
+    {
+      "name": "describeReminder: 1d",
+      "op": "describeReminder",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Pay rent",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-05-10",
+          "reminder": "1d"
+        }
+      },
+      "then": "Due tomorrow: Pay rent"
+    },
+    {
+      "name": "describeReminder: none",
+      "op": "describeReminder",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Pay rent",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        }
+      },
+      "then": ""
+    },
+    {
+      "name": "planReminders: open todos with a due date and reminder, in list order",
+      "op": "planReminders",
+      "given": {
+        "todos": [
+          {
+            "id": "rent",
+            "title": "Pay rent",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "1h"
+          },
+          {
+            "id": "plain",
+            "title": "No reminder",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10"
+          },
+          {
+            "id": "later",
+            "title": "Later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "at"
+          },
+          {
+            "id": "done",
+            "title": "Done",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-01",
+            "reminder": "at"
+          },
+          {
+            "id": "trip",
+            "title": "Book trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-11",
+            "reminder": "1d"
+          }
+        ]
+      },
+      "then": [
+        {
+          "key": "rent:2026-05-10:1h",
+          "todoId": "rent",
+          "title": "Todo Tracker",
+          "body": "Due in 1 hour: Pay rent",
+          "at": "2026-05-10T08:00:00"
+        },
+        {
+          "key": "later:2026-05-10:at",
+          "todoId": "later",
+          "title": "Todo Tracker",
+          "body": "Due today: Later",
+          "at": "2026-05-10T09:00:00"
+        },
+        {
+          "key": "trip:2026-05-11:1d",
+          "todoId": "trip",
+          "title": "Todo Tracker",
+          "body": "Due tomorrow: Book trip",
+          "at": "2026-05-10T09:00:00"
+        }
+      ]
+    },
+    {
+      "name": "dueReminders: only reminders whose time has come",
+      "op": "dueReminders",
+      "given": {
+        "todos": [
+          {
+            "id": "rent",
+            "title": "Pay rent",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "1h"
+          },
+          {
+            "id": "plain",
+            "title": "No reminder",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10"
+          },
+          {
+            "id": "later",
+            "title": "Later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "at"
+          },
+          {
+            "id": "done",
+            "title": "Done",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-01",
+            "reminder": "at"
+          },
+          {
+            "id": "trip",
+            "title": "Book trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-11",
+            "reminder": "1d"
+          }
+        ],
+        "delivered": [],
+        "now": "2026-05-10T08:30:00"
+      },
+      "then": [
+        {
+          "key": "rent:2026-05-10:1h",
+          "todoId": "rent",
+          "title": "Todo Tracker",
+          "body": "Due in 1 hour: Pay rent",
+          "at": "2026-05-10T08:00:00"
+        }
+      ]
+    },
+    {
+      "name": "dueReminders: boundary is inclusive",
+      "op": "dueReminders",
+      "given": {
+        "todos": [
+          {
+            "id": "rent",
+            "title": "Pay rent",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "1h"
+          },
+          {
+            "id": "plain",
+            "title": "No reminder",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10"
+          },
+          {
+            "id": "later",
+            "title": "Later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "at"
+          },
+          {
+            "id": "done",
+            "title": "Done",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-01",
+            "reminder": "at"
+          },
+          {
+            "id": "trip",
+            "title": "Book trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-11",
+            "reminder": "1d"
+          }
+        ],
+        "delivered": [],
+        "now": "2026-05-10T09:00:00"
+      },
+      "then": [
+        {
+          "key": "rent:2026-05-10:1h",
+          "todoId": "rent",
+          "title": "Todo Tracker",
+          "body": "Due in 1 hour: Pay rent",
+          "at": "2026-05-10T08:00:00"
+        },
+        {
+          "key": "later:2026-05-10:at",
+          "todoId": "later",
+          "title": "Todo Tracker",
+          "body": "Due today: Later",
+          "at": "2026-05-10T09:00:00"
+        },
+        {
+          "key": "trip:2026-05-11:1d",
+          "todoId": "trip",
+          "title": "Todo Tracker",
+          "body": "Due tomorrow: Book trip",
+          "at": "2026-05-10T09:00:00"
+        }
+      ]
+    },
+    {
+      "name": "dueReminders: skips delivered keys",
+      "op": "dueReminders",
+      "given": {
+        "todos": [
+          {
+            "id": "rent",
+            "title": "Pay rent",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "1h"
+          },
+          {
+            "id": "plain",
+            "title": "No reminder",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10"
+          },
+          {
+            "id": "later",
+            "title": "Later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "at"
+          },
+          {
+            "id": "done",
+            "title": "Done",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-01",
+            "reminder": "at"
+          },
+          {
+            "id": "trip",
+            "title": "Book trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-11",
+            "reminder": "1d"
+          }
+        ],
+        "delivered": [
+          "rent:2026-05-10:1h"
+        ],
+        "now": "2026-05-10T09:00:00"
+      },
+      "then": [
+        {
+          "key": "later:2026-05-10:at",
+          "todoId": "later",
+          "title": "Todo Tracker",
+          "body": "Due today: Later",
+          "at": "2026-05-10T09:00:00"
+        },
+        {
+          "key": "trip:2026-05-11:1d",
+          "todoId": "trip",
+          "title": "Todo Tracker",
+          "body": "Due tomorrow: Book trip",
+          "at": "2026-05-10T09:00:00"
+        }
+      ]
+    },
+    {
+      "name": "dueReminders: a moved due date fires again",
+      "op": "dueReminders",
+      "given": {
+        "todos": [
+          {
+            "id": "rent",
+            "title": "Pay rent",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-11",
+            "reminder": "1d"
+          }
+        ],
+        "delivered": [
+          "rent:2026-05-10:1d"
+        ],
+        "now": "2026-05-10T09:00:00"
+      },
+      "then": [
+        {
+          "key": "rent:2026-05-11:1d",
+          "todoId": "rent",
+          "title": "Todo Tracker",
+          "body": "Due tomorrow: Pay rent",
+          "at": "2026-05-10T09:00:00"
+        }
+      ]
+    },
+    {
+      "name": "pruneDelivered drops keys with no planned reminder",
+      "op": "pruneDelivered",
+      "given": {
+        "todos": [
+          {
+            "id": "rent",
+            "title": "Pay rent",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "1h"
+          },
+          {
+            "id": "plain",
+            "title": "No reminder",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10"
+          },
+          {
+            "id": "later",
+            "title": "Later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-10",
+            "reminder": "at"
+          },
+          {
+            "id": "done",
+            "title": "Done",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-01",
+            "reminder": "at"
+          },
+          {
+            "id": "trip",
+            "title": "Book trip",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-05-11",
+            "reminder": "1d"
+          }
+        ],
+        "delivered": [
+          "later:2026-05-10:at",
+          "rent:2026-05-09:1h",
+          "done:2026-05-01:at",
+          "gone:x:at"
+        ]
+      },
+      "then": [
+        "later:2026-05-10:at"
+      ]
+    }
+  ]
+}

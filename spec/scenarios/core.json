@@ -74,6 +74,15 @@
       ]
     },
     {
+      "name": "reminder-on-due-date",
+      "steps": [
+        { "do": "add", "title": "Pay rent", "dueDate": "2030-01-01", "reminder": "1d" },
+        { "expect": "reminder", "title": "Pay rent", "text": "1 day before" },
+        { "do": "relaunch" },
+        { "expect": "reminder", "title": "Pay rent", "text": "1 day before" }
+      ]
+    },
+    {
       "name": "search",
       "platforms": ["web"],
       "steps": [

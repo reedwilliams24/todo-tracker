@@ -43,6 +43,7 @@ function maestroStep(step: Step): string[] {
         ...(s.priority ? tap(id("formPriorityOption", s.priority)) : []),
         ...(s.dueDate ? [...tap(id("formDueDate")), `- inputText: ${q(s.dueDate)}`] : []),
         "- hideKeyboard",
+        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
         ...tap(id("formSubmit")),
         ...visible(id("item", s.title)),
       ];
@@ -75,6 +76,8 @@ function maestroStep(step: Step): string[] {
       return s.titles!.length === 0 ? visible(id("empty")) : s.titles!.flatMap((title) => visible(id("item", title)));
     case "remaining":
       return visible(id("remaining"), [`    text: ${q(s.text)}`]);
+    case "reminder":
+      return visible(id("itemReminder", s.title), [`    text: ${q(s.text)}`]);
     case "completed":
       return visible(id("itemToggle", s.title), [`    checked: ${s.value}`]);
     case "undo":

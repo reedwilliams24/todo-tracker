@@ -10,6 +10,9 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.reedwilliams24.todotracker.core.ReminderOffset
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoPriority
 
@@ -23,6 +26,7 @@ data class TodoEntity(
     val completed: Boolean,
     val priority: String,
     val dueDate: String?,
+    val reminder: String?,
     val createdAt: String,
     val updatedAt: String,
 ) {
@@ -33,6 +37,7 @@ data class TodoEntity(
         completed = completed,
         priority = TodoPriority.entries.firstOrNull { it.key == priority } ?: TodoPriority.MEDIUM,
         dueDate = dueDate,
+        reminder = ReminderOffset.fromKey(reminder),
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
@@ -46,6 +51,7 @@ data class TodoEntity(
             completed = todo.completed,
             priority = todo.priority.key,
             dueDate = todo.dueDate,
+            reminder = todo.reminder?.key,
             createdAt = todo.createdAt,
             updatedAt = todo.updatedAt,
         )
@@ -70,7 +76,13 @@ interface TodoDao {
     }
 }
 
-@Database(entities = [TodoEntity::class], version = 1)
+private val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE todos ADD COLUMN reminder TEXT")
+    }
+}
+
+@Database(entities = [TodoEntity::class], version = 2)
 abstract class TodoDatabase : RoomDatabase() {
     abstract fun todos(): TodoDao
 
@@ -79,6 +91,7 @@ abstract class TodoDatabase : RoomDatabase() {
 
         fun get(context: Context): TodoDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, TodoDatabase::class.java, "todo-tracker.db")
+                .addMigrations(MIGRATION_1_2)
                 .build()
                 .also { instance = it }
         }

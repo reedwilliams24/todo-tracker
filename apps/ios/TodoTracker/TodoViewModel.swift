@@ -10,13 +10,24 @@ final class TodoViewModel {
     var filter: TodoFilter = .all
 
     private let store: TodoStore
+    private let reminders: ReminderScheduling?
     private let now: () -> Date
     private var expiry: Task<Void, Never>?
 
-    init(store: TodoStore, now: @escaping () -> Date = Date.init) {
+    init(store: TodoStore, reminders: ReminderScheduling? = nil, now: @escaping () -> Date = Date.init) {
         self.store = store
+        self.reminders = reminders
         self.now = now
         state = reduceTodos(state, .load(store.load()), now: now())
+        reminders?.sync(state.todos)
+    }
+
+    /// Asks for notification permission the first time the user picks a reminder.
+    func requestReminderPermission() {
+        reminders?.requestAuthorization { [weak self] in
+            guard let self else { return }
+            self.reminders?.sync(self.state.todos)
+        }
     }
 
     var visibleTodos: [Todo] { sortByPriority(filterTodos(state.todos, filter)) }
@@ -41,7 +52,10 @@ final class TodoViewModel {
     private func dispatch(_ action: TodoAction) {
         let previous = state
         state = reduceTodos(state, action, now: now())
-        if state.todos != previous.todos { store.save(state.todos) }
+        if state.todos != previous.todos {
+            store.save(state.todos)
+            reminders?.sync(state.todos)
+        }
         if state.undoable != previous.undoable { scheduleExpiry() }
     }
 

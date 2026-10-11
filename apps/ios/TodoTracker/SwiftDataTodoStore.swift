@@ -18,6 +18,8 @@ final class StoredTodo {
     var completed: Bool
     var priority: String
     var dueDate: String?
+    /// `ReminderOffset` raw value; optional, so existing stores migrate automatically.
+    var reminder: String?
     var createdAt: String
     var updatedAt: String
 
@@ -29,6 +31,7 @@ final class StoredTodo {
         completed = todo.completed
         priority = todo.priority.rawValue
         dueDate = todo.dueDate
+        reminder = todo.reminder?.rawValue
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
     }
@@ -40,6 +43,7 @@ final class StoredTodo {
         completed = todo.completed
         priority = todo.priority.rawValue
         dueDate = todo.dueDate
+        reminder = todo.reminder?.rawValue
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
     }
@@ -53,6 +57,7 @@ final class StoredTodo {
             completed: completed,
             priority: priority,
             dueDate: dueDate,
+            reminder: reminder.flatMap(ReminderOffset.init(rawValue:)),
             createdAt: createdAt,
             updatedAt: updatedAt
         )

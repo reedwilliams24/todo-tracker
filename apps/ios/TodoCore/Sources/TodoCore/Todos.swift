@@ -2,23 +2,39 @@ import Foundation
 
 public let defaultPriority: TodoPriority = .medium
 
-/// Controlled-input state for the add-todo form; `dueDate` is "" when unset.
+/// Controlled-input state for the add-todo form; `dueDate` and `reminder` are "" when unset.
 public struct TodoFormState: Codable, Equatable, Sendable {
     public var title: String
     public var priority: TodoPriority
     public var dueDate: String
+    /// A `ReminderOffset` raw value, or "".
+    public var reminder: String
 
-    public init(title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "") {
+    public init(title: String = "", priority: TodoPriority = defaultPriority, dueDate: String = "", reminder: String = "") {
         self.title = title
         self.priority = priority
         self.dueDate = dueDate
+        self.reminder = reminder
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        title = try c.decode(String.self, forKey: .title)
+        priority = try c.decode(TodoPriority.self, forKey: .priority)
+        dueDate = try c.decode(String.self, forKey: .dueDate)
+        reminder = try c.decodeIfPresent(String.self, forKey: .reminder) ?? ""
     }
 
     public static let empty = TodoFormState()
 }
 
 public func toTodoDraft(_ form: TodoFormState) -> TodoDraft {
-    TodoDraft(title: form.title, priority: form.priority, dueDate: form.dueDate.isEmpty ? nil : form.dueDate)
+    TodoDraft(
+        title: form.title,
+        priority: form.priority,
+        dueDate: form.dueDate.isEmpty ? nil : form.dueDate,
+        reminder: form.dueDate.isEmpty ? nil : ReminderOffset(rawValue: form.reminder)
+    )
 }
 
 extension TodoPriority {
@@ -61,6 +77,7 @@ public func createTodo(_ draft: TodoDraft, now: Date = Date()) -> Todo {
         completed: false,
         priority: draft.priority ?? defaultPriority,
         dueDate: draft.dueDate,
+        reminder: draft.dueDate?.isEmpty == false ? draft.reminder : nil,
         createdAt: timestamp,
         updatedAt: timestamp
     )

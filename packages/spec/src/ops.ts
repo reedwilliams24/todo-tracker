@@ -6,7 +6,10 @@ import {
   countRemaining,
   createTodo,
   DEFAULT_PRIORITY,
+  describeReminder,
   describeUndo,
+  DUE_HOUR,
+  dueReminders,
   EMPTY_TODO_FORM,
   extractDueDate,
   extractPriority,
@@ -17,9 +20,14 @@ import {
   isValidTitle,
   parseStoredTodos,
   parseTranscript,
+  planReminders,
   PRIORITY_ORDER,
+  pruneDelivered,
   reconcileDrafts,
   reduceTodos,
+  REMINDER_LABELS,
+  REMINDER_OFFSETS,
+  reminderAt,
   removeFromList,
   searchTodos,
   serializeTodos,
@@ -29,6 +37,7 @@ import {
   toTodoDraft,
   UNDO_TIMEOUT_MS,
   updateTodoText,
+  type Reminder,
   type Todo,
   type TodoAction,
   type TodoDraft,
@@ -59,6 +68,14 @@ function applyStep(state: TodoState, step: Step): TodoState {
   return reduceTodos(state, { type: action, ...rest } as TodoAction, now);
 }
 
+/** Local wall-clock `YYYY-MM-DDTHH:mm:ss` (no zone), the format reminder fixtures use. */
+function localTime(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+const reminderJson = (r: Reminder) => ({ ...r, at: localTime(r.at) });
+
 /** TypeScript implementation of every operation named in spec/fixtures. */
 export const OPS: Record<string, (given: Given) => unknown> = {
   constants: () => ({
@@ -67,6 +84,9 @@ export const OPS: Record<string, (given: Given) => unknown> = {
     defaultPriority: DEFAULT_PRIORITY,
     priorityOrder: PRIORITY_ORDER,
     emptyForm: EMPTY_TODO_FORM,
+    reminderOffsets: REMINDER_OFFSETS,
+    reminderLabels: REMINDER_LABELS,
+    dueHour: DUE_HOUR,
   }),
   isValidTitle: (g) => isValidTitle(g.title),
   isValidDueDate: (g) => isValidDueDate(g.value),
@@ -97,6 +117,14 @@ export const OPS: Record<string, (given: Given) => unknown> = {
   cleanTitle: (g) => cleanTitle(g.text),
   coerceDrafts: (g) => coerceDrafts(g.value),
   reconcileDrafts: (g) => reconcileDrafts(g.heuristic, g.llm),
+  reminderAt: (g) => {
+    const at = reminderAt(g.todo);
+    return at ? localTime(at) : null;
+  },
+  describeReminder: (g) => describeReminder(g.todo),
+  planReminders: (g) => planReminders(g.todos).map(reminderJson),
+  dueReminders: (g) => dueReminders(g.todos, new Set(g.delivered), new Date(g.now)).map(reminderJson),
+  pruneDelivered: (g) => [...pruneDelivered(new Set(g.delivered), g.todos)].sort(),
 };
 
 const NEW_ID = /^new-\d+$/;

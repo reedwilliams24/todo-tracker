@@ -10,7 +10,9 @@ struct TodoTrackerApp: App {
         let inMemory = ProcessInfo.processInfo.arguments.contains("-uiTesting")
         let container = SwiftDataTodoStore.makeContainer(inMemory: inMemory)
         self.container = container
-        _model = State(initialValue: TodoViewModel(store: SwiftDataTodoStore(context: container.mainContext)))
+        let store = SwiftDataTodoStore(context: container.mainContext)
+        let reminders: ReminderScheduling? = inMemory ? nil : ReminderScheduler()
+        _model = State(initialValue: TodoViewModel(store: store, reminders: reminders))
     }
 
     var body: some Scene {

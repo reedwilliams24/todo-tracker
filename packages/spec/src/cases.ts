@@ -26,6 +26,14 @@ const sample = [
   todo("c", { title: "Call mom", priority: "low", dueDate: "2026-01-06", createdAt: "2026-01-03T09:00:00.000Z" }),
 ];
 
+const reminderList = [
+  todo("rent", { title: "Pay rent", dueDate: "2026-05-10", reminder: "1h" }),
+  todo("plain", { title: "No reminder", dueDate: "2026-05-10" }),
+  todo("later", { title: "Later", dueDate: "2026-05-10", reminder: "at" }),
+  todo("done", { title: "Done", completed: true, dueDate: "2026-05-01", reminder: "at" }),
+  todo("trip", { title: "Book trip", dueDate: "2026-05-11", reminder: "1d" }),
+];
+
 export const FEATURES: Feature[] = [
   {
     feature: "todo",
@@ -61,11 +69,36 @@ export const FEATURES: Feature[] = [
         op: "toTodoDraft",
         given: { form: { title: "Pay rent", priority: "low", dueDate: "2026-02-01" } },
       },
+      {
+        name: "toTodoDraft keeps reminder with a due date",
+        op: "toTodoDraft",
+        given: { form: { title: "Pay rent", priority: "medium", dueDate: "2026-02-01", reminder: "1d" } },
+      },
+      {
+        name: "toTodoDraft drops reminder without a due date",
+        op: "toTodoDraft",
+        given: { form: { title: "Pay rent", priority: "medium", dueDate: "", reminder: "1h" } },
+      },
+      {
+        name: "toTodoDraft drops empty reminder",
+        op: "toTodoDraft",
+        given: { form: { title: "Pay rent", priority: "medium", dueDate: "2026-02-01", reminder: "" } },
+      },
       { name: "createTodo defaults", op: "createTodo", given: { draft: { title: "  Buy milk  " }, now: T0 } },
       {
         name: "createTodo with every field",
         op: "createTodo",
         given: { draft: { title: "Pay rent", notes: "  by transfer ", priority: "high", dueDate: "2026-02-01" }, now: T0 },
+      },
+      {
+        name: "createTodo keeps reminder with a due date",
+        op: "createTodo",
+        given: { draft: { title: "Pay rent", dueDate: "2026-02-01", reminder: "at" }, now: T0 },
+      },
+      {
+        name: "createTodo drops reminder without a due date",
+        op: "createTodo",
+        given: { draft: { title: "Pay rent", reminder: "1d" }, now: T0 },
       },
       { name: "createTodo drops blank notes", op: "createTodo", given: { draft: { title: "Read", notes: "   " }, now: T0 } },
       { name: "toggleTodo completes", op: "toggleTodo", given: { todo: todo("a"), now: T1 } },
@@ -274,6 +307,11 @@ export const FEATURES: Feature[] = [
     spec: "features/storage.md",
     cases: [
       { name: "parse valid list", op: "parseStoredTodos", given: { raw: JSON.stringify(sample) } },
+      {
+        name: "parse keeps reminder",
+        op: "parseStoredTodos",
+        given: { raw: JSON.stringify([todo("r", { dueDate: "2026-02-01", reminder: "1h" })]) },
+      },
       { name: "parse null", op: "parseStoredTodos", given: { raw: null } },
       { name: "parse empty string", op: "parseStoredTodos", given: { raw: "" } },
       { name: "parse corrupt JSON", op: "parseStoredTodos", given: { raw: "[{oops" } },
@@ -346,6 +384,64 @@ export const FEATURES: Feature[] = [
         },
       },
       { name: "reconcileDrafts falls back to heuristic", op: "reconcileDrafts", given: { heuristic: [{ title: "buy milk" }], llm: [] } },
+    ],
+  },
+  {
+    feature: "reminders",
+    spec: "features/reminders.md",
+    cases: [
+      ...(["at", "1h", "1d"] as const).map((reminder) => ({
+        name: `reminderAt: ${reminder}`,
+        op: "reminderAt",
+        given: { todo: todo("a", { dueDate: "2026-05-10", reminder }) },
+      })),
+      {
+        name: "reminderAt: 1d on the 1st falls on the previous month",
+        op: "reminderAt",
+        given: { todo: todo("a", { dueDate: "2026-03-01", reminder: "1d" }) },
+      },
+      { name: "reminderAt: no reminder", op: "reminderAt", given: { todo: todo("a", { dueDate: "2026-05-10" }) } },
+      { name: "reminderAt: no due date", op: "reminderAt", given: { todo: todo("a", { reminder: "at" }) } },
+      ...(["at", "1h", "1d"] as const).map((reminder) => ({
+        name: `describeReminder: ${reminder}`,
+        op: "describeReminder",
+        given: { todo: todo("a", { title: "Pay rent", dueDate: "2026-05-10", reminder }) },
+      })),
+      { name: "describeReminder: none", op: "describeReminder", given: { todo: todo("a", { title: "Pay rent" }) } },
+      {
+        name: "planReminders: open todos with a due date and reminder, in list order",
+        op: "planReminders",
+        given: { todos: reminderList },
+      },
+      {
+        name: "dueReminders: only reminders whose time has come",
+        op: "dueReminders",
+        given: { todos: reminderList, delivered: [], now: "2026-05-10T08:30:00" },
+      },
+      {
+        name: "dueReminders: boundary is inclusive",
+        op: "dueReminders",
+        given: { todos: reminderList, delivered: [], now: "2026-05-10T09:00:00" },
+      },
+      {
+        name: "dueReminders: skips delivered keys",
+        op: "dueReminders",
+        given: { todos: reminderList, delivered: ["rent:2026-05-10:1h"], now: "2026-05-10T09:00:00" },
+      },
+      {
+        name: "dueReminders: a moved due date fires again",
+        op: "dueReminders",
+        given: {
+          todos: [todo("rent", { title: "Pay rent", dueDate: "2026-05-11", reminder: "1d" })],
+          delivered: ["rent:2026-05-10:1d"],
+          now: "2026-05-10T09:00:00",
+        },
+      },
+      {
+        name: "pruneDelivered drops keys with no planned reminder",
+        op: "pruneDelivered",
+        given: { todos: reminderList, delivered: ["later:2026-05-10:at", "rent:2026-05-09:1h", "done:2026-05-01:at", "gone:x:at"] },
+      },
     ],
   },
 ];

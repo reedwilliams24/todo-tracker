@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { isValidTitle, TEST_IDS, type Todo } from "@/domain";
+import { REMINDER_LABELS, isValidTitle, TEST_IDS, type Todo } from "@/domain";
 
 const PRIORITY_STYLES: Record<Todo["priority"], string> = {
   high: "bg-red-500/15 text-red-600 dark:text-red-400",
@@ -84,6 +84,16 @@ export function TodoItem({ todo, onToggle, onRename, onRemove }: TodoItemProps) 
       {todo.dueDate && (
         <span data-testid={TEST_IDS.itemDueDate(todo.title)} className="text-xs opacity-60">
           {todo.dueDate}
+        </span>
+      )}
+      {todo.reminder && (
+        <span
+          data-testid={TEST_IDS.itemReminder(todo.title)}
+          className="text-xs opacity-60"
+          aria-label={`Reminder ${REMINDER_LABELS[todo.reminder].toLowerCase()}`}
+          title={`Reminder ${REMINDER_LABELS[todo.reminder].toLowerCase()}`}
+        >
+          {REMINDER_LABELS[todo.reminder]}
         </span>
       )}
 

@@ -59,6 +59,14 @@ struct TodoRowView: View {
                     .accessibilityIdentifier(TestID.itemDueDate(todo.title))
             }
 
+            if let reminder = todo.reminder {
+                Text(reminder.label)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.muted)
+                    .accessibilityLabel("Reminder \(reminder.label.lowercased())")
+                    .accessibilityIdentifier(TestID.itemReminder(todo.title))
+            }
+
             let colors = Theme.priority(todo.priority)
             Text(todo.priority.rawValue.capitalized)
                 .font(.system(size: 12))

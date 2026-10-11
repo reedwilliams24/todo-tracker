@@ -15,7 +15,7 @@ struct ContentView: View {
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.muted)
                 }
-                TodoFormView(onAdd: model.add)
+                TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
                 toolbar
                 list
                 Text(model.remainingText)

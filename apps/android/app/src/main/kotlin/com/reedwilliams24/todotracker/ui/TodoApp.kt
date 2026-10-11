@@ -1,5 +1,10 @@
 package com.reedwilliams24.todotracker.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,6 +49,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -63,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.reedwilliams24.todotracker.TodoViewModel
 import com.reedwilliams24.todotracker.core.EMPTY_TODO_FORM
+import com.reedwilliams24.todotracker.core.REMINDER_OFFSETS
 import com.reedwilliams24.todotracker.core.TestIds
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoDraft
@@ -105,7 +112,20 @@ fun TodoApp(viewModel: TodoViewModel) {
                 Text("A tiny local-first todo list.", fontSize = FontSize.sm, color = Palette.muted)
             }
 
-            TodoForm(onAdd = viewModel::add)
+            val context = LocalContext.current
+            val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+                viewModel.syncReminders()
+            }
+            TodoForm(
+                onAdd = viewModel::add,
+                onPickReminder = {
+                    if (Build.VERSION.SDK_INT >= 33 &&
+                        context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                },
+            )
 
             Row(
                 Modifier.fillMaxWidth(),
@@ -242,19 +262,21 @@ private fun Field(
 }
 
 @Composable
-private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
+private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
+    var reminder by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.reminder) }
     val dateOk = isValidDueDate(dueDate)
     val canAdd = isValidTitle(title) && dateOk
 
     fun submit() {
         if (!canAdd) return
-        onAdd(toTodoDraft(EMPTY_TODO_FORM.copy(title = title, priority = priority, dueDate = dueDate)))
+        onAdd(toTodoDraft(EMPTY_TODO_FORM.copy(title = title, priority = priority, dueDate = dueDate, reminder = reminder)))
         title = EMPTY_TODO_FORM.title
         priority = EMPTY_TODO_FORM.priority
         dueDate = EMPTY_TODO_FORM.dueDate
+        reminder = EMPTY_TODO_FORM.reminder
     }
 
     Column(
@@ -314,6 +336,37 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit) {
                     .testTag(TestIds.formDueDate)
                     .padding(horizontal = Spacing.s2, vertical = Spacing.s1_5),
             )
+        }
+        val reminderEnabled = dueDate.isNotEmpty()
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .alpha(if (reminderEnabled) 1f else 0.4f)
+                .clip(RoundedCornerShape(Radius.md))
+                .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
+                .selectableGroup()
+                .semantics { contentDescription = "Reminder" }
+                .testTag(TestIds.formReminder),
+        ) {
+            (listOf("" to "No reminder") + REMINDER_OFFSETS.map { it.key to it.label }).forEach { (key, label) ->
+                val selected = key == reminder
+                Text(
+                    label,
+                    fontSize = FontSize.xs,
+                    color = if (selected) Palette.card else Palette.foreground,
+                    maxLines = 1,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(if (selected) Palette.foreground else Palette.card)
+                        .selectable(selected = selected, enabled = reminderEnabled, role = Role.RadioButton) {
+                            reminder = key
+                            if (key.isNotEmpty()) onPickReminder()
+                        }
+                        .testTag(TestIds.formReminderOption(key))
+                        .padding(horizontal = Spacing.s1, vertical = Spacing.s1_5),
+                )
+            }
         }
         Text(
             "Add",
@@ -425,6 +478,18 @@ private fun TodoItem(
 
         todo.dueDate?.let {
             Text(it, fontSize = FontSize.xs, color = Palette.muted, modifier = Modifier.testTag(TestIds.itemDueDate(todo.title)))
+        }
+
+        todo.reminder?.let {
+            Text(
+                it.label,
+                fontSize = FontSize.xs,
+                color = Palette.muted,
+                maxLines = 1,
+                modifier = Modifier
+                    .semantics { contentDescription = "Reminder ${it.label.lowercase()}" }
+                    .testTag(TestIds.itemReminder(todo.title)),
+            )
         }
 
         val (badgeBg, badgeText) = Palette.priority(todo.priority)

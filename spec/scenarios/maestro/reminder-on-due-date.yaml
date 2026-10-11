@@ -1,0 +1,27 @@
+# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: reminder-on-due-date
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Pay rent"
+- tapOn:
+    id: "todo-form-due-date"
+- inputText: "2030-01-01"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-reminder-1d"
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Pay rent"
+- assertVisible:
+    id: "todo-reminder-Pay rent"
+    text: "1 day before"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "todo-reminder-Pay rent"
+    text: "1 day before"

@@ -3,9 +3,12 @@
 import { useState } from "react";
 import {
   EMPTY_TODO_FORM,
+  REMINDER_LABELS,
+  REMINDER_OFFSETS,
   isValidTitle,
   TEST_IDS,
   toTodoDraft,
+  type ReminderOffset,
   type TodoDraft,
   type TodoPriority,
 } from "@/domain";
@@ -14,7 +17,7 @@ const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate } = form;
+  const { title, priority, dueDate, reminder } = form;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,7 +37,7 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         placeholder="What needs doing?"
         aria-label="Todo title"
         data-testid={TEST_IDS.formTitle}
-        className="flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50"
+        className="min-w-0 flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50"
       />
       <select
         value={priority}
@@ -64,6 +67,28 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
         data-testid={TEST_IDS.formDueDate}
         className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
       />
+      <select
+        value={reminder}
+        disabled={!dueDate}
+        onChange={(event) =>
+          setForm((f) => ({ ...f, reminder: event.target.value as ReminderOffset | "" }))
+        }
+        aria-label="Reminder"
+        data-testid={TEST_IDS.formReminder}
+        className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm disabled:opacity-40 dark:border-white/15"
+      >
+        <option value="">No reminder</option>
+        {REMINDER_OFFSETS.map((option) => (
+          <option
+            key={option}
+            value={option}
+            data-testid={TEST_IDS.formReminderOption(option)}
+            className="text-foreground"
+          >
+            {REMINDER_LABELS[option]}
+          </option>
+        ))}
+      </select>
       <button
         type="submit"
         data-testid={TEST_IDS.formSubmit}

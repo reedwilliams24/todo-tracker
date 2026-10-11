@@ -12,6 +12,18 @@ enum class TodoPriority {
     val key: String get() = name.lowercase()
 }
 
+/** Reminder offset from a todo's due date (spec/features/reminders.md). */
+@Serializable
+enum class ReminderOffset(val key: String, val label: String) {
+    @SerialName("at") AT("at", "When due"),
+    @SerialName("1h") HOUR_BEFORE("1h", "1 hour before"),
+    @SerialName("1d") DAY_BEFORE("1d", "1 day before");
+
+    companion object {
+        fun fromKey(key: String?): ReminderOffset? = entries.firstOrNull { it.key == key }
+    }
+}
+
 @Serializable
 data class Todo(
     val id: String,
@@ -20,6 +32,7 @@ data class Todo(
     val completed: Boolean,
     val priority: TodoPriority,
     val dueDate: String? = null,
+    val reminder: ReminderOffset? = null,
     val createdAt: String,
     val updatedAt: String,
 )
@@ -40,12 +53,14 @@ data class TodoDraft(
     val notes: String? = null,
     val priority: TodoPriority? = null,
     val dueDate: String? = null,
+    val reminder: ReminderOffset? = null,
 )
 
-/** Controlled-input state for the add form; dueDate is "" when unset. */
+/** Controlled-input state for the add form; dueDate and reminder are "" when unset. */
 @Serializable
 data class TodoFormState(
     val title: String = "",
     val priority: TodoPriority = DEFAULT_PRIORITY,
     val dueDate: String = "",
+    val reminder: String = "",
 )

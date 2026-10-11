@@ -1,5 +1,7 @@
 export type TodoPriority = "low" | "medium" | "high";
 
+export type ReminderOffset = "at" | "1h" | "1d";
+
 export type Todo = {
   id: string;
   title: string;
@@ -7,6 +9,7 @@ export type Todo = {
   completed: boolean;
   priority: TodoPriority;
   dueDate?: string;
+  reminder?: ReminderOffset;
   createdAt: string;
   updatedAt: string;
 };
@@ -18,4 +21,5 @@ export type TodoDraft = {
   notes?: string;
   priority?: TodoPriority;
   dueDate?: string;
+  reminder?: ReminderOffset;
 };
