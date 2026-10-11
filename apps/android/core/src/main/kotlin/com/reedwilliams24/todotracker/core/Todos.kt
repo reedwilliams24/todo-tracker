@@ -30,6 +30,7 @@ fun toTodoDraft(form: TodoFormState): TodoDraft =
         priority = form.priority,
         dueDate = form.dueDate.ifEmpty { null },
         reminder = if (form.dueDate.isEmpty()) null else ReminderOffset.fromKey(form.reminder),
+        recurrence = Recurrence.fromKey(form.recurrence),
     )
 
 /** Accepts an empty value or a real calendar date in YYYY-MM-DD form. */
@@ -61,6 +62,7 @@ fun createTodo(draft: TodoDraft, now: Instant = Instant.now()): Todo {
         priority = draft.priority ?: DEFAULT_PRIORITY,
         dueDate = draft.dueDate,
         reminder = if (draft.dueDate.isNullOrEmpty()) null else draft.reminder,
+        recurrence = draft.recurrence,
         createdAt = stamp,
         updatedAt = stamp,
     )

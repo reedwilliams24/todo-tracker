@@ -1,7 +1,8 @@
 import Foundation
 import TodoCore
 
-/// Swift implementation of every op named in spec/fixtures; mirrors packages/spec/src/ops.ts.
+/// Runs the ops named in spec/fixtures. Each feature's ops live in FixtureOps+<Feature>.swift and
+/// mirror packages/spec/src/features/<feature>.ts.
 enum FixtureOps {
     struct UnknownOp: Error, CustomStringConvertible {
         let op: String
@@ -19,193 +20,29 @@ enum FixtureOps {
 
     // MARK: - Dispatch
 
+    typealias Op = (Given) throws -> any Encodable
+
+    /// One table per feature, each in its own FixtureOps+<Feature>.swift. Keep one per line, in
+    /// alphabetical order, so features added in parallel don't conflict.
+    static var modules: [[String: Op]] {
+        [
+            listOps,
+            quickAddOps,
+            recurrenceOps,
+            remindersOps,
+            statsOps,
+            storageOps,
+            todoOps,
+            undoOps,
+            voiceOps,
+        ]
+    }
+
     private static func call(op: String, given g: Given) throws -> any Encodable {
-        switch op {
-        case "constants":
-            return Constants()
-        case "isValidTitle":
-            return isValidTitle(try g.decode("title"))
-        case "isValidDueDate":
-            return isValidDueDate(try g.decode("value", as: String?.self))
-        case "toTodoDraft":
-            return toTodoDraft(try g.decode("form"))
-        case "createTodo":
-            return createTodo(try g.decode("draft"), now: try g.date("now"))
-        case "updateTodoText":
-            return updateTodoText(try g.decode("todos"), id: try g.decode("id"), text: try g.decode("text"), now: try g.date("now"))
-        case "toggleTodo":
-            return toggleTodo(try g.decode("todo"), now: try g.date("now"))
-        case "filterTodos":
-            return filterTodos(try g.decode("todos"), try g.decode("filter"))
-        case "searchTodos":
-            return searchTodos(try g.decode("todos"), query: try g.decode("query"))
-        case "sortByPriority":
-            return sortByPriority(try g.decode("todos"))
-        case "sortByDue":
-            return sortByDue(try g.decode("todos"))
-        case "sortTodos":
-            let sort = try g.decode("sort", as: String?.self).flatMap(TodoSort.init(rawValue:)) ?? .priority
-            return sortTodos(try g.decode("todos"), sort)
-        case "isOverdue":
-            return isOverdue(try g.decode("todo"), now: try g.date("now"))
-        case "toDateKey":
-            return toDateKey(try g.date("now"))
-        case "countRemaining":
-            return countRemaining(try g.decode("todos"))
-        case "countCompleted":
-            return countCompleted(try g.decode("todos"))
-        case "addTodos":
-            return addTodos(try g.decode("todos"), drafts: try g.decode("drafts"), now: try g.date("now"))
-        case "removeFromList":
-            return removeFromList(try g.decode("todos"), ids: try g.decode("ids"))
-        case "clearCompletedInList":
-            return clearCompletedInList(try g.decode("todos"))
-        case "bulkToggle":
-            return bulkToggle(try g.decode("todos"), ids: try g.decode("ids"), now: try g.date("now"))
-        case "describeUndo":
-            return describeUndo(try g.decode("action"), count: try g.decode("count"))
-        case "isUndoExpired":
-            let entry = UndoEntry(label: "", before: [], at: Timestamp.milliseconds(try g.date("at")))
-            let timeout = try g.decode("timeoutMs", as: Int64?.self) ?? undoTimeoutMs
-            return isUndoExpired(entry, now: Timestamp.milliseconds(try g.date("now")), timeoutMs: timeout)
-        case "applyActions":
-            var state = TodoState(todos: try g.decode("todos"))
-            for step in try g.decode("steps", as: [Step].self) {
-                state = try step.apply(to: state)
-            }
-            return ApplyActionsResult(todos: state.todos, undoLabel: state.undoable?.label)
-        case "computeStats":
-            let zone: String? = try g.decode("timeZone")
-            guard let timeZone = zone.map({ TimeZone(identifier: $0) }) ?? .current else {
-                throw BadGiven(description: "given.timeZone is not a time zone: \(zone ?? "")")
-            }
-            return computeStats(
-                try g.decode("todos"),
-                now: try g.date("now"),
-                days: try g.decode("days", as: Int?.self) ?? statsDays,
-                timeZone: timeZone
-            )
-        case "parseStoredTodos":
-            return parseStoredTodos(try g.decode("raw", as: String?.self))
-        case "serializeTodos":
-            return try JSONDecoder().decode(JSONValue.self, from: Data(serializeTodos(try g.decode("todos")).utf8))
-        case "parseTranscript":
-            return parseTranscript(try g.decode("transcript"), now: try g.date("now"))
-        case "extractPriority":
-            return extractPriority(try g.decode("text"))
-        case "extractDueDate":
-            return extractDueDate(try g.decode("text"), now: try g.date("now"))
-        case "cleanTitle":
-            return cleanTitle(try g.decode("text"))
-        case "coerceDrafts":
-            return coerceDrafts(g.raw["value"] ?? .null)
-        case "reconcileDrafts":
-            return reconcileDrafts(heuristic: try g.decode("heuristic"), llm: try g.decode("llm"))
-        case "reminderAt":
-            return reminderAt(try g.decode("todo")).map(localTime)
-        case "describeReminder":
-            return describeReminder(try g.decode("todo"))
-        case "planReminders":
-            return planReminders(try g.decode("todos")).map(ReminderResult.init)
-        case "dueReminders":
-            return dueReminders(try g.decode("todos"), delivered: try g.decode("delivered"), now: try g.date("now"))
-                .map(ReminderResult.init)
-        case "pruneDelivered":
-            return pruneDelivered(try g.decode("delivered"), todos: try g.decode("todos")).sorted()
-        case "parseQuickAdd":
-            return parseQuickAdd(try g.decode("input"), now: try g.date("now"))
-        case "hasQuickAddMeta":
-            return hasQuickAddMeta(try g.decode("parse"))
-        case "quickAddToDraft":
-            return quickAddToDraft(
-                try g.decode("parse"),
-                fallbackPriority: try g.decode("fallbackPriority"),
-                fallbackDueDate: try g.decode("fallbackDueDate", as: String?.self)
-            )
-        default:
-            throw UnknownOp(op: op)
+        for module in modules {
+            if let impl = module[op] { return try impl(g) }
         }
-    }
-
-    private struct Constants: Encodable {
-        let storageKey = TodoCore.storageKey
-        let undoTimeoutMs = TodoCore.undoTimeoutMs
-        let defaultPriority = TodoCore.defaultPriority
-        let priorityOrder = Dictionary(uniqueKeysWithValues: TodoPriority.allCases.map { ($0.rawValue, $0.order) })
-        let emptyForm = TodoFormState.empty
-        let reminderOffsets = TodoCore.reminderOffsets
-        let reminderLabels = Dictionary(uniqueKeysWithValues: ReminderOffset.allCases.map { ($0.rawValue, $0.label) })
-        let dueHour = TodoCore.dueHour
-        let statsDays = TodoCore.statsDays
-    }
-
-    /// Local wall-clock `YYYY-MM-DDTHH:mm:ss`, the format reminder fixtures use.
-    private static func localTime(_ date: Date) -> String {
-        let c = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-        return String(format: "%04d-%02d-%02dT%02d:%02d:%02d", c.year!, c.month!, c.day!, c.hour!, c.minute!, c.second!)
-    }
-
-    private struct ReminderResult: Encodable {
-        let key: String
-        let todoId: String
-        let title: String
-        let body: String
-        let at: String
-
-        init(_ reminder: Reminder) {
-            key = reminder.key
-            todoId = reminder.todoId
-            title = reminder.title
-            body = reminder.body
-            at = FixtureOps.localTime(reminder.at)
-        }
-    }
-
-    /// `undoLabel` is always present, so a missing label encodes as `null` rather than being omitted.
-    private struct ApplyActionsResult: Encodable {
-        let todos: [Todo]
-        let undoLabel: String?
-
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(todos, forKey: .todos)
-            try container.encode(undoLabel, forKey: .undoLabel)
-        }
-
-        enum CodingKeys: String, CodingKey { case todos, undoLabel }
-    }
-
-    private struct Step: Decodable {
-        let action: String
-        let now: String
-        let drafts: [TodoDraft]?
-        let id: String?
-        let title: String?
-        let ids: [String]?
-
-        func apply(to state: TodoState) throws -> TodoState {
-            guard let date = Timestamp.parse(now) else { throw BadGiven(description: "bad step now \(now)") }
-            let action: TodoAction
-            switch self.action {
-            case "add":
-                let created = addTodos([], drafts: drafts ?? [], now: date).created
-                action = .prepend(created)
-            case "toggle": action = .toggle(id: try require(id))
-            case "toggleMany": action = .toggleMany(ids: try require(ids))
-            case "rename": action = .rename(id: try require(id), title: try require(title))
-            case "remove": action = .remove(ids: try require(ids))
-            case "clearCompleted": action = .clearCompleted
-            case "undo": action = .undo
-            case "expireUndo": action = .expireUndo
-            default: throw BadGiven(description: "unknown step action \(self.action)")
-            }
-            return reduceTodos(state, action, now: date)
-        }
-
-        private func require<T>(_ value: T?) throws -> T {
-            guard let value else { throw BadGiven(description: "step \(action) is missing a field") }
-            return value
-        }
+        throw UnknownOp(op: op)
     }
 
     // MARK: - Given

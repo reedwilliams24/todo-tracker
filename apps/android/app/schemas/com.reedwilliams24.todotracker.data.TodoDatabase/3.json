@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "2c2cf990999bbc76e2736b1d4a8c6c1b",
+    "identityHash": "973a0844153f2c6291e90c5365da890b",
     "entities": [
       {
         "tableName": "todos",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `position` INTEGER NOT NULL, `title` TEXT NOT NULL, `notes` TEXT, `completed` INTEGER NOT NULL, `priority` TEXT NOT NULL, `dueDate` TEXT, `reminder` TEXT, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `completedAt` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `position` INTEGER NOT NULL, `title` TEXT NOT NULL, `notes` TEXT, `completed` INTEGER NOT NULL, `priority` TEXT NOT NULL, `dueDate` TEXT, `recurrence` TEXT DEFAULT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `completedAt` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -51,10 +51,11 @@
             "notNull": false
           },
           {
-            "fieldPath": "reminder",
-            "columnName": "reminder",
+            "fieldPath": "recurrence",
+            "columnName": "recurrence",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": false,
+            "defaultValue": "NULL"
           },
           {
             "fieldPath": "createdAt",
@@ -88,7 +89,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2c2cf990999bbc76e2736b1d4a8c6c1b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '973a0844153f2c6291e90c5365da890b')"
     ]
   }
 }

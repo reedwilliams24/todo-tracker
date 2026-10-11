@@ -4,23 +4,82 @@
   "title": "Conformance fixture file",
   "description": "One feature's golden cases. Each platform runner calls `op` with `given` and must produce exactly `then` after normalization (see spec/README.md).",
   "type": "object",
-  "required": ["feature", "spec", "cases"],
+  "required": [
+    "feature",
+    "spec",
+    "status",
+    "cases"
+  ],
   "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string" },
-    "feature": { "type": "string", "pattern": "^[a-z][a-z-]*$" },
-    "spec": { "type": "string", "description": "Path of the feature spec, relative to spec/." },
+    "$schema": {
+      "type": "string"
+    },
+    "feature": {
+      "type": "string",
+      "pattern": "^[a-z][a-z-]*$"
+    },
+    "spec": {
+      "type": "string",
+      "description": "Path of the feature spec, relative to spec/."
+    },
+    "status": {
+      "type": "object",
+      "description": "Which platforms pass this feature's cases: pass | missing (link a follow-up ticket in the PR) | n/a.",
+      "required": [
+        "web",
+        "ios",
+        "android"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "web": {
+          "enum": [
+            "pass",
+            "missing",
+            "n/a"
+          ]
+        },
+        "ios": {
+          "enum": [
+            "pass",
+            "missing",
+            "n/a"
+          ]
+        },
+        "android": {
+          "enum": [
+            "pass",
+            "missing",
+            "n/a"
+          ]
+        }
+      }
+    },
     "cases": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["name", "op", "given", "then"],
+        "required": [
+          "name",
+          "op",
+          "given",
+          "then"
+        ],
         "additionalProperties": false,
         "properties": {
-          "name": { "type": "string", "minLength": 1 },
-          "op": { "type": "string", "minLength": 1 },
-          "given": { "type": "object" },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "op": {
+            "type": "string",
+            "minLength": 1
+          },
+          "given": {
+            "type": "object"
+          },
           "then": {}
         }
       }

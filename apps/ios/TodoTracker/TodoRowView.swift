@@ -81,7 +81,7 @@ struct TodoRowView: View {
             .accessibilityLabel("Mark \"\(todo.title)\" as \(todo.completed ? "active" : "complete")")
             .accessibilityIdentifier(TestID.itemToggle(todo.title))
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 if editing {
                     TextField("Edit title", text: $draftTitle)
                         .font(.system(size: 16))
@@ -107,7 +107,6 @@ struct TodoRowView: View {
                             .strikethrough(todo.completed)
                             .opacity(todo.completed ? 0.7 : 1)
                             .lineLimit(1)
-                            .layoutPriority(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                     }
@@ -117,49 +116,57 @@ struct TodoRowView: View {
                     .accessibilityIdentifier(TestID.itemTitle(todo.title))
                 }
 
-                HStack(spacing: 8) {
-                    if let dueDate = todo.dueDate {
-                        HStack(spacing: 0) {
-                            if overdue {
-                                Text("Overdue · ")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .accessibilityIdentifier(TestID.itemOverdue(todo.title))
+                if todo.dueDate != nil || todo.recurrence != nil {
+                    HStack(spacing: 8) {
+                        if let dueDate = todo.dueDate {
+                            HStack(spacing: 0) {
+                                if overdue {
+                                    Text("Overdue · ")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .accessibilityIdentifier(TestID.itemOverdue(todo.title))
+                                }
+                                Text(dueDate)
+                                    .font(.system(size: 12))
+                                    .accessibilityIdentifier(TestID.itemDueDate(todo.title))
                             }
-                            Text(dueDate)
-                                .font(.system(size: 12))
-                                .accessibilityIdentifier(TestID.itemDueDate(todo.title))
-                        }
-                        .foregroundStyle(overdue ? Theme.danger : Theme.muted)
-                        .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                        .layoutPriority(1)
-                        .accessibilityElement(children: .contain)
-                        .accessibilityLabel(overdue ? "Overdue, was due \(dueDate)" : "Due \(dueDate)")
-                    }
-
-                    if let reminder = todo.reminder {
-                        Text(reminder.label)
-                            .font(.system(size: 12))
-                            .foregroundStyle(Theme.muted)
+                            .foregroundStyle(overdue ? Theme.danger : Theme.muted)
                             .lineLimit(1)
-                            .fixedSize()
-                            .accessibilityHint("Reminder")
-                            .accessibilityIdentifier(TestID.itemReminder(todo.title))
+                            .fixedSize(horizontal: true, vertical: false)
+                            .layoutPriority(1)
+                            .accessibilityElement(children: .contain)
+                            .accessibilityLabel(overdue ? "Overdue, was due \(dueDate)" : "Due \(dueDate)")
+                        }
+                        if let recurrence = todo.recurrence {
+                            Text("↻ \(recurrence.label)")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Theme.muted)
+                                .lineLimit(1)
+                                .fixedSize()
+                                .accessibilityIdentifier(TestID.itemRecurrence(todo.title))
+                        }
+                        if let reminder = todo.reminder {
+                            Text(reminder.label)
+                                .font(.system(size: 12))
+                                .foregroundStyle(Theme.muted)
+                                .lineLimit(1)
+                                .fixedSize()
+                                .accessibilityHint("Reminder")
+                                .accessibilityIdentifier(TestID.itemReminder(todo.title))
+                        }
                     }
-
-                    let colors = Theme.priority(todo.priority)
-                    Text(todo.priority.rawValue.capitalized)
-                        .font(.system(size: 12))
-                        .foregroundStyle(colors.text)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(colors.bg, in: Capsule())
-                        .lineLimit(1)
-                        .fixedSize()
-                        .accessibilityIdentifier(TestID.itemPriority(todo.title))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+
+            let colors = Theme.priority(todo.priority)
+            Text(todo.priority.rawValue.capitalized)
+                .font(.system(size: 12))
+                .foregroundStyle(colors.text)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(colors.bg, in: Capsule())
+                .fixedSize()
+                .accessibilityIdentifier(TestID.itemPriority(todo.title))
 
             Button(action: onRemove) {
                 Text("×")

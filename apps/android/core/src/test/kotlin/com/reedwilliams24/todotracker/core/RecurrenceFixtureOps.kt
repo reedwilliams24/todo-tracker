@@ -1,0 +1,37 @@
+package com.reedwilliams24.todotracker.core
+
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
+import kotlinx.serialization.json.put
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.DynamicContainer
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
+import java.io.File
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+
+/** `recurrence` ops; mirrors packages/spec/src/features/recurrence.ts. */
+internal val recurrenceOps: Map<String, Op> = mapOf(
+    "recurrenceConstants" to { _: JsonObject ->
+        buildJsonObject { put("recurrences", JsonArray(RECURRENCES.map { JsonPrimitive(it.key) })) }
+    },
+    "nextOccurrence" to { g: JsonObject -> JsonPrimitive(nextOccurrence(g.str("dueDate"), requireNotNull(Recurrence.fromKey(g.str("recurrence"))))) },
+    "scheduleNext" to { g: JsonObject ->
+        scheduleNext(TodoJson.decodeFromJsonElement(Todo.serializer(), g.getValue("todo")), g.instant("now"))
+            ?.let { TodoJson.encodeToJsonElement(Todo.serializer(), it) } ?: JsonNull
+    },
+)

@@ -1,4 +1,4 @@
-# Generated from spec/scenarios/core.json by `pnpm spec:generate`. Do not edit.
+# Generated from spec/scenarios/core/reminder-on-due-date.json by `pnpm spec:generate`. Do not edit.
 appId: ${APP_ID}
 name: reminder-on-due-date
 tags:
@@ -9,11 +9,11 @@ tags:
     id: "todo-form-title"
 - inputText: "Pay rent"
 - tapOn:
+    id: "todo-form-reminder-1d"
+- tapOn:
     id: "todo-form-due-date"
 - inputText: "2030-01-01"
 - hideKeyboard
-- tapOn:
-    id: "todo-form-reminder-1d"
 - tapOn:
     id: "todo-form-submit"
 - assertVisible:

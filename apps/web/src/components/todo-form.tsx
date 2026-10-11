@@ -9,8 +9,11 @@ import {
   isValidTitle,
   parseQuickAdd,
   quickAddToDraft,
+  RECURRENCES,
+  RECURRENCE_LABELS,
   TEST_IDS,
   type ReminderOffset,
+  type Recurrence,
   type TodoDraft,
   type TodoPriority,
 } from "@/domain";
@@ -19,14 +22,14 @@ const PRIORITIES: TodoPriority[] = ["low", "medium", "high"];
 
 export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
   const [form, setForm] = useState(EMPTY_TODO_FORM);
-  const { title, priority, dueDate, reminder } = form;
+  const { title, priority, dueDate, reminder, recurrence } = form;
   const parsed = useMemo(() => parseQuickAdd(title), [title]);
   const canAdd = isValidTitle(parsed.title);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canAdd) return;
-    const draft = quickAddToDraft(parsed, priority, dueDate);
+    const draft = { ...quickAddToDraft(parsed, priority, dueDate), recurrence: recurrence || undefined };
     onAdd(draft.dueDate && reminder ? { ...draft, reminder } : draft);
     setForm(EMPTY_TODO_FORM);
   }
@@ -92,6 +95,24 @@ export function TodoForm({ onAdd }: { onAdd: (draft: TodoDraft) => void }) {
               className="text-foreground"
             >
               {REMINDER_LABELS[option]}
+            </option>
+          ))}
+        </select>
+        <select
+          value={recurrence}
+          onChange={(event) =>
+            setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))
+          }
+          aria-label="Repeat"
+          data-testid={TEST_IDS.formRecurrence}
+          className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
+        >
+          <option value="" className="text-foreground">
+            No repeat
+          </option>
+          {RECURRENCES.map((option) => (
+            <option key={option} value={option} className="text-foreground">
+              {RECURRENCE_LABELS[option]}
             </option>
           ))}
         </select>

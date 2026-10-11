@@ -1,4 +1,4 @@
-import type { ReminderOffset, Todo, TodoDraft, TodoFilter, TodoPriority, TodoSort } from "./types";
+import type { Recurrence, ReminderOffset, Todo, TodoDraft, TodoFilter, TodoPriority, TodoSort } from "./types";
 
 export const DEFAULT_PRIORITY: TodoPriority = "medium";
 
@@ -8,6 +8,7 @@ export type TodoFormState = {
   priority: TodoPriority;
   dueDate: string;
   reminder: ReminderOffset | "";
+  recurrence: Recurrence | "";
 };
 
 export const EMPTY_TODO_FORM: TodoFormState = {
@@ -15,6 +16,7 @@ export const EMPTY_TODO_FORM: TodoFormState = {
   priority: DEFAULT_PRIORITY,
   dueDate: "",
   reminder: "",
+  recurrence: "",
 };
 
 export function toTodoDraft(form: TodoFormState): TodoDraft {
@@ -23,6 +25,7 @@ export function toTodoDraft(form: TodoFormState): TodoDraft {
     priority: form.priority,
     dueDate: form.dueDate || undefined,
     reminder: form.dueDate && form.reminder ? form.reminder : undefined,
+    recurrence: form.recurrence || undefined,
   };
 }
 
@@ -56,6 +59,7 @@ export function createTodo(draft: TodoDraft, now: Date = new Date()): Todo {
     priority: draft.priority ?? DEFAULT_PRIORITY,
     dueDate: draft.dueDate,
     reminder: draft.dueDate ? draft.reminder : undefined,
+    recurrence: draft.recurrence,
     createdAt: timestamp,
     updatedAt: timestamp,
   };

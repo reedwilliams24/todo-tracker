@@ -2,6 +2,11 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "todo",
   "spec": "features/todo.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
     {
       "name": "constants",
@@ -20,20 +25,9 @@
           "title": "",
           "priority": "medium",
           "dueDate": "",
-          "reminder": ""
-        },
-        "reminderOffsets": [
-          "at",
-          "1h",
-          "1d"
-        ],
-        "reminderLabels": {
-          "at": "When due",
-          "1h": "1 hour before",
-          "1d": "1 day before"
-        },
-        "dueHour": 9,
-        "statsDays": 30
+          "reminder": "",
+          "recurrence": ""
+        }
       }
     },
     {
@@ -188,6 +182,47 @@
       }
     },
     {
+      "name": "createTodo defaults",
+      "op": "createTodo",
+      "given": {
+        "draft": {
+          "title": "  Buy milk  "
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Buy milk",
+        "completed": false,
+        "priority": "medium",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "createTodo with every field",
+      "op": "createTodo",
+      "given": {
+        "draft": {
+          "title": "Pay rent",
+          "notes": "  by transfer ",
+          "priority": "high",
+          "dueDate": "2026-02-01"
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Pay rent",
+        "notes": "by transfer",
+        "completed": false,
+        "priority": "high",
+        "dueDate": "2026-02-01",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
       "name": "toTodoDraft keeps reminder with a due date",
       "op": "toTodoDraft",
       "given": {
@@ -236,47 +271,6 @@
         "title": "Pay rent",
         "priority": "medium",
         "dueDate": "2026-02-01"
-      }
-    },
-    {
-      "name": "createTodo defaults",
-      "op": "createTodo",
-      "given": {
-        "draft": {
-          "title": "  Buy milk  "
-        },
-        "now": "2026-01-05T09:00:00.000Z"
-      },
-      "then": {
-        "id": "new-1",
-        "title": "Buy milk",
-        "completed": false,
-        "priority": "medium",
-        "createdAt": "2026-01-05T09:00:00.000Z",
-        "updatedAt": "2026-01-05T09:00:00.000Z"
-      }
-    },
-    {
-      "name": "createTodo with every field",
-      "op": "createTodo",
-      "given": {
-        "draft": {
-          "title": "Pay rent",
-          "notes": "  by transfer ",
-          "priority": "high",
-          "dueDate": "2026-02-01"
-        },
-        "now": "2026-01-05T09:00:00.000Z"
-      },
-      "then": {
-        "id": "new-1",
-        "title": "Pay rent",
-        "notes": "by transfer",
-        "completed": false,
-        "priority": "high",
-        "dueDate": "2026-02-01",
-        "createdAt": "2026-01-05T09:00:00.000Z",
-        "updatedAt": "2026-01-05T09:00:00.000Z"
       }
     },
     {

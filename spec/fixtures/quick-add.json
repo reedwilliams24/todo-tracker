@@ -2,6 +2,11 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "quick-add",
   "spec": "features/quick-add.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
     {
       "name": "parseQuickAdd: call mom tomorrow 5pm #family !p1",

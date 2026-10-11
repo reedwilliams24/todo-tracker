@@ -2,6 +2,11 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "undo",
   "spec": "features/undo.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
     {
       "name": "describeUndo: complete 1",

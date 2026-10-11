@@ -1,0 +1,11 @@
+{
+  "name": "rename-persists",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "do": "add", "title": "Buy milk" },
+    { "do": "rename", "from": "Buy milk", "to": "Buy oat milk" },
+    { "expect": "titles", "titles": ["Buy oat milk"] },
+    { "do": "relaunch" },
+    { "expect": "titles", "titles": ["Buy oat milk"] }
+  ]
+}

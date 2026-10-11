@@ -20,6 +20,7 @@ final class StoredTodo {
     var dueDate: String?
     /// `ReminderOffset` raw value; optional, so existing stores migrate automatically.
     var reminder: String?
+    var recurrence: String?
     var createdAt: String
     var updatedAt: String
     var completedAt: String?
@@ -33,6 +34,7 @@ final class StoredTodo {
         priority = todo.priority.rawValue
         dueDate = todo.dueDate
         reminder = todo.reminder?.rawValue
+        recurrence = todo.recurrence?.rawValue
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
         completedAt = todo.completedAt
@@ -46,6 +48,7 @@ final class StoredTodo {
         priority = todo.priority.rawValue
         dueDate = todo.dueDate
         reminder = todo.reminder?.rawValue
+        recurrence = todo.recurrence?.rawValue
         createdAt = todo.createdAt
         updatedAt = todo.updatedAt
         completedAt = todo.completedAt
@@ -61,6 +64,7 @@ final class StoredTodo {
             priority: priority,
             dueDate: dueDate,
             reminder: reminder.flatMap(ReminderOffset.init(rawValue:)),
+            recurrence: recurrence.flatMap(Recurrence.init(rawValue:)),
             createdAt: createdAt,
             updatedAt: updatedAt,
             completedAt: completedAt

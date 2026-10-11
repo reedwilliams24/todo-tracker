@@ -2,6 +2,7 @@ package com.reedwilliams24.todotracker.data
 
 import android.content.Context
 import androidx.room.AutoMigration
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -11,9 +12,8 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.reedwilliams24.todotracker.core.ReminderOffset
+import com.reedwilliams24.todotracker.core.Recurrence
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoPriority
 
@@ -27,7 +27,8 @@ data class TodoEntity(
     val completed: Boolean,
     val priority: String,
     val dueDate: String?,
-    val reminder: String?,
+    @ColumnInfo(defaultValue = "NULL") val reminder: String?,
+    @ColumnInfo(defaultValue = "NULL") val recurrence: String?,
     val createdAt: String,
     val updatedAt: String,
     val completedAt: String? = null,
@@ -40,6 +41,7 @@ data class TodoEntity(
         priority = TodoPriority.entries.firstOrNull { it.key == priority } ?: TodoPriority.MEDIUM,
         dueDate = dueDate,
         reminder = ReminderOffset.fromKey(reminder),
+        recurrence = recurrence?.let(Recurrence::fromKey),
         createdAt = createdAt,
         updatedAt = updatedAt,
         completedAt = completedAt,
@@ -55,6 +57,7 @@ data class TodoEntity(
             priority = todo.priority.key,
             dueDate = todo.dueDate,
             reminder = todo.reminder?.key,
+            recurrence = todo.recurrence?.key,
             createdAt = todo.createdAt,
             updatedAt = todo.updatedAt,
             completedAt = todo.completedAt,
@@ -80,13 +83,7 @@ interface TodoDao {
     }
 }
 
-private val MIGRATION_2_3 = object : Migration(2, 3) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE todos ADD COLUMN reminder TEXT")
-    }
-}
-
-@Database(entities = [TodoEntity::class], version = 3, autoMigrations = [AutoMigration(from = 1, to = 2)])
+@Database(entities = [TodoEntity::class], version = 4, autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)])
 abstract class TodoDatabase : RoomDatabase() {
     abstract fun todos(): TodoDao
 
@@ -95,7 +92,6 @@ abstract class TodoDatabase : RoomDatabase() {
 
         fun get(context: Context): TodoDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, TodoDatabase::class.java, "todo-tracker.db")
-                .addMigrations(MIGRATION_2_3)
                 .build()
                 .also { instance = it }
         }

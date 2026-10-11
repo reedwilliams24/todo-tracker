@@ -8,9 +8,8 @@ spec/
   schema/*.schema.json JSON Schemas: todo, stored list, fixture file
   fixtures/*.json      golden cases: { name, op, given, then }
   test-ids.json        shared UI selector registry
-  scenarios/core.json  platform-neutral UI scenarios
-  scenarios/maestro/   Maestro flows generated from core.json (mobile)
-  platforms.json       which platform passes which feature (CI parity matrix)
+  scenarios/core/     platform-neutral UI scenarios, one file per scenario
+  scenarios/maestro/   Maestro flows generated from core/ (mobile)
 ```
 
 ## Commands
@@ -18,11 +17,11 @@ spec/
 | Command | What it does |
 | --- | --- |
 | `pnpm --filter @todo/spec test` | TypeScript fixture runner + schema validation |
-| `pnpm spec:record` | Re-records `fixtures/*.json` from `packages/spec/src/cases.ts` and the current TS implementation |
+| `pnpm spec:record` | Re-records `fixtures/*.json` from `packages/spec/src/features/*.ts` and the current TS implementation |
 | `pnpm spec:generate` | Regenerates `apps/web/src/domain/test-ids.ts` and `scenarios/maestro/*.yaml` |
 | `pnpm spec:check` | Fails if fixtures or generated files are stale |
-| `pnpm spec:parity` | Prints the parity matrix from `platforms.json` |
-| `pnpm --filter web e2e` | Runs `scenarios/core.json` (and the older web-only specs) with Playwright |
+| `pnpm spec:parity` | Prints the parity matrix from each fixture's and scenario's `status` |
+| `pnpm --filter web e2e` | Runs `scenarios/core/*.json` (and the older web-only specs) with Playwright |
 | `maestro test --include-tags spec -e APP_ID=… spec/scenarios/maestro` | Runs the scenarios on a device or emulator (see below) |
 
 ## Fixtures
@@ -36,9 +35,9 @@ Each file in `fixtures/` covers one feature:
     "then": { … } } ] }
 ```
 
-A runner calls the platform's implementation of `op` with `given` and asserts that the normalized result deep-equals `then`. The ops and their arguments are listed in `packages/spec/src/ops.ts`, which is the reference adapter.
+A runner calls the platform's implementation of `op` with `given` and asserts that the normalized result deep-equals `then`. Each feature's ops and their arguments are in `packages/spec/src/features/<feature>.ts`, which is the reference adapter.
 
-Cases are written in `packages/spec/src/cases.ts` and `then` is recorded from the TypeScript implementation. To change behavior: update the spec markdown, change the code, run `pnpm spec:record`, and review the fixture diff in the PR. The fixture diff is the behavior change.
+Cases are written in `packages/spec/src/features/<feature>.ts` (with the feature's `status` per platform) and `then` is recorded from the TypeScript implementation. To change behavior: update the spec markdown, change the code, run `pnpm spec:record`, and review the fixture diff in the PR. The fixture diff is the behavior change.
 
 ### Normalization
 
@@ -55,17 +54,50 @@ Swift and Kotlin load the same files; nothing is copied or regenerated per platf
 
 - **iOS (XCTest)**: `apps/ios/TodoCore` is a Swift package whose `FixtureTests` resolve `spec/fixtures` from `#filePath`. Each test decodes each file, switches on `op`, calls the Swift implementation, encodes the result with `JSONEncoder` (`.sortedKeys`), applies normalization, and compares with `then` decoded as `JSONValue`. One `XCTContext.runActivity` per case gives per-case reporting.
 - **Android (JUnit 5)**: point `sourceSets.test.resources.srcDir("../../spec/fixtures")` at the folder. A `@TestFactory` returns one `DynamicTest` per case, dispatches on `op` to the Kotlin implementation, serializes with kotlinx.serialization (`explicitNulls = false`), normalizes, and asserts JSON equality.
-- An unknown `op` must **fail**, not skip, so a new fixture can't silently pass on a platform that doesn't implement it. Update `platforms.json` when a platform starts passing a feature.
+- An unknown `op` must **fail**, not skip, so a new fixture can't silently pass on a platform that doesn't implement it. Update the feature's `status` when a platform starts passing it.
 
 ## UI scenarios
 
-`scenarios/core.json` lists user flows as steps. Every platform drives its UI through the IDs in `test-ids.json` (`data-testid` on web, `accessibilityIdentifier` in SwiftUI, `Modifier.testTag` with `testTagsAsResourceId` in Compose). `{title}` placeholders take the todo's title.
+Each file in `scenarios/core/` is one user flow: `{ name, status, steps }`, where `name` matches the file name and `status` says which platforms pass it (`n/a` skips that platform). Every platform drives its UI through the IDs in `test-ids.json` (`data-testid` on web, `accessibilityIdentifier` in SwiftUI, `Modifier.testTag` with `testTagsAsResourceId` in Compose). `{title}` placeholders take the todo's title.
 
-Actions (`do`): `add {title, priority?, dueDate?, reminder?}`, `type {text}` (fills the add form's title without submitting), `submit`, `toggle {title}`, `delete {title}`, `rename {from, to}`, `filter {filter}`, `sort {sort}`, `search {query}`, `clearCompleted`, `undo`, `openStats`, `relaunch`, `selectMode` (tap Select/Done), `select {title}`, `selectAll`, `bulkToggle`, `bulkDelete {confirm}` (tap Delete, then Delete or Cancel in the confirmation).
+New feature scenarios add a file in `scenarios/core/`, and each step kind below is one line, in alphabetical order, so parallel PRs don't conflict.
 
-Assertions (`expect`): `empty`, `titles {titles}` (web checks exact order; Maestro checks each is visible), `remaining {text}`, `completed {title, value}`, `overdue {title, value}`, `undo {label | null}`, `reminder {title, text}` (the reminder label shown on the todo), `quickAddPreview {title | null}` (`null`: preview hidden), `priority {title, priority}` (case-insensitive), `dueDate {title, dueDate}`, `selected {text}`, `clearCompleted {text}`, `stats {total, current, longest}` (the Stats panel's texts).
+Actions (`do`):
 
-A scenario may set `platforms` (`web`, `mobile`) when a feature isn't on every platform yet, e.g. mobile has no search today.
+- `add {title, priority?, dueDate?, recurrence?, reminder?}`
+- `bulkDelete {confirm}` (tap Delete, then Delete or Cancel in the confirmation)
+- `bulkToggle`
+- `clearCompleted`
+- `delete {title}`
+- `filter {filter}`
+- `openStats`
+- `relaunch`
+- `rename {from, to}`
+- `search {query}`
+- `select {title}`
+- `selectAll`
+- `selectMode` (tap Select/Done)
+- `sort {sort}`
+- `submit`
+- `toggle {title}`
+- `type {text}` (fills the add form's title without submitting)
+- `undo`
+
+Assertions (`expect`):
+
+- `clearCompleted {text}`
+- `completed {title, value}`
+- `dueDate {title, dueDate}` and `recurrence {title, text}` (some todo with that title shows that value)
+- `empty`
+- `overdue {title, value}`
+- `priority {title, priority}` (case-insensitive)
+- `quickAddPreview {title | null}` (`null`: preview hidden)
+- `remaining {text}`
+- `reminder {title, text}` (the row's reminder label)
+- `selected {text}`
+- `stats {total, current, longest}` (the Stats panel's texts)
+- `titles {titles}` (web checks exact order; Maestro checks each is visible)
+- `undo {label | null}`
 
 Running on the Android emulator or iOS Simulator, with the native app installed:
 

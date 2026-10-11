@@ -25,23 +25,21 @@ final class FixtureTests: XCTestCase {
         .appendingPathComponent("../../../spec/fixtures")
         .standardizedFileURL
 
-    static let features = ["todo", "list", "undo", "storage", "voice", "reminders", "quick-add", "stats"]
-
-    func testTodo() throws { try runFixtures("todo") }
-    func testList() throws { try runFixtures("list") }
-    func testUndo() throws { try runFixtures("undo") }
-    func testStorage() throws { try runFixtures("storage") }
-    func testVoice() throws { try runFixtures("voice") }
-    func testReminders() throws { try runFixtures("reminders") }
-    func testQuickAdd() throws { try runFixtures("quick-add") }
-    func testStats() throws { try runFixtures("stats") }
-
-    /// A new fixture file must get a test above, or it would silently never run on iOS.
-    func testEveryFixtureFileIsCovered() throws {
-        let files = try FileManager.default.contentsOfDirectory(atPath: Self.fixturesDir.path)
+    /// Runs every fixture file, so a new feature only adds files and never edits this test.
+    func testFixtures() throws {
+        let features = try FileManager.default.contentsOfDirectory(atPath: Self.fixturesDir.path)
             .filter { $0.hasSuffix(".json") }
             .map { String($0.dropLast(5)) }
-        XCTAssertEqual(Set(files), Set(Self.features))
+            .sorted()
+        XCTAssertFalse(features.isEmpty)
+        for feature in features {
+            try runFixtures(feature)
+        }
+    }
+
+    func testOpsAreDefinedOnce() {
+        let names = FixtureOps.modules.flatMap(\.keys)
+        XCTAssertEqual(names.count, Set(names).count)
     }
 
     func testUnknownOpFails() {

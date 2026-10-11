@@ -2,6 +2,8 @@ export type TodoPriority = "low" | "medium" | "high";
 
 export type ReminderOffset = "at" | "1h" | "1d";
 
+export type Recurrence = "daily" | "weekly" | "monthly";
+
 export type Todo = {
   id: string;
   title: string;
@@ -10,6 +12,7 @@ export type Todo = {
   priority: TodoPriority;
   dueDate?: string;
   reminder?: ReminderOffset;
+  recurrence?: Recurrence;
   /** ISO timestamp of the most recent completion; cleared when reopened. */
   completedAt?: string;
   createdAt: string;
@@ -26,4 +29,5 @@ export type TodoDraft = {
   priority?: TodoPriority;
   dueDate?: string;
   reminder?: ReminderOffset;
+  recurrence?: Recurrence;
 };

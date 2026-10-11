@@ -1,0 +1,537 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "recurrence",
+  "spec": "features/recurrence.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
+  "cases": [
+    {
+      "name": "constants",
+      "op": "recurrenceConstants",
+      "given": {},
+      "then": {
+        "recurrences": [
+          "daily",
+          "weekly",
+          "monthly"
+        ]
+      }
+    },
+    {
+      "name": "nextOccurrence: daily rolls over a month",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-01-31",
+        "recurrence": "daily"
+      },
+      "then": "2026-02-01"
+    },
+    {
+      "name": "nextOccurrence: daily rolls over a year",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-12-31",
+        "recurrence": "daily"
+      },
+      "then": "2027-01-01"
+    },
+    {
+      "name": "nextOccurrence: daily across spring-forward DST",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-03-07",
+        "recurrence": "daily"
+      },
+      "then": "2026-03-08"
+    },
+    {
+      "name": "nextOccurrence: daily across fall-back DST",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-10-31",
+        "recurrence": "daily"
+      },
+      "then": "2026-11-01"
+    },
+    {
+      "name": "nextOccurrence: weekly rolls over a month",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-02-26",
+        "recurrence": "weekly"
+      },
+      "then": "2026-03-05"
+    },
+    {
+      "name": "nextOccurrence: weekly across DST",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-03-01",
+        "recurrence": "weekly"
+      },
+      "then": "2026-03-08"
+    },
+    {
+      "name": "nextOccurrence: monthly keeps the day",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-12-15",
+        "recurrence": "monthly"
+      },
+      "then": "2027-01-15"
+    },
+    {
+      "name": "nextOccurrence: monthly clamps to February",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-01-31",
+        "recurrence": "monthly"
+      },
+      "then": "2026-02-28"
+    },
+    {
+      "name": "nextOccurrence: monthly clamps to a leap February",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2028-01-31",
+        "recurrence": "monthly"
+      },
+      "then": "2028-02-29"
+    },
+    {
+      "name": "nextOccurrence: monthly clamps to a 30-day month",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-03-31",
+        "recurrence": "monthly"
+      },
+      "then": "2026-04-30"
+    },
+    {
+      "name": "nextOccurrence: monthly from February 28",
+      "op": "nextOccurrence",
+      "given": {
+        "dueDate": "2026-02-28",
+        "recurrence": "monthly"
+      },
+      "then": "2026-03-28"
+    },
+    {
+      "name": "toTodoDraft keeps recurrence",
+      "op": "toTodoDraft",
+      "given": {
+        "form": {
+          "title": "Water plants",
+          "priority": "medium",
+          "dueDate": "2026-01-31",
+          "recurrence": "monthly"
+        }
+      },
+      "then": {
+        "title": "Water plants",
+        "priority": "medium",
+        "dueDate": "2026-01-31",
+        "recurrence": "monthly"
+      }
+    },
+    {
+      "name": "toTodoDraft drops empty recurrence",
+      "op": "toTodoDraft",
+      "given": {
+        "form": {
+          "title": "Water plants",
+          "priority": "medium",
+          "dueDate": "",
+          "recurrence": ""
+        }
+      },
+      "then": {
+        "title": "Water plants",
+        "priority": "medium"
+      }
+    },
+    {
+      "name": "createTodo keeps recurrence",
+      "op": "createTodo",
+      "given": {
+        "draft": {
+          "title": "Gym",
+          "recurrence": "daily"
+        },
+        "now": "2026-01-05T09:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Gym",
+        "completed": false,
+        "priority": "medium",
+        "recurrence": "daily",
+        "createdAt": "2026-01-05T09:00:00.000Z",
+        "updatedAt": "2026-01-05T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "scheduleNext copies the todo with the next due date",
+      "op": "scheduleNext",
+      "given": {
+        "todo": {
+          "id": "r",
+          "title": "Water plants",
+          "completed": true,
+          "priority": "high",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "balcony",
+          "dueDate": "2026-01-31",
+          "recurrence": "monthly"
+        },
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Water plants",
+        "notes": "balcony",
+        "completed": false,
+        "priority": "high",
+        "dueDate": "2026-02-28",
+        "recurrence": "monthly",
+        "createdAt": "2026-01-05T10:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z"
+      }
+    },
+    {
+      "name": "scheduleNext without a due date starts from today (UTC)",
+      "op": "scheduleNext",
+      "given": {
+        "todo": {
+          "id": "r",
+          "title": "Gym",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "recurrence": "daily"
+        },
+        "now": "2026-01-05T23:30:00.000Z"
+      },
+      "then": {
+        "id": "new-1",
+        "title": "Gym",
+        "completed": false,
+        "priority": "medium",
+        "dueDate": "2026-01-06",
+        "recurrence": "daily",
+        "createdAt": "2026-01-05T23:30:00.000Z",
+        "updatedAt": "2026-01-05T23:30:00.000Z"
+      }
+    },
+    {
+      "name": "scheduleNext ignores non-recurring todos",
+      "op": "scheduleNext",
+      "given": {
+        "todo": {
+          "id": "a",
+          "title": "Todo a",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": null
+    },
+    {
+      "name": "toggleInList: completing a recurring todo inserts the next one after it",
+      "op": "toggleInList",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "r",
+            "title": "Gym",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "recurrence": "weekly",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "id": "r",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": false,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "notes": "2% organic"
+        },
+        {
+          "id": "r",
+          "title": "Gym",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "recurrence": "weekly",
+          "dueDate": "2026-01-05",
+          "completedAt": "2026-01-05T10:00:00.000Z"
+        },
+        {
+          "id": "new-1",
+          "title": "Gym",
+          "completed": false,
+          "priority": "medium",
+          "dueDate": "2026-01-12",
+          "recurrence": "weekly",
+          "createdAt": "2026-01-05T10:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "toggleInList: reopening a recurring todo schedules nothing",
+      "op": "toggleInList",
+      "given": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Gym",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "recurrence": "daily",
+            "dueDate": "2026-01-05"
+          }
+        ],
+        "id": "r",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": [
+        {
+          "id": "r",
+          "title": "Gym",
+          "completed": false,
+          "priority": "medium",
+          "createdAt": "2026-01-05T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "recurrence": "daily",
+          "dueDate": "2026-01-05"
+        }
+      ]
+    },
+    {
+      "name": "toggleInList: non-recurring todo just toggles",
+      "op": "toggleInList",
+      "given": {
+        "todos": [
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          },
+          {
+            "id": "b",
+            "title": "Walk the dog",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-02T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "c",
+            "title": "Call mom",
+            "completed": false,
+            "priority": "low",
+            "createdAt": "2026-01-03T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-01-06"
+          }
+        ],
+        "id": "a",
+        "now": "2026-01-05T10:00:00.000Z"
+      },
+      "then": [
+        {
+          "id": "a",
+          "title": "Buy milk",
+          "completed": true,
+          "priority": "high",
+          "createdAt": "2026-01-01T09:00:00.000Z",
+          "updatedAt": "2026-01-05T10:00:00.000Z",
+          "notes": "2% organic",
+          "completedAt": "2026-01-05T10:00:00.000Z"
+        },
+        {
+          "id": "b",
+          "title": "Walk the dog",
+          "completed": true,
+          "priority": "medium",
+          "createdAt": "2026-01-02T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Call mom",
+          "completed": false,
+          "priority": "low",
+          "createdAt": "2026-01-03T09:00:00.000Z",
+          "updatedAt": "2026-01-05T09:00:00.000Z",
+          "dueDate": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "name": "undo of a recurring completion removes the scheduled todo",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Gym",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "recurrence": "daily",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          }
+        ],
+        "steps": [
+          {
+            "action": "toggle",
+            "id": "r",
+            "now": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "action": "undo",
+            "now": "2026-01-05T11:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Gym",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "recurrence": "daily",
+            "dueDate": "2026-01-05"
+          },
+          {
+            "id": "a",
+            "title": "Buy milk",
+            "completed": false,
+            "priority": "high",
+            "createdAt": "2026-01-01T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "notes": "2% organic"
+          }
+        ],
+        "undoLabel": null
+      }
+    },
+    {
+      "name": "completing a recurring todo offers undo",
+      "op": "applyActions",
+      "given": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Gym",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "recurrence": "daily",
+            "dueDate": "2026-01-05"
+          }
+        ],
+        "steps": [
+          {
+            "action": "toggle",
+            "id": "r",
+            "now": "2026-01-05T10:00:00.000Z"
+          }
+        ]
+      },
+      "then": {
+        "todos": [
+          {
+            "id": "r",
+            "title": "Gym",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z",
+            "recurrence": "daily",
+            "dueDate": "2026-01-05",
+            "completedAt": "2026-01-05T10:00:00.000Z"
+          },
+          {
+            "id": "new-1",
+            "title": "Gym",
+            "completed": false,
+            "priority": "medium",
+            "dueDate": "2026-01-06",
+            "recurrence": "daily",
+            "createdAt": "2026-01-05T10:00:00.000Z",
+            "updatedAt": "2026-01-05T10:00:00.000Z"
+          }
+        ],
+        "undoLabel": "Completed todo"
+      }
+    }
+  ]
+}

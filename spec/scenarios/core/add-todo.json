@@ -1,0 +1,10 @@
+{
+  "name": "add-todo",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "expect": "empty" },
+    { "do": "add", "title": "Buy milk", "priority": "high" },
+    { "expect": "titles", "titles": ["Buy milk"] },
+    { "expect": "remaining", "text": "1 task remaining" }
+  ]
+}

@@ -2,7 +2,30 @@
   "$schema": "../schema/fixture.schema.json",
   "feature": "reminders",
   "spec": "features/reminders.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
   "cases": [
+    {
+      "name": "constants",
+      "op": "remindersConstants",
+      "given": {},
+      "then": {
+        "reminderOffsets": [
+          "at",
+          "1h",
+          "1d"
+        ],
+        "reminderLabels": {
+          "at": "When due",
+          "1h": "1 hour before",
+          "1d": "1 day before"
+        },
+        "dueHour": 9
+      }
+    },
     {
       "name": "reminderAt: at",
       "op": "reminderAt",

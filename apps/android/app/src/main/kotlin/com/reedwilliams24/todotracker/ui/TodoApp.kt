@@ -77,6 +77,8 @@ import com.reedwilliams24.todotracker.TodoViewModel
 import com.reedwilliams24.todotracker.core.EMPTY_TODO_FORM
 import com.reedwilliams24.todotracker.core.REMINDER_OFFSETS
 import com.reedwilliams24.todotracker.core.ReminderOffset
+import com.reedwilliams24.todotracker.core.RECURRENCES
+import com.reedwilliams24.todotracker.core.Recurrence
 import com.reedwilliams24.todotracker.core.TestIds
 import com.reedwilliams24.todotracker.core.Todo
 import com.reedwilliams24.todotracker.core.TodoDraft
@@ -564,18 +566,20 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
     var reminder by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.reminder) }
+    var recurrence by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.recurrence) }
     val parsed = remember(title) { parseQuickAdd(title) }
     val dateOk = isValidDueDate(dueDate)
     val canAdd = isValidTitle(parsed.title) && dateOk
 
     fun submit() {
         if (!canAdd) return
-        val draft = quickAddToDraft(parsed, priority, dueDate)
+        val draft = quickAddToDraft(parsed, priority, dueDate).copy(recurrence = Recurrence.fromKey(recurrence))
         onAdd(draft.copy(reminder = if (draft.dueDate == null) null else ReminderOffset.fromKey(reminder)))
         title = EMPTY_TODO_FORM.title
         priority = EMPTY_TODO_FORM.priority
         dueDate = EMPTY_TODO_FORM.dueDate
         reminder = EMPTY_TODO_FORM.reminder
+        recurrence = EMPTY_TODO_FORM.recurrence
     }
 
     Column(
@@ -664,6 +668,28 @@ private fun TodoForm(onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
                         }
                         .testTag(TestIds.formReminderOption(key))
                         .padding(horizontal = Spacing.s1, vertical = Spacing.s1_5),
+                )
+            }
+        }
+        Row(
+            Modifier
+                .clip(RoundedCornerShape(Radius.md))
+                .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
+                .selectableGroup()
+                .semantics { contentDescription = "Repeat" }
+                .testTag(TestIds.formRecurrence),
+        ) {
+            (listOf("" to "No repeat") + RECURRENCES.map { it.key to it.label }).forEach { (key, label) ->
+                val selected = key == recurrence
+                Text(
+                    label,
+                    fontSize = FontSize.sm,
+                    color = if (selected) Palette.card else Palette.foreground,
+                    modifier = Modifier
+                        .background(if (selected) Palette.foreground else Palette.card)
+                        .selectable(selected = selected, role = Role.RadioButton) { recurrence = key }
+                        .testTag(TestIds.formRecurrenceOption(key.ifEmpty { "none" }))
+                        .padding(horizontal = Spacing.s2_5, vertical = Spacing.s1_5),
                 )
             }
         }
@@ -836,6 +862,15 @@ private fun TodoItem(
                 modifier = Modifier
                     .semantics { contentDescription = "Reminder ${it.label.lowercase()}" }
                     .testTag(TestIds.itemReminder(todo.title)),
+            )
+        }
+
+        todo.recurrence?.let {
+            Text(
+                "↻ ${it.label}",
+                fontSize = FontSize.xs,
+                color = Palette.muted,
+                modifier = Modifier.testTag(TestIds.itemRecurrence(todo.title)),
             )
         }
 

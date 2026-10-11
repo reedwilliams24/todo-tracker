@@ -22,7 +22,6 @@ import org.junit.jupiter.api.TestFactory
 import java.io.File
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.time.ZoneId
 
 /** Runs every case in spec/fixtures against the Kotlin implementation (see spec/README.md). */
@@ -49,147 +48,30 @@ class FixtureTest {
     }
 }
 
-private val todoList = ListSerializer(Todo.serializer())
-private val draftList = ListSerializer(TodoDraft.serializer())
+internal typealias Op = (JsonObject) -> JsonElement
 
-private fun JsonObject.str(key: String): String = getValue(key).jsonPrimitive.content
-private fun JsonObject.instant(key: String): Instant = Instant.parse(str(key))
-private fun JsonObject.local(key: String): LocalDateTime = LocalDateTime.parse(str(key))
-private fun JsonObject.todos(key: String = "todos"): List<Todo> = TodoJson.decodeFromJsonElement(todoList, getValue(key))
-private fun JsonObject.drafts(key: String): List<TodoDraft> = TodoJson.decodeFromJsonElement(draftList, getValue(key))
-private fun JsonObject.quickAddParse(): QuickAddParse = TodoJson.decodeFromJsonElement(QuickAddParse.serializer(), getValue("parse"))
-private fun encode(todos: List<Todo>): JsonElement = TodoJson.encodeToJsonElement(todoList, todos)
-private fun encodeDrafts(drafts: List<TodoDraft>): JsonElement = TodoJson.encodeToJsonElement(draftList, drafts)
-
-private val LOCAL_TIME = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
-private fun JsonObject.todo(key: String = "todo"): Todo = TodoJson.decodeFromJsonElement(Todo.serializer(), getValue(key))
-private fun JsonObject.strings(key: String): Set<String> = getValue(key).jsonArray.mapTo(LinkedHashSet()) { it.jsonPrimitive.content }
-private fun encodeReminders(reminders: List<Reminder>): JsonElement = JsonArray(reminders.map {
-    buildJsonObject {
-        put("key", it.key)
-        put("todoId", it.todoId)
-        put("title", it.title)
-        put("body", it.body)
-        put("at", LOCAL_TIME.format(it.at))
+/**
+ * One table per feature, each in its own <Feature>FixtureOps.kt. Keep one per line, in
+ * alphabetical order, so features added in parallel don't conflict.
+ */
+private val OPS: Map<String, Op> = buildMap {
+    listOf(
+        listOps,
+        quickAddOps,
+        recurrenceOps,
+        remindersOps,
+        statsOps,
+        storageOps,
+        todoOps,
+        undoOps,
+        voiceOps,
+    ).forEach { module ->
+        module.forEach { (op, impl) -> check(put(op, impl) == null) { "op \"$op\" is defined twice" } }
     }
-})
-
-private fun applyStep(state: TodoState, step: JsonObject): TodoState {
-    val now = step.instant("now")
-    val action = when (val name = step.str("action")) {
-        "add" -> TodoAction.Prepend(addTodos(emptyList(), step.drafts("drafts"), now).created)
-        "toggle" -> TodoAction.Toggle(step.str("id"))
-        "toggleMany" -> TodoAction.ToggleMany(step.getValue("ids").jsonArray.map { it.jsonPrimitive.content })
-        "rename" -> TodoAction.Rename(step.str("id"), step.str("title"))
-        "remove" -> TodoAction.Remove(step.getValue("ids").jsonArray.map { it.jsonPrimitive.content })
-        "clearCompleted" -> TodoAction.ClearCompleted
-        "undo" -> TodoAction.Undo
-        "expireUndo" -> TodoAction.ExpireUndo
-        else -> error("Unknown applyActions step \"$name\"")
-    }
-    return reduceTodos(state, action, now)
 }
 
-/** Kotlin implementation of every operation named in spec/fixtures. Unknown ops fail. */
-private fun runOp(op: String, g: JsonObject): JsonElement = when (op) {
-    "constants" -> buildJsonObject {
-        put("storageKey", STORAGE_KEY)
-        put("undoTimeoutMs", UNDO_TIMEOUT_MS)
-        put("defaultPriority", DEFAULT_PRIORITY.key)
-        put("priorityOrder", buildJsonObject { PRIORITY_ORDER.forEach { (p, n) -> put(p.key, n) } })
-        put("emptyForm", Json { encodeDefaults = true }.encodeToJsonElement(TodoFormState.serializer(), EMPTY_TODO_FORM))
-        put("reminderOffsets", JsonArray(REMINDER_OFFSETS.map { JsonPrimitive(it.key) }))
-        put("reminderLabels", buildJsonObject { REMINDER_OFFSETS.forEach { put(it.key, it.label) } })
-        put("dueHour", DUE_HOUR)
-        put("statsDays", STATS_DAYS)
-    }
-    "isValidTitle" -> JsonPrimitive(isValidTitle(g.str("title")))
-    "isValidDueDate" -> JsonPrimitive(isValidDueDate(g.str("value")))
-    "toTodoDraft" -> TodoJson.encodeToJsonElement(
-        TodoDraft.serializer(),
-        toTodoDraft(TodoJson.decodeFromJsonElement(TodoFormState.serializer(), g.getValue("form"))),
-    )
-    "createTodo" -> TodoJson.encodeToJsonElement(
-        Todo.serializer(),
-        createTodo(TodoJson.decodeFromJsonElement(TodoDraft.serializer(), g.getValue("draft")), g.instant("now")),
-    )
-    "updateTodoText" -> encode(updateTodoText(g.todos(), g.str("id"), g.str("text"), g.instant("now")))
-    "toggleTodo" -> TodoJson.encodeToJsonElement(
-        Todo.serializer(),
-        toggleTodo(TodoJson.decodeFromJsonElement(Todo.serializer(), g.getValue("todo")), g.instant("now")),
-    )
-    "filterTodos" -> encode(filterTodos(g.todos(), TodoFilter.fromKey(g.str("filter"))))
-    "searchTodos" -> encode(searchTodos(g.todos(), g.str("query")))
-    "sortByPriority" -> encode(sortByPriority(g.todos()))
-    "sortByDue" -> encode(sortByDue(g.todos()))
-    "sortTodos" -> encode(sortTodos(g.todos(), g["sort"]?.jsonPrimitive?.content?.let(TodoSort::fromKey) ?: TodoSort.PRIORITY))
-    "isOverdue" -> JsonPrimitive(
-        isOverdue(TodoJson.decodeFromJsonElement(Todo.serializer(), g.getValue("todo")), g.local("now")),
-    )
-    "toDateKey" -> JsonPrimitive(toDateKey(g.local("now")))
-    "countRemaining" -> JsonPrimitive(countRemaining(g.todos()))
-    "countCompleted" -> JsonPrimitive(countCompleted(g.todos()))
-    "addTodos" -> addTodos(g.todos(), g.drafts("drafts"), g.instant("now")).let {
-        buildJsonObject {
-            put("todos", encode(it.todos))
-            put("created", encode(it.created))
-        }
-    }
-    "removeFromList" -> encode(removeFromList(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content }))
-    "clearCompletedInList" -> encode(clearCompletedInList(g.todos()))
-    "bulkToggle" -> encode(bulkToggle(g.todos(), g.getValue("ids").jsonArray.map { it.jsonPrimitive.content }, g.instant("now")))
-    "describeUndo" -> JsonPrimitive(
-        describeUndo(UndoKind.valueOf(g.str("action").uppercase()), g.getValue("count").jsonPrimitive.int),
-    )
-    "isUndoExpired" -> JsonPrimitive(
-        isUndoExpired(
-            UndoEntry("", emptyList(), g.instant("at").toEpochMilli()),
-            g.instant("now").toEpochMilli(),
-            g["timeoutMs"]?.jsonPrimitive?.long ?: UNDO_TIMEOUT_MS,
-        ),
-    )
-    "applyActions" -> {
-        var state = TodoState(todos = g.todos())
-        g.getValue("steps").jsonArray.forEach { state = applyStep(state, it.jsonObject) }
-        buildJsonObject {
-            put("todos", encode(state.todos))
-            put("undoLabel", state.undoable?.label?.let(::JsonPrimitive) ?: JsonNull)
-        }
-    }
-    "computeStats" -> TodoJson.encodeToJsonElement(
-        TodoStats.serializer(),
-        computeStats(
-            g.todos(),
-            g.instant("now"),
-            g["days"]?.jsonPrimitive?.int ?: STATS_DAYS,
-            g["timeZone"]?.jsonPrimitive?.content?.let(ZoneId::of) ?: ZoneId.systemDefault(),
-        ),
-    )
-    "parseStoredTodos" -> encode(parseStoredTodos((g["raw"] as? JsonPrimitive)?.takeIf { it.isString }?.content))
-    "serializeTodos" -> Json.parseToJsonElement(serializeTodos(g.todos()))
-    "parseTranscript" -> encodeDrafts(parseTranscript(g.str("transcript"), g.local("now")))
-    "extractPriority" -> TodoJson.encodeToJsonElement(PriorityMatch.serializer(), extractPriority(g.str("text")))
-    "extractDueDate" -> TodoJson.encodeToJsonElement(DueDateMatch.serializer(), extractDueDate(g.str("text"), g.local("now")))
-    "cleanTitle" -> JsonPrimitive(cleanTitle(g.str("text")))
-    "coerceDrafts" -> encodeDrafts(coerceDrafts(g["value"]))
-    "reconcileDrafts" -> encodeDrafts(reconcileDrafts(g.drafts("heuristic"), g.drafts("llm")))
-    "reminderAt" -> reminderAt(g.todo())?.let { JsonPrimitive(LOCAL_TIME.format(it)) } ?: JsonNull
-    "describeReminder" -> JsonPrimitive(describeReminder(g.todo()))
-    "planReminders" -> encodeReminders(planReminders(g.todos()))
-    "dueReminders" -> encodeReminders(dueReminders(g.todos(), g.strings("delivered"), g.local("now")))
-    "pruneDelivered" -> JsonArray(pruneDelivered(g.strings("delivered"), g.todos()).sorted().map(::JsonPrimitive))
-    "parseQuickAdd" -> TodoJson.encodeToJsonElement(QuickAddParse.serializer(), parseQuickAdd(g.str("input"), g.local("now")))
-    "hasQuickAddMeta" -> JsonPrimitive(hasQuickAddMeta(g.quickAddParse()))
-    "quickAddToDraft" -> TodoJson.encodeToJsonElement(
-        TodoDraft.serializer(),
-        quickAddToDraft(
-            g.quickAddParse(),
-            TodoJson.decodeFromJsonElement(TodoPriority.serializer(), g.getValue("fallbackPriority")),
-            (g["fallbackDueDate"] as? JsonPrimitive)?.content,
-        ),
-    )
-    else -> error("Unknown op \"$op\"")
-}
+/** Runs the Kotlin implementation of an op named in spec/fixtures. Unknown ops fail. */
+private fun runOp(op: String, g: JsonObject): JsonElement = OPS[op]?.invoke(g) ?: error("Unknown op \"$op\"")
 
 private val NEW_ID = Regex("""^new-\d+$""")
 
