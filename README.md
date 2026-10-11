@@ -93,8 +93,9 @@ pnpm build
 
 | Tier | Jobs | When |
 | --- | --- | --- |
-| Fast checks | `lint`, `typecheck`, `spec`, `build` | every PR and push |
-| Unit tests | `unit-tests-web` (vitest + TS fixture runner), `unit-tests-android` (`:core:test` + debug APK + lint), `unit-tests-ios` (`swift test`), `build-ios` (compiles the SwiftUI app when it changes) | every PR, only for the platforms the PR touches |
+| Fast checks | `lint`, `typecheck`, `spec` | every PR and push |
+| Unit tests | `unit-tests-web` (vitest + TS fixture runner), `unit-tests-android` (`:core:test`), `unit-tests-ios` (`swift test`) | every PR, only for the platforms the PR touches |
+| Builds | `build-web` (`next build`), `build-android` (debug APK + Android lint), `build-ios` (Simulator build of the SwiftUI app, when the app target changes) | every PR, only for the platforms the PR touches |
 | E2E tests | `e2e-tests-web` (Playwright), `e2e-tests-android` (Maestro on an emulator), `e2e-tests-ios` (XCUITest + Maestro on the Simulator) | push to `main` (or `workflow_dispatch` with `e2e: true`) |
 
 Platform detection: files under `apps/<platform>` count for that platform only; everything
