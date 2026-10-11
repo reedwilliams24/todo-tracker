@@ -25,6 +25,7 @@ function row(id: string, seq: number): TodoRow {
     updated_at: "2026-01-05T09:00:00.000Z",
     deleted_at: null,
     server_seq: seq,
+    subtasks: null,
   };
 }
 
