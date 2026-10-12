@@ -83,7 +83,8 @@ struct ContentView: View {
     }
 
     private var captureBar: some View {
-        // A content-sized scroll view so a drag on the bar dismisses the keyboard, like the list.
+        // Content-sized scroll view: a drag on the (expanded) bar dismisses the keyboard, like the list.
+        // Without it Maestro's hideKeyboard swipe lands on the bar and fails.
         ScrollView {
             TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
                 .disabled(!editable)

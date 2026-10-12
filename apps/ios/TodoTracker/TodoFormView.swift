@@ -11,62 +11,86 @@ struct TodoFormView: View {
     private var dateOk: Bool { isValidDueDate(form.dueDate) }
     private var canAdd: Bool { isValidTitle(parsed.title) && dateOk }
 
+    private enum Field { case title, dueDate }
+    @FocusState private var focus: Field?
+
+    /// Compact by default; the option rows appear while typing or once a title is entered.
+    private var expanded: Bool { focus != nil || !form.title.isEmpty }
+
     var body: some View {
-        VStack(alignment: .trailing, spacing: 8) {
-            TextField(
-                t("form.title.placeholder"), text: $form.title,
-                prompt: Text(t("form.title.placeholder")).foregroundStyle(Theme.muted)
-            )
-            .font(.system(size: 16))
-            .foregroundStyle(Theme.foreground)
-            .padding(8)
-            .submitLabel(.done)
-            .onSubmit(submit)
-            .accessibilityLabel(t("form.title.label"))
-            .accessibilityIdentifier(TestID.formTitle)
+        VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                priorityPicker
-                TextField(
-                    t("form.dueDate.placeholder"), text: $form.dueDate,
-                    prompt: Text(t("form.dueDate.placeholder")).foregroundStyle(Theme.muted)
-                )
-                .font(.system(size: 14))
-                .foregroundStyle(Theme.foreground)
-                .keyboardType(.numbersAndPunctuation)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
-                .overlay(
-                    RoundedRectangle(cornerRadius: Theme.Radius.md)
-                        .stroke(dateOk ? Theme.border : Theme.danger, lineWidth: 1)
-                )
-                .accessibilityLabel(t("form.dueDate.label"))
-                .accessibilityIdentifier(TestID.formDueDate)
+                titleField
+                addButton
             }
-            reminderPicker
-            recurrencePicker
-                .frame(maxWidth: .infinity, alignment: .leading)
-            let preview = parsed
-            if hasQuickAddMeta(preview) {
-                QuickAddPreview(parse: preview)
+            if expanded {
+                HStack(spacing: 8) {
+                    priorityPicker
+                    dueDateField
+                }
+                reminderPicker
+                recurrencePicker
+                let preview = parsed
+                if hasQuickAddMeta(preview) {
+                    QuickAddPreview(parse: preview)
+                }
             }
-            Button(action: submit) {
-                Text(t("form.add"))
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Theme.accentInk)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(UndimmedButtonStyle())
-            .disabled(!canAdd)
-            .opacity(canAdd ? 1 : 0.4)
-            .accessibilityLabel(t("form.add.label"))
-            .accessibilityIdentifier(TestID.formSubmit)
         }
         .padding(12)
         .cardStyle()
+        .animation(.easeOut(duration: 0.15), value: expanded)
+    }
+
+    private var titleField: some View {
+        TextField(
+            t("form.title.placeholder"), text: $form.title,
+            prompt: Text(t("form.title.placeholder")).foregroundStyle(Theme.muted)
+        )
+        .font(.system(size: 16))
+        .foregroundStyle(Theme.foreground)
+        .padding(8)
+        .focused($focus, equals: .title)
+        .submitLabel(.done)
+        .onSubmit(submit)
+        .accessibilityLabel(t("form.title.label"))
+        .accessibilityIdentifier(TestID.formTitle)
+    }
+
+    private var dueDateField: some View {
+        TextField(
+            t("form.dueDate.placeholder"), text: $form.dueDate,
+            prompt: Text(t("form.dueDate.placeholder")).foregroundStyle(Theme.muted)
+        )
+        .font(.system(size: 14))
+        .foregroundStyle(Theme.foreground)
+        .keyboardType(.numbersAndPunctuation)
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+        .focused($focus, equals: .dueDate)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radius.md)
+                .stroke(dateOk ? Theme.border : Theme.danger, lineWidth: 1)
+        )
+        .accessibilityLabel(t("form.dueDate.label"))
+        .accessibilityIdentifier(TestID.formDueDate)
+    }
+
+    private var addButton: some View {
+        Button(action: submit) {
+            Text(t("form.add"))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Theme.accentInk)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Theme.accent, in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(UndimmedButtonStyle())
+        .disabled(!canAdd)
+        .opacity(canAdd ? 1 : 0.4)
+        .accessibilityLabel(t("form.add.label"))
+        .accessibilityIdentifier(TestID.formSubmit)
     }
 
     private var priorityPicker: some View {
