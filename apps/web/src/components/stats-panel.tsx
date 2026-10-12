@@ -1,46 +1,34 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { computeStats, TEST_IDS, type Todo } from "@/domain";
 import { useT } from "@/hooks/use-t";
 
 export function StatsPanel({ todos }: { todos: readonly Todo[] }) {
   const t = useT();
-  const [open, setOpen] = useState(false);
-  const stats = useMemo(() => (open ? computeStats(todos) : undefined), [open, todos]);
+  const stats = useMemo(() => computeStats(todos), [todos]);
   const max = stats ? Math.max(1, ...stats.perDay.map((d) => d.count)) : 1;
 
   return (
-    <section className="rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/15 dark:bg-white/5">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-controls="stats-panel"
-        data-testid={TEST_IDS.statsToggle}
-        className="flex w-full items-center justify-between text-sm"
-      >
-        <span className="font-medium">{t("stats.title")}</span>
-        <span className="opacity-60">{t(open ? "stats.hide" : "stats.show")}</span>
-      </button>
+    <section aria-label={t("stats.title")} className="rounded-[14px] border border-line bg-surface p-4">
       {stats && (
-        <div id="stats-panel" className="mt-3 flex flex-col gap-3">
+        <div id="stats-panel" className="flex flex-col gap-4">
           <dl className="grid grid-cols-3 gap-2 text-center text-sm">
             <div>
-              <dt className="text-xs opacity-60">{t("stats.completed")}</dt>
-              <dd className="text-lg font-semibold" data-testid={TEST_IDS.statsTotal}>
+              <dt className="text-xs text-muted">{t("stats.completed")}</dt>
+              <dd className="text-2xl font-bold" data-testid={TEST_IDS.statsTotal}>
                 {stats.totalCompleted}
               </dd>
             </div>
             <div>
-              <dt className="text-xs opacity-60">{t("stats.currentStreak")}</dt>
-              <dd className="text-lg font-semibold" data-testid={TEST_IDS.statsCurrent}>
+              <dt className="text-xs text-muted">{t("stats.currentStreak")}</dt>
+              <dd className="text-2xl font-bold" data-testid={TEST_IDS.statsCurrent}>
                 {t("stats.days", { count: stats.currentStreak })}
               </dd>
             </div>
             <div>
-              <dt className="text-xs opacity-60">{t("stats.longestStreak")}</dt>
-              <dd className="text-lg font-semibold" data-testid={TEST_IDS.statsLongest}>
+              <dt className="text-xs text-muted">{t("stats.longestStreak")}</dt>
+              <dd className="text-2xl font-bold" data-testid={TEST_IDS.statsLongest}>
                 {t("stats.days", { count: stats.longestStreak })}
               </dd>
             </div>
@@ -55,7 +43,7 @@ export function StatsPanel({ todos }: { todos: readonly Todo[] }) {
                 key={day.date}
                 title={`${day.date}: ${day.count}`}
                 aria-label={t("stats.day", { date: day.date, count: day.count })}
-                className="flex-1 rounded-t-sm bg-foreground/70"
+                className="flex-1 rounded-t-sm bg-accent"
                 style={{ height: `${Math.max(day.count > 0 ? 8 : 2, (day.count / max) * 100)}%` }}
               />
             ))}

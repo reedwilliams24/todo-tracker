@@ -1,32 +1,13 @@
 import SwiftUI
 import TodoCore
 
-/// Collapsible stats section: completed total, streaks and a per-day bar chart (spec/features/stats.md).
+/// Stats tab content: completed total, streaks and a per-day bar chart (spec/features/stats.md).
 struct StatsPanelView: View {
     let stats: TodoStats
-    @State private var open = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Button {
-                open.toggle()
-            } label: {
-                HStack {
-                    Text(t("stats.title"))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Theme.foreground)
-                    Spacer()
-                    Text(t(open ? "stats.hide" : "stats.show"))
-                        .font(.system(size: 12))
-                        .foregroundStyle(Theme.muted)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint(t(open ? "stats.hidesHint" : "stats.showsHint"))
-            .accessibilityIdentifier(TestID.statsToggle)
-
-            if open {
+            Group {
                 HStack(alignment: .top) {
                     value(t("stats.completed"), "\(stats.totalCompleted)", id: TestID.statsTotal)
                     value(
@@ -49,7 +30,7 @@ struct StatsPanelView: View {
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.muted)
             Text(text)
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(Theme.foreground)
                 .accessibilityIdentifier(id)
         }
@@ -61,7 +42,7 @@ struct StatsPanelView: View {
         return HStack(alignment: .bottom, spacing: 2) {
             ForEach(stats.perDay, id: \.date) { day in
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(day.count == 0 ? Theme.border : Theme.foreground)
+                    .fill(day.count == 0 ? Theme.border : Theme.accent)
                     .frame(maxWidth: .infinity)
                     .frame(height: day.count == 0 ? 3 : 64 * CGFloat(day.count) / CGFloat(peak))
                     .accessibilityLabel(t("stats.day", ["date": day.date, "count": day.count]))

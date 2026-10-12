@@ -40,11 +40,11 @@ tags:
 - assertVisible:
     id: "todo-item-Undated medium"
 - assertVisible:
-    id: "todo-item-Far future high"
+    id: "todo-item-Yesterday low"
 - assertVisible:
     id: "todo-item-Undated medium"
 - assertVisible:
-    id: "todo-item-Yesterday low"
+    id: "todo-item-Far future high"
 - assertVisible:
     id: "todo-overdue-Yesterday low"
 - assertNotVisible:
@@ -54,9 +54,9 @@ tags:
 - assertVisible:
     id: "todo-item-Yesterday low"
 - assertVisible:
-    id: "todo-item-Far future high"
-- assertVisible:
     id: "todo-item-Undated medium"
+- assertVisible:
+    id: "todo-item-Far future high"
 - tapOn:
     id: "todo-toggle-Yesterday low"
 - assertNotVisible:

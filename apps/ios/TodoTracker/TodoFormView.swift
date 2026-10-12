@@ -54,10 +54,10 @@ struct TodoFormView: View {
             Button(action: submit) {
                 Text(t("form.add"))
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Theme.card)
+                    .foregroundStyle(Theme.accentInk)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Theme.foreground, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
+                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 12))
             }
             .buttonStyle(UndimmedButtonStyle())
             .disabled(!canAdd)
@@ -78,10 +78,10 @@ struct TodoFormView: View {
                 } label: {
                     Text(t("priority.\(option.rawValue)"))
                         .font(.system(size: 14))
-                        .foregroundStyle(selected ? Theme.card : Theme.foreground)
+                        .foregroundStyle(selected ? Theme.accentInk : Theme.foreground)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(selected ? Theme.foreground : .clear)
+                        .background(selected ? Theme.accent : .clear)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -109,11 +109,11 @@ struct TodoFormView: View {
                     Text(t(key.isEmpty ? "reminder.none" : "reminder.\(key)"))
                         .font(.system(size: 12))
                         .lineLimit(1)
-                        .foregroundStyle(selected ? Theme.card : Theme.foreground)
+                        .foregroundStyle(selected ? Theme.accentInk : Theme.foreground)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 6)
                         .frame(maxWidth: .infinity)
-                        .background(selected ? Theme.foreground : .clear)
+                        .background(selected ? Theme.accent : .clear)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -138,10 +138,10 @@ struct TodoFormView: View {
                 } label: {
                     Text(option.map { t("recurrence.\($0.rawValue)") } ?? t("recurrence.none"))
                         .font(.system(size: 14))
-                        .foregroundStyle(selected ? Theme.card : Theme.foreground)
+                        .foregroundStyle(selected ? Theme.accentInk : Theme.foreground)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(selected ? Theme.foreground : .clear)
+                        .background(selected ? Theme.accent : .clear)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])

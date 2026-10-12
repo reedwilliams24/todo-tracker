@@ -50,6 +50,9 @@ class TestIdsTest {
                 "bulkToggle" to TestIds.bulkToggle,
                 "clearCompleted" to TestIds.clearCompleted,
                 "connectionBanner" to TestIds.connectionBanner,
+                "daybookDoneToggle" to TestIds.daybookDoneToggle,
+                "daybookProgress" to TestIds.daybookProgress,
+                "daybookSection" to TestIds.daybookSection("{section}"),
                 "empty" to TestIds.empty,
                 "filter" to TestIds.filter("{filter}"),
                 "formDueDate" to TestIds.formDueDate,
@@ -93,11 +96,15 @@ class TestIdsTest {
                 "subtaskInput" to TestIds.subtaskInput("{title}"),
                 "subtaskToggle" to TestIds.subtaskToggle("{title}"),
                 "syncError" to TestIds.syncError,
+                "tab" to TestIds.tab("{tab}"),
                 "themeOption" to TestIds.themeOption("{theme}"),
                 "themeToggle" to TestIds.themeToggle,
                 "undoAction" to TestIds.undoAction,
                 "undoLabel" to TestIds.undoLabel,
                 "undoToast" to TestIds.undoToast,
+                "upcomingDay" to TestIds.upcomingDay("{date}"),
+                "upcomingEmpty" to TestIds.upcomingEmpty,
+                "upcomingList" to TestIds.upcomingList,
             )
         assertEquals(expected, actual)
     }

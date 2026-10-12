@@ -1,40 +1,33 @@
 import SwiftUI
 import TodoCore
 
-/// Tailwind scale (1 unit = 4pt). Colors adapt to the resolved color scheme; dark values mirror the web `.dark` palette.
-/// Text meets WCAG AA (spec/features/accessibility.md).
+/// Daybook tokens (spec/features/daybook.md); light/dark values match the web `.d-day` palette.
+/// Spacing follows the Tailwind scale (1 unit = 4pt). Text meets WCAG AA (spec/features/accessibility.md).
 enum Theme {
-    static let background = Color(light: 0xF7F7F5, dark: 0x0B0C0F)
-    static let card = Color(light: 0xFFFFFF, dark: 0x17181B)
-    static let border = Color(
-        light: UIColor.black.withAlphaComponent(0.1), dark: UIColor.white.withAlphaComponent(0.15))
-    static let foreground = Color(light: 0x171717, dark: 0xE9EAEE)
-    static let muted = foreground.opacity(0.7)
-    static let danger = Color(light: 0xDC2626, dark: 0xF87171)
+    static let background = Color(light: 0xF3F4FA, dark: 0x0D0F21)
+    static let card = Color(light: 0xFFFFFF, dark: 0x171A33)
+    static let border = Color(light: 0xE3E5F1, dark: 0x272B4D)
+    static let foreground = Color(light: 0x151833, dark: 0xE8EAFB)
+    static let muted = Color(light: 0x686D8E, dark: 0x9196BA)
+    static let accent = Color(light: 0x4F46E5, dark: 0x8B8DFF)
+    static let accentInk = Color(light: 0xFFFFFF, dark: 0x0D0F21)
+    static let soft = Color(light: 0xECEDFF, dark: 0x23274F)
+    static let danger = Color(light: 0xE5484D, dark: 0xFF6B6E)
+    static let success = Color(light: 0x0E9F6E, dark: 0x34D399)
+    static let note = Color(light: 0x8A5300, dark: 0xF5C26B)
+    static let noteBackground = Color(light: 0xFFF4E0, dark: 0x2C2414)
 
     enum Radius {
         static let sm: CGFloat = 4
         static let md: CGFloat = 8
-        static let lg: CGFloat = 12
+        static let lg: CGFloat = 14
     }
 
-    static func priority(_ priority: TodoPriority) -> (bg: Color, text: Color) {
+    static func priority(_ priority: TodoPriority) -> Color {
         switch priority {
-        case .high:
-            (
-                Color(red: 239 / 255, green: 68 / 255, blue: 68 / 255).opacity(0.15),
-                Color(light: 0xB91C1C, dark: 0xF87171)
-            )
-        case .medium:
-            (
-                Color(red: 245 / 255, green: 158 / 255, blue: 11 / 255).opacity(0.15),
-                Color(light: 0x92400E, dark: 0xFBBF24)
-            )
-        case .low:
-            (
-                Color(red: 16 / 255, green: 185 / 255, blue: 129 / 255).opacity(0.15),
-                Color(light: 0x047857, dark: 0x34D399)
-            )
+        case .high: Color(light: 0xE5484D, dark: 0xFF6B6E)
+        case .medium: Color(light: 0xE58A00, dark: 0xFBBF24)
+        case .low: Color(light: 0x0E9F6E, dark: 0x34D399)
         }
     }
 }

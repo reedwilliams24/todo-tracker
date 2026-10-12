@@ -54,8 +54,9 @@ function maestroStep(step: Step): string[] {
         `- inputText: ${q(s.title!)}`,
         ...(s.priority ? tap(id("formPriorityOption", s.priority)) : []),
         ...(s.recurrence ? tap(id("formRecurrenceOption", s.recurrence)) : []),
-        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
+        // Reminders need a due date first (spec/features/reminders.md), so the date goes in before the reminder.
         ...(s.dueDate ? [...tap(id("formDueDate")), `- inputText: ${q(s.dueDate)}`] : []),
+        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
         "- hideKeyboard",
         ...tap(id("formSubmit")),
         ...visible(id("item", s.title!)),
@@ -99,6 +100,8 @@ function maestroStep(step: Step): string[] {
       return tap(id("sortOption", s.sort));
     case "submit":
       return ["- hideKeyboard", ...tap(id("formSubmit"))];
+    case "tab":
+      return tap(id("tab", s.tab));
     case "theme":
       return tap(id("themeOption", s.theme));
     case "toggle":
@@ -125,6 +128,8 @@ function maestroStep(step: Step): string[] {
         : [`- assertNotVisible:`, `    id: ${q(id("itemOverdue", s.title!))}`];
     case "priority":
       return visible(id("itemPriority", s.title!), [`    text: ${q(capitalize(s.priority!))}`]);
+    case "progress":
+      return visible(id("daybookProgress"), [`    text: ${q(s.text)}`]);
     case "quickAddPreview":
       return s.title === null
         ? [`- assertNotVisible:`, `    id: ${q(id("quickAddPreview"))}`]
@@ -135,6 +140,8 @@ function maestroStep(step: Step): string[] {
       return visible(id("remaining"), [`    text: ${q(s.text)}`]);
     case "reminder":
       return visible(id("itemReminder", s.title!), [`    text: ${q(s.text)}`]);
+    case "section":
+      return visible(id("daybookSection", s.section));
     case "selected":
       return visible(id("selectedCount"), [`    text: ${q(s.text)}`]);
     case "stats":
@@ -149,6 +156,8 @@ function maestroStep(step: Step): string[] {
       return visible(id("themeOption", s.theme), ["    selected: true"]);
     case "titles":
       return s.titles!.length === 0 ? visible(id("empty")) : s.titles!.flatMap((title) => visible(id("item", title)));
+    case "upcomingDay":
+      return visible(id("upcomingDay", s.date));
     case "undo":
       return s.label === null
         ? [`- assertNotVisible:`, `    id: ${q(id("undoToast"))}`]
