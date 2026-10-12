@@ -40,7 +40,11 @@ tags:
     id: "auth-code"
 - eraseText: 10
 - inputText: "${output.code}"
-- hideKeyboard
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - tapOn:
     id: "auth-verify"
 - assertVisible:

@@ -66,7 +66,13 @@ function enterCode(code: string, email: string): string[] {
     ...tap(id("authCode")),
     "- eraseText: 10",
     `- inputText: ${q(emailed ? "${output.code}" : code)}`,
-    "- hideKeyboard",
+    // iOS's number pad has no dismiss key and the ticking resend countdown never lets Maestro's swipe-to-dismiss
+    // settle; Verify sits above the keyboard there anyway.
+    "- runFlow:",
+    "    when:",
+    "      platform: Android",
+    "    commands:",
+    "      - hideKeyboard",
     ...tap(id("authVerify")),
   ];
 }
@@ -86,8 +92,9 @@ function maestroStep(step: Step, ctx: { email?: string }): string[] {
         `- inputText: ${q(s.title!)}`,
         ...(s.priority ? tap(id("formPriorityOption", s.priority)) : []),
         ...(s.recurrence ? tap(id("formRecurrenceOption", s.recurrence)) : []),
-        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
+        // Reminder options stay disabled until a due date is entered, so type the date first.
         ...(s.dueDate ? [...tap(id("formDueDate")), `- inputText: ${q(s.dueDate)}`] : []),
+        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
         "- hideKeyboard",
         ...tap(id("formSubmit")),
         ...visible(id("item", s.title!)),

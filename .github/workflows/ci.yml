@@ -387,11 +387,40 @@ jobs:
           app=$(find build/Build/Products -maxdepth 2 -name 'TodoTracker.app' -not -path '*Runner*' | head -1)
           xcrun simctl install "$SIMULATOR_UDID" "$app"
           maestro --device "$SIMULATOR_UDID" test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker --format junit --output maestro-ios.xml ../../spec/scenarios/maestro
+      # macOS runners have no Docker for `supabase start`, so iOS runs the sign-in flows against scripts/supabase-mock.py.
+      - name: Run Maestro sign-in flows against the Supabase mock
+        run: |
+          python3 ../../scripts/supabase-mock.py > supabase-mock.log 2>&1 &
+          printf 'SUPABASE_URL = http:/$()/127.0.0.1:54321\nSUPABASE_ANON_KEY = sb_publishable_local-mock\n' > Config/Supabase.override.xcconfig
+          # Ad-hoc signed: unsigned Simulator builds can't use the Keychain (-34018), where the session lives.
+          xcodebuild build -project TodoTracker.xcodeproj -scheme TodoTracker \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" -derivedDataPath build-supabase \
+            -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+          xcrun simctl install "$SIMULATOR_UDID" build-supabase/Build/Products/Debug-iphonesimulator/TodoTracker.app
+          status=0
+          # One run per flow: Maestro's clearState doesn't clear the Keychain, so reset it before each.
+          for flow in $(grep -l '^  - supabase$' ../../spec/scenarios/maestro/*.yaml); do
+            xcrun simctl keychain "$SIMULATOR_UDID" reset
+            maestro --device "$SIMULATOR_UDID" test -e APP_ID=com.reedwilliams24.todotracker \
+              --format junit --output "maestro-ios-supabase-$(basename "$flow" .yaml).xml" "$flow" || status=1
+          done
+          python3 - maestro-ios-supabase-*.xml <<'EOF'
+          import sys, xml.etree.ElementTree as ET
+          merged = ET.Element("testsuites")
+          for path in sys.argv[1:]:
+              root = ET.parse(path).getroot()
+              merged.extend(list(root) if root.tag == "testsuites" else [root])
+          ET.ElementTree(merged).write("maestro-ios-supabase.xml", encoding="utf-8", xml_declaration=True)
+          EOF
+          exit $status
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: maestro-ios
           path: |
             apps/ios/maestro-ios.xml
+            apps/ios/maestro-ios-supabase.xml
+            apps/ios/supabase-mock.log
             ~/.maestro/tests/
           retention-days: 14
