@@ -1,0 +1,86 @@
+# Generated from spec/scenarios/core/daybook-shell.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: daybook-shell
+tags:
+  - spec
+---
+- runFlow: launch.yaml
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Yesterday low"
+- tapOn:
+    id: "todo-form-priority-low"
+- tapOn:
+    id: "todo-form-due-date"
+- inputText: "2000-01-02"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Yesterday low"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Far future"
+- tapOn:
+    id: "todo-form-due-date"
+- inputText: "2999-12-31"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Far future"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Undated"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Undated"
+- assertVisible:
+    id: "daybook-section-slipped"
+- assertVisible:
+    id: "daybook-section-today"
+- assertVisible:
+    id: "daybook-section-later"
+- assertVisible:
+    id: "daybook-progress"
+    text: "0/2"
+- assertVisible:
+    id: "todo-item-Yesterday low"
+- assertVisible:
+    id: "todo-item-Undated"
+- assertVisible:
+    id: "todo-item-Far future"
+- tapOn:
+    id: "todo-toggle-Undated"
+- assertVisible:
+    id: "daybook-progress"
+    text: "1/2"
+- assertVisible:
+    id: "todo-toggle-Undated"
+    checked: true
+- tapOn:
+    id: "tab-upcoming"
+- assertVisible:
+    id: "upcoming-day-2999-12-31"
+- assertVisible:
+    id: "todo-item-Far future"
+- tapOn:
+    id: "tab-today"
+- assertVisible:
+    id: "daybook-section-slipped"
+- scrollUntilVisible:
+    element:
+      id: "stats-toggle"
+- tapOn:
+    id: "stats-toggle"
+- assertVisible:
+    id: "stat-total"
+    text: "1"
+- assertVisible:
+    id: "stat-current"
+    text: "1d"
+- assertVisible:
+    id: "stat-longest"
+    text: "1d"

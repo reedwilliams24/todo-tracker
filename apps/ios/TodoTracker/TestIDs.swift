@@ -27,6 +27,9 @@ enum TestID {
     static let authSignOut = "auth-sign-out"
     static let authVerify = "auth-verify"
     static let bulkBar = "todo-bulk-bar"
+    static let daybookDoneToggle = "daybook-done-toggle"
+    static let daybookProgress = "daybook-progress"
+    static func daybookSection(_ section: String) -> String { "daybook-section-\(section)" }
     static let bulkDelete = "todo-bulk-delete"
     static let bulkDeleteCancel = "todo-bulk-delete-cancel"
     static let bulkDeleteConfirm = "todo-bulk-delete-confirm"
@@ -77,10 +80,14 @@ enum TestID {
     static func subtaskDelete(_ title: String) -> String { "todo-subtask-delete-\(title)" }
     static func subtaskInput(_ title: String) -> String { "todo-subtask-input-\(title)" }
     static func subtaskToggle(_ title: String) -> String { "todo-subtask-toggle-\(title)" }
+    static func tab(_ tab: String) -> String { "tab-\(tab)" }
     static func themeOption(_ theme: ThemePreference) -> String { "theme-option-\(theme.rawValue)" }
     static let syncError = "sync-error-toast"
     static let themeToggle = "theme-toggle"
     static let undoAction = "undo-toast-action"
     static let undoLabel = "undo-toast-label"
     static let undoToast = "undo-toast"
+    static func upcomingDay(_ date: String) -> String { "upcoming-day-\(date)" }
+    static let upcomingEmpty = "upcoming-empty"
+    static let upcomingList = "upcoming-list"
 }

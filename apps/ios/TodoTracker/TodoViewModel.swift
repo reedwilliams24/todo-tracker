@@ -13,6 +13,17 @@ final class TodoViewModel {
         didSet { defaults.set(sort.rawValue, forKey: sortStorageKey) }
     }
     var selecting = false
+    /// Daybook tab; leaving one forgets which todos were completed there (spec/features/daybook.md).
+    var tab: DaybookTab = .today {
+        didSet {
+            guard tab != oldValue else { return }
+            seenOpen = []
+            if tab != .today { exitSelectMode() }
+        }
+    }
+    var doneOpen = false
+    /// Todos seen open on this view. Completing one keeps it in place (struck through) until the view is left.
+    @ObservationIgnored private var seenOpen: Set<String> = []
     var selectedIds: Set<String> = []
     var confirmingDelete = false
 
@@ -151,6 +162,31 @@ final class TodoViewModel {
     var remainingText: String { t("list.remaining", ["count": remaining]) }
     var undoLabel: String? { state.undoable?.label }
     var stats: TodoStats { computeStats(state.todos, now: now()) }
+    var today: String { localDateKey(now()) }
+    var progress: DaybookProgress { daybookProgress(state.todos, now: now()) }
+    var upcoming: [UpcomingDay] { upcomingDays(sortTodos(state.todos, sort), today: today) }
+    var showDone: Bool { doneOpen || filter == .completed }
+
+    /// Visible todos grouped for Today; a todo completed on this view stays in its group.
+    var sections: DaybookSections {
+        let visible = visibleTodos
+        for todo in state.todos where !todo.completed { seenOpen.insert(todo.id) }
+        let byId = Dictionary(visible.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let grouped = daybookSections(
+            visible.map { todo in
+                var copy = todo
+                if copy.completed, seenOpen.contains(copy.id) { copy.completed = false }
+                return copy
+            },
+            today: today)
+        func real(_ todos: [Todo]) -> [Todo] { todos.compactMap { byId[$0.id] } }
+        var result = DaybookSections()
+        result.slipped = real(grouped.slipped)
+        result.today = real(grouped.today)
+        result.later = real(grouped.later)
+        result.done = real(grouped.done)
+        return result
+    }
     var emptyText: String {
         state.todos.isEmpty ? t("list.empty") : t("list.emptyFiltered", ["filter": filter.rawValue])
     }
@@ -191,7 +227,7 @@ final class TodoViewModel {
         if selecting { exitSelectMode() }
     }
 
-    private func exitSelectMode() {
+    func exitSelectMode() {
         selecting = false
         selectedIds = []
         confirmingDelete = false
@@ -232,4 +268,8 @@ final class TodoViewModel {
             self?.dispatch(.expireUndo)
         }
     }
+}
+
+enum DaybookTab: String, CaseIterable {
+    case today, upcoming, stats
 }

@@ -1,0 +1,418 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "daybook",
+  "spec": "features/daybook.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
+  "cases": [
+    {
+      "name": "daybookSections: no todos",
+      "op": "daybookSections",
+      "given": {
+        "todos": [],
+        "today": "2026-03-10"
+      },
+      "then": {
+        "slipped": [],
+        "today": [],
+        "later": [],
+        "done": []
+      }
+    },
+    {
+      "name": "daybookSections: slipped, today, later, done in input order",
+      "op": "daybookSections",
+      "given": {
+        "todos": [
+          {
+            "id": "slipped-old",
+            "title": "Todo slipped-old",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-06"
+          },
+          {
+            "id": "undated",
+            "title": "Todo undated",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "later",
+            "title": "Todo later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-12"
+          },
+          {
+            "id": "due-today",
+            "title": "Todo due-today",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-10"
+          },
+          {
+            "id": "slipped-yesterday",
+            "title": "Todo slipped-yesterday",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-09"
+          },
+          {
+            "id": "done-today",
+            "title": "Todo done-today",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T09:00:00.000Z",
+            "completedAt": "2026-03-10T09:00:00.000Z"
+          },
+          {
+            "id": "done-overdue",
+            "title": "Todo done-overdue",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-01"
+          },
+          {
+            "id": "later-same-day",
+            "title": "Todo later-same-day",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-12"
+          },
+          {
+            "id": "next-month",
+            "title": "Todo next-month",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-04-01"
+          }
+        ],
+        "today": "2026-03-10"
+      },
+      "then": {
+        "slipped": [
+          "slipped-old",
+          "slipped-yesterday"
+        ],
+        "today": [
+          "undated",
+          "due-today"
+        ],
+        "later": [
+          "later",
+          "later-same-day",
+          "next-month"
+        ],
+        "done": [
+          "done-today",
+          "done-overdue"
+        ]
+      }
+    },
+    {
+      "name": "daybookProgress: no todos",
+      "op": "daybookProgress",
+      "given": {
+        "todos": [],
+        "now": "2026-03-10T15:00:00.000Z",
+        "timeZone": "UTC"
+      },
+      "then": {
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "daybookProgress: done today over done today plus open slipped, due-today and undated",
+      "op": "daybookProgress",
+      "given": {
+        "todos": [
+          {
+            "id": "slipped-old",
+            "title": "Todo slipped-old",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-06"
+          },
+          {
+            "id": "undated",
+            "title": "Todo undated",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "later",
+            "title": "Todo later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-12"
+          },
+          {
+            "id": "due-today",
+            "title": "Todo due-today",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-10"
+          },
+          {
+            "id": "slipped-yesterday",
+            "title": "Todo slipped-yesterday",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-09"
+          },
+          {
+            "id": "done-today",
+            "title": "Todo done-today",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T09:00:00.000Z",
+            "completedAt": "2026-03-10T09:00:00.000Z"
+          },
+          {
+            "id": "done-overdue",
+            "title": "Todo done-overdue",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-01"
+          },
+          {
+            "id": "later-same-day",
+            "title": "Todo later-same-day",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-12"
+          },
+          {
+            "id": "next-month",
+            "title": "Todo next-month",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-04-01"
+          },
+          {
+            "id": "done-yesterday",
+            "title": "Todo done-yesterday",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-09T12:00:00.000Z",
+            "completedAt": "2026-03-09T12:00:00.000Z"
+          },
+          {
+            "id": "legacy",
+            "title": "Todo legacy",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "garbage",
+            "title": "Todo garbage",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "not a date",
+            "completedAt": "not a date"
+          }
+        ],
+        "now": "2026-03-10T15:00:00.000Z",
+        "timeZone": "UTC"
+      },
+      "then": {
+        "done": 1,
+        "total": 5
+      }
+    },
+    {
+      "name": "daybookProgress: today follows the given time zone",
+      "op": "daybookProgress",
+      "given": {
+        "todos": [
+          {
+            "id": "late",
+            "title": "Todo late",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T03:30:00.000Z",
+            "completedAt": "2026-03-10T03:30:00.000Z"
+          },
+          {
+            "id": "open",
+            "title": "Todo open",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-10"
+          }
+        ],
+        "now": "2026-03-10T16:00:00.000Z",
+        "timeZone": "America/New_York"
+      },
+      "then": {
+        "done": 0,
+        "total": 1
+      }
+    },
+    {
+      "name": "upcomingDays: no todos",
+      "op": "upcomingDays",
+      "given": {
+        "todos": [],
+        "today": "2026-03-10"
+      },
+      "then": []
+    },
+    {
+      "name": "upcomingDays: open dated todos from today, grouped by day, soonest first",
+      "op": "upcomingDays",
+      "given": {
+        "todos": [
+          {
+            "id": "slipped-old",
+            "title": "Todo slipped-old",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-06"
+          },
+          {
+            "id": "undated",
+            "title": "Todo undated",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z"
+          },
+          {
+            "id": "later",
+            "title": "Todo later",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-12"
+          },
+          {
+            "id": "due-today",
+            "title": "Todo due-today",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-10"
+          },
+          {
+            "id": "slipped-yesterday",
+            "title": "Todo slipped-yesterday",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-09"
+          },
+          {
+            "id": "done-today",
+            "title": "Todo done-today",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-03-10T09:00:00.000Z",
+            "completedAt": "2026-03-10T09:00:00.000Z"
+          },
+          {
+            "id": "done-overdue",
+            "title": "Todo done-overdue",
+            "completed": true,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-01"
+          },
+          {
+            "id": "later-same-day",
+            "title": "Todo later-same-day",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-03-12"
+          },
+          {
+            "id": "next-month",
+            "title": "Todo next-month",
+            "completed": false,
+            "priority": "medium",
+            "createdAt": "2026-01-05T09:00:00.000Z",
+            "updatedAt": "2026-01-05T09:00:00.000Z",
+            "dueDate": "2026-04-01"
+          }
+        ],
+        "today": "2026-03-10"
+      },
+      "then": [
+        {
+          "date": "2026-03-10",
+          "ids": [
+            "due-today"
+          ]
+        },
+        {
+          "date": "2026-03-12",
+          "ids": [
+            "later",
+            "later-same-day"
+          ]
+        },
+        {
+          "date": "2026-04-01",
+          "ids": [
+            "next-month"
+          ]
+        }
+      ]
+    }
+  ]
+}

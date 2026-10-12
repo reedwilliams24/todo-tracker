@@ -27,6 +27,11 @@ object TestIds {
     const val authSignOut = "auth-sign-out"
     const val authVerify = "auth-verify"
     const val bulkBar = "todo-bulk-bar"
+    const val daybookDoneToggle = "daybook-done-toggle"
+    const val daybookProgress = "daybook-progress"
+
+    fun daybookSection(section: String) = "daybook-section-$section"
+
     const val bulkDelete = "todo-bulk-delete"
     const val bulkDeleteCancel = "todo-bulk-delete-cancel"
     const val bulkDeleteConfirm = "todo-bulk-delete-confirm"
@@ -106,10 +111,17 @@ object TestIds {
 
     const val syncError = "sync-error-toast"
 
+    fun tab(tab: String) = "tab-$tab"
+
     fun themeOption(theme: String) = "theme-option-$theme"
 
     const val themeToggle = "theme-toggle"
     const val undoAction = "undo-toast-action"
     const val undoLabel = "undo-toast-label"
     const val undoToast = "undo-toast"
+
+    fun upcomingDay(date: String) = "upcoming-day-$date"
+
+    const val upcomingEmpty = "upcoming-empty"
+    const val upcomingList = "upcoming-list"
 }

@@ -13,7 +13,7 @@ export function ThemeToggle() {
       role="radiogroup"
       aria-label={t("theme.label")}
       data-testid={TEST_IDS.themeToggle}
-      className="flex rounded-lg border border-black/10 text-xs dark:border-white/15"
+      className="flex rounded-lg border border-line bg-surface text-xs"
     >
       {THEME_PREFERENCES.map((option: ThemePreference) => {
         const selected = option === preference;
@@ -26,7 +26,7 @@ export function ThemeToggle() {
             data-testid={TEST_IDS.themeOption(option)}
             onClick={() => setPreference(option)}
             className={`px-2.5 py-1 first:rounded-l-lg last:rounded-r-lg ${
-              selected ? "bg-foreground text-background" : "opacity-70 hover:opacity-100"
+              selected ? "bg-soft font-semibold text-accent" : "text-muted hover:text-ink"
             }`}
           >
             {t(`theme.${option}`)}

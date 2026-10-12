@@ -44,26 +44,23 @@ export function TodoForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-2 rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/15 dark:bg-white/5"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 p-3">
       <fieldset disabled={disabled} aria-describedby={describedBy} className="contents disabled:opacity-50">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             value={title}
             onChange={(event) => setForm((f) => ({ ...f, title: event.target.value }))}
             placeholder={t("form.title.placeholder")}
             aria-label={t("form.title.label")}
             data-testid={TEST_IDS.formTitle}
-            className="flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50"
+            className="min-w-0 basis-full rounded-lg bg-transparent px-2 py-2 text-[15px] outline-none placeholder:text-muted"
           />
           <select
             value={priority}
             onChange={(event) => setForm((f) => ({ ...f, priority: event.target.value as TodoPriority }))}
             aria-label={t("form.priority.label")}
             data-testid={TEST_IDS.formPriority}
-            className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
+            className="rounded-lg border border-line bg-transparent px-2 py-2 text-sm"
           >
             {PRIORITIES.map((option) => (
               <option
@@ -82,7 +79,7 @@ export function TodoForm({
             onChange={(event) => setForm((f) => ({ ...f, dueDate: event.target.value }))}
             aria-label={t("form.dueDate.label")}
             data-testid={TEST_IDS.formDueDate}
-            className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
+            className="rounded-lg border border-line bg-transparent px-2 py-2 text-sm"
           />
           <select
             value={reminder}
@@ -90,7 +87,7 @@ export function TodoForm({
             onChange={(event) => setForm((f) => ({ ...f, reminder: event.target.value as ReminderOffset | "" }))}
             aria-label={t("form.reminder.label")}
             data-testid={TEST_IDS.formReminder}
-            className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm disabled:opacity-40 dark:border-white/15"
+            className="rounded-lg border border-line bg-transparent px-2 py-2 text-sm disabled:opacity-40"
           >
             <option value="">{t("reminder.none")}</option>
             {REMINDER_OFFSETS.map((option) => (
@@ -109,7 +106,7 @@ export function TodoForm({
             onChange={(event) => setForm((f) => ({ ...f, recurrence: event.target.value as Recurrence | "" }))}
             aria-label={t("form.recurrence.label")}
             data-testid={TEST_IDS.formRecurrence}
-            className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm dark:border-white/15"
+            className="rounded-lg border border-line bg-transparent px-2 py-2 text-sm"
           >
             <option value="" className="text-foreground">
               {t("recurrence.none")}
@@ -124,13 +121,13 @@ export function TodoForm({
             type="submit"
             data-testid={TEST_IDS.formSubmit}
             disabled={!canAdd}
-            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
+            className="ml-auto rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-ink disabled:opacity-40"
           >
             {t("form.add")}
           </button>
         </div>
         {hasQuickAddMeta(parsed) && (
-          <p className="flex flex-wrap gap-x-3 px-2 text-xs opacity-70" data-testid={TEST_IDS.quickAddPreview}>
+          <p className="flex flex-wrap gap-x-3 px-2 text-xs text-muted" data-testid={TEST_IDS.quickAddPreview}>
             <span>
               {t("quickAdd.willAdd")}{" "}
               <strong className="font-medium" data-testid={TEST_IDS.quickAddPreviewTitle}>

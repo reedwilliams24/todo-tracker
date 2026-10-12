@@ -177,6 +177,8 @@ export async function run(page: Page, step: Step, ctx: Ctx) {
       return void (await page.getByTestId(id("sort")).selectOption(s.sort!));
     case "submit":
       return page.getByTestId(id("formSubmit")).click();
+    case "tab":
+      return page.getByTestId(id("tab", s.tab)).click();
     case "theme":
       return page.getByTestId(id("themeOption", s.theme)).click();
     case "toggle":
@@ -228,6 +230,8 @@ export async function run(page: Page, step: Step, ctx: Ctx) {
       return expect(page.getByTestId(id("itemOverdue", s.title!))).toBeHidden();
     case "priority":
       return expect(page.getByTestId(id("itemPriority", s.title!))).toHaveText(new RegExp(`^${s.priority}$`, "i"));
+    case "progress":
+      return expect(page.getByTestId(id("daybookProgress"))).toHaveText(s.text!);
     case "quickAddPreview":
       if (s.title === null) return expect(page.getByTestId(id("quickAddPreview"))).toBeHidden();
       return expect(page.getByTestId(id("quickAddPreviewTitle"))).toHaveText(s.title!);
@@ -239,6 +243,8 @@ export async function run(page: Page, step: Step, ctx: Ctx) {
       return expect(page.getByTestId(id("remaining"))).toHaveText(s.text!);
     case "reminder":
       return expect(page.getByTestId(id("itemReminder", s.title!))).toHaveText(s.text!);
+    case "section":
+      return expect(page.getByTestId(id("daybookSection", s.section))).toBeVisible();
     case "selected":
       return expect(page.getByTestId(id("selectedCount"))).toHaveText(s.text!);
     case "stats":
@@ -258,6 +264,8 @@ export async function run(page: Page, step: Step, ctx: Ctx) {
     case "undo":
       if (s.label === null) return expect(page.getByTestId(id("undoToast"))).toBeHidden();
       return expect(page.getByTestId(id("undoLabel"))).toHaveText(s.label!);
+    case "upcomingDay":
+      return expect(page.getByTestId(id("upcomingDay", s.date))).toBeVisible();
   }
   throw new Error(`Unknown step ${JSON.stringify(step)}`);
 }
