@@ -1,0 +1,57 @@
+# Generated from spec/scenarios/core/sign-in-discards-guest-todos.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: sign-in-discards-guest-todos
+tags:
+  - supabase
+---
+- runFlow: launch.yaml
+- evalScript: ${output.run = String(Date.now())}
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- tapOn:
+    id: "auth-sign-in"
+- tapOn:
+    id: "auth-email"
+- inputText: "reed.${output.run}@example.com"
+- hideKeyboard
+- tapOn:
+    id: "auth-send-code"
+- assertVisible:
+    id: "auth-code"
+- runScript:
+    file: mailpit-code.js
+    env:
+      EMAIL: "reed.${output.run}@example.com"
+- tapOn:
+    id: "auth-code"
+- eraseText: 10
+- inputText: "${output.code}"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- tapOn:
+    id: "auth-verify"
+- assertVisible:
+    text: "Move your 1 guest todo to your account\\?"
+- tapOn:
+    id: "auth-move-discard"
+- assertVisible:
+    id: "todo-empty"
+- tapOn:
+    id: "auth-account"
+- tapOn:
+    id: "auth-sign-out"
+- assertNotVisible:
+    id: "auth-account"
+- assertVisible:
+    id: "auth-guest-banner"
+- assertVisible:
+    id: "todo-empty"

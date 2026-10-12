@@ -1,0 +1,70 @@
+# Generated from spec/scenarios/core/sign-in-moves-guest-todos.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: sign-in-moves-guest-todos
+tags:
+  - supabase
+---
+- runFlow: launch.yaml
+- evalScript: ${output.run = String(Date.now())}
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Walk dog"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Walk dog"
+- tapOn:
+    id: "auth-sign-in"
+- tapOn:
+    id: "auth-email"
+- inputText: "reed.${output.run}@example.com"
+- hideKeyboard
+- tapOn:
+    id: "auth-send-code"
+- assertVisible:
+    id: "auth-code"
+- runScript:
+    file: mailpit-code.js
+    env:
+      EMAIL: "reed.${output.run}@example.com"
+- tapOn:
+    id: "auth-code"
+- eraseText: 10
+- inputText: "${output.code}"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- tapOn:
+    id: "auth-verify"
+- assertVisible:
+    text: "Move your 2 guest todos to your account\\?"
+- tapOn:
+    id: "auth-move-confirm"
+- assertNotVisible:
+    id: "auth-move-confirm"
+- assertVisible:
+    id: "auth-account"
+    text: "reed\\.${output.run}@example\\.com"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- assertVisible:
+    id: "todo-item-Walk dog"
+- tapOn:
+    id: "auth-account"
+- tapOn:
+    id: "auth-sign-out"
+- assertNotVisible:
+    id: "auth-account"
+- assertVisible:
+    id: "todo-empty"

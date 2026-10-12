@@ -127,6 +127,8 @@ private struct SignInSheet: View {
                         .accessibilityIdentifier(TestID.authError)
                 }
             }
+            // Like the todo list: a swipe dismisses the email/number pad keyboards, which have no Done key.
+            .scrollDismissesKeyboard(.immediately)
             .navigationTitle(t("auth.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

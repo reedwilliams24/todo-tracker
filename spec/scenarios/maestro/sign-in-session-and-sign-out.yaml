@@ -1,0 +1,78 @@
+# Generated from spec/scenarios/core/sign-in-session-and-sign-out.json by `pnpm spec:generate`. Do not edit.
+appId: ${APP_ID}
+name: sign-in-session-and-sign-out
+tags:
+  - supabase
+---
+- runFlow: launch.yaml
+- evalScript: ${output.run = String(Date.now())}
+- assertVisible:
+    id: "auth-guest-banner"
+- tapOn:
+    id: "auth-sign-in"
+- tapOn:
+    id: "auth-email"
+- inputText: "reed.${output.run}@example.com"
+- hideKeyboard
+- tapOn:
+    id: "auth-send-code"
+- assertVisible:
+    id: "auth-code"
+- tapOn:
+    id: "auth-code"
+- eraseText: 10
+- inputText: "000000"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- tapOn:
+    id: "auth-verify"
+- assertVisible:
+    id: "auth-error"
+    text: "That code is wrong or has expired\\. Check it or send a new one\\."
+- runScript:
+    file: mailpit-code.js
+    env:
+      EMAIL: "reed.${output.run}@example.com"
+- tapOn:
+    id: "auth-code"
+- eraseText: 10
+- inputText: "${output.code}"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- tapOn:
+    id: "auth-verify"
+- assertVisible:
+    id: "auth-account"
+    text: "reed\\.${output.run}@example\\.com"
+- assertNotVisible:
+    id: "auth-guest-banner"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Call mom"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Call mom"
+- runFlow: relaunch.yaml
+- assertVisible:
+    id: "auth-account"
+    text: "reed\\.${output.run}@example\\.com"
+- assertVisible:
+    id: "todo-item-Call mom"
+- tapOn:
+    id: "auth-account"
+- tapOn:
+    id: "auth-sign-out"
+- assertNotVisible:
+    id: "auth-account"
+- assertVisible:
+    id: "auth-guest-banner"
+- assertVisible:
+    id: "todo-empty"

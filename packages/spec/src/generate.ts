@@ -38,9 +38,47 @@ const q = (value: unknown) => JSON.stringify(value);
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 const tap = (testId: string) => [`- tapOn:`, `    id: ${q(testId)}`];
 const visible = (testId: string, extra: string[] = []) => [`- assertVisible:`, `    id: ${q(testId)}`, ...extra];
+const hidden = (testId: string) => [`- assertNotVisible:`, `    id: ${q(testId)}`];
+/** Maestro matches `text` as a full regex; escape everything but the `${…}` interpolations. */
+const literal = (text: string) =>
+  text
+    .split(/(\$\{[^}]*\})/)
+    .map((part, i) => (i % 2 ? part : part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
+    .join("");
+/** A per-run unique address (`reed.<run>@example.com`) so GoTrue's 60 s resend limit and Mailpit searches never collide. */
+const runEmail = (email: string) => email.replace("@", ".${output.run}@");
+
+function requestCode(email: string): string[] {
+  return [
+    ...tap(id("authSignIn")),
+    ...tap(id("authEmail")),
+    `- inputText: ${q(runEmail(email))}`,
+    "- hideKeyboard",
+    ...tap(id("authSendCode")),
+    ...visible(id("authCode")),
+  ];
+}
+
+function enterCode(code: string, email: string): string[] {
+  const emailed = code === "{emailed}";
+  return [
+    ...(emailed ? ["- runScript:", "    file: mailpit-code.js", "    env:", `      EMAIL: ${q(runEmail(email))}`] : []),
+    ...tap(id("authCode")),
+    "- eraseText: 10",
+    `- inputText: ${q(emailed ? "${output.code}" : code)}`,
+    // iOS's number pad has no dismiss key and the ticking resend countdown never lets Maestro's swipe-to-dismiss
+    // settle; Verify sits above the keyboard there anyway.
+    "- runFlow:",
+    "    when:",
+    "      platform: Android",
+    "    commands:",
+    "      - hideKeyboard",
+    ...tap(id("authVerify")),
+  ];
+}
 
 /** Maestro commands for one scenario step; mirrors apps/web/e2e/scenarios.spec.ts. */
-function maestroStep(step: Step): string[] {
+function maestroStep(step: Step, ctx: { email?: string }): string[] {
   const s = step as Record<string, string> & {
     value?: boolean;
     titles?: string[];
@@ -54,8 +92,9 @@ function maestroStep(step: Step): string[] {
         `- inputText: ${q(s.title!)}`,
         ...(s.priority ? tap(id("formPriorityOption", s.priority)) : []),
         ...(s.recurrence ? tap(id("formRecurrenceOption", s.recurrence)) : []),
-        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
+        // Reminder options stay disabled until a due date is entered, so type the date first.
         ...(s.dueDate ? [...tap(id("formDueDate")), `- inputText: ${q(s.dueDate)}`] : []),
+        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
         "- hideKeyboard",
         ...tap(id("formSubmit")),
         ...visible(id("item", s.title!)),
@@ -71,22 +110,48 @@ function maestroStep(step: Step): string[] {
       return [...tap(id("bulkDelete")), ...tap(id(step.confirm ? "bulkDeleteConfirm" : "bulkDeleteCancel"))];
     case "bulkToggle":
       return tap(id("bulkToggle"));
+    case "cancelDeleteAccount":
+      return [...tap(id("authDeleteCancel")), ...hidden(id("authDeleteConfirm"))];
+    case "chooseGuestTodos":
+      return tap(id(s.choice === "move" ? "authMoveConfirm" : "authMoveDiscard"));
     case "clearCompleted":
       return tap(id("clearCompleted"));
+    case "confirmDeleteAccount":
+      return [...tap(id("authDeleteConfirm")), ...hidden(id("authAccount"))];
     case "delete":
       return tap(id("itemDelete", s.title!));
     case "deleteSubtask":
       return tap(id("subtaskDelete", s.subtask!));
+    case "enterCode":
+      return enterCode(s.code!, ctx.email!);
     case "expandSubtasks":
       return tap(id("itemSubtasksToggle", s.title!));
     case "filter":
       return tap(id("filter", s.filter));
+    case "forgetLocalTodos":
+      // Debug builds drop the account cache and cursor (keeping the session) when launched with this argument.
+      return [
+        "- stopApp",
+        "- launchApp:",
+        "    clearState: false",
+        "    arguments:",
+        "      forgetLocalTodos: true",
+        `- extendedWaitUntil:`,
+        `    visible:`,
+        `      id: ${q(id("formTitle"))}`,
+        "    timeout: 60000",
+      ];
+    case "openDeleteAccount":
+      return [...tap(id("authAccount")), ...tap(id("authDeleteAccount")), ...visible(id("authDeleteConfirm"))];
     case "openStats":
       return [`- scrollUntilVisible:`, `    element:`, `      id: ${q(id("statsToggle"))}`, ...tap(id("statsToggle"))];
     case "relaunch":
       return ["- runFlow: relaunch.yaml"];
     case "rename":
       return [...tap(id("itemTitle", s.from)), "- eraseText: 200", `- inputText: ${q(s.to)}`, "- pressKey: Enter"];
+    case "requestCode":
+      ctx.email = s.email!;
+      return requestCode(s.email!);
     case "search":
       return [...tap(id("search")), `- inputText: ${q(s.query)}`, "- hideKeyboard"];
     case "select":
@@ -95,6 +160,11 @@ function maestroStep(step: Step): string[] {
       return tap(id("selectAll"));
     case "selectMode":
       return tap(id("selectMode"));
+    case "signIn":
+      ctx.email = s.email!;
+      return [...requestCode(s.email!), ...enterCode("{emailed}", s.email!)];
+    case "signOut":
+      return [...tap(id("authAccount")), ...tap(id("authSignOut")), ...hidden(id("authAccount"))];
     case "sort":
       return tap(id("sortOption", s.sort));
     case "submit":
@@ -111,14 +181,24 @@ function maestroStep(step: Step): string[] {
       return tap(id("undoAction"));
   }
   switch (step.expect) {
+    case "account":
+      return visible(id("authAccount"), [`    text: ${q(literal(runEmail(s.email!)))}`]);
+    case "authError":
+      return visible(id("authError"), [`    text: ${q(literal(s.text!))}`]);
     case "clearCompleted":
       return visible(id("clearCompleted"), [`    text: ${q(s.text)}`]);
     case "completed":
       return visible(id("itemToggle", s.title!), [`    checked: ${s.value}`]);
+    case "deleteDialog":
+      return [`- assertVisible:`, `    text: ${q(`.*${literal(runEmail(s.email!))}.*`)}`];
     case "dueDate":
       return visible(id("itemDueDate", s.title!), [`    text: ${q(s.dueDate)}`]);
     case "empty":
       return visible(id("empty"));
+    case "guestBanner":
+      return step.value ? visible(id("authGuestBanner")) : hidden(id("authGuestBanner"));
+    case "movePrompt":
+      return s.text === null ? hidden(id("authMoveConfirm")) : [`- assertVisible:`, `    text: ${q(literal(s.text!))}`];
     case "overdue":
       return step.value
         ? visible(id("itemOverdue", s.title!))
@@ -157,14 +237,21 @@ function maestroStep(step: Step): string[] {
   throw new Error(`Unknown step ${JSON.stringify(step)}`);
 }
 
+const NATIVE = ["ios", "android"] as const;
+
 function maestroFlows(): Record<string, string> {
   const flows: Record<string, string> = {};
   for (const scenario of loadScenarios()) {
     if (scenario.status.ios === "n/a" && scenario.status.android === "n/a") continue;
-    if (scenario.requires) continue;
-    const body = ["- runFlow: launch.yaml", ...scenario.steps.flatMap(maestroStep)];
+    // Scenarios no native platform runs yet (e.g. ones needing steps Maestro can't drive) get no flow.
+    if (scenario.requires && !NATIVE.some((platform) => scenario.status[platform] === "pass")) continue;
+    const ctx = {};
+    const setup = scenario.requires ? ["- evalScript: ${output.run = String(Date.now())}"] : [];
+    const body = ["- runFlow: launch.yaml", ...setup, ...scenario.steps.flatMap((step) => maestroStep(step, ctx))];
+    // `spec` flows run on any build; `supabase` flows need a configured build + the local stack (spec/README.md).
+    const tag = scenario.requires ?? "spec";
     flows[`spec/scenarios/maestro/${scenario.name}.yaml`] =
-      `# Generated from spec/scenarios/core/${scenario.file} by \`pnpm spec:generate\`. Do not edit.\nappId: \${APP_ID}\nname: ${scenario.name}\ntags:\n  - spec\n---\n${body.join("\n")}\n`;
+      `# Generated from spec/scenarios/core/${scenario.file} by \`pnpm spec:generate\`. Do not edit.\nappId: \${APP_ID}\nname: ${scenario.name}\ntags:\n  - ${tag}\n---\n${body.join("\n")}\n`;
   }
   return flows;
 }
