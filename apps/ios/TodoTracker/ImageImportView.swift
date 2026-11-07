@@ -39,9 +39,9 @@ struct ImageImportView: View {
                             }
                         }
                     }
-                    .accessibilityIdentifier(TestIDs.imageImportPaste)
+                    .accessibilityIdentifier(TestID.imageImportPaste)
                     Button(t("image.choose"), systemImage: "photo.on.rectangle") { choosing = true }
-                        .accessibilityIdentifier(TestIDs.imageImportChoose)
+                        .accessibilityIdentifier(TestID.imageImportChoose)
                 } label: {
                     Image(systemName: "photo")
                         .font(.system(size: 18, weight: .semibold))
@@ -52,7 +52,7 @@ struct ImageImportView: View {
                 .disabled(busy)
                 .opacity(busy ? 0.4 : 1)
                 .accessibilityLabel(t("image.import"))
-                .accessibilityIdentifier(TestIDs.imageImportButton)
+                .accessibilityIdentifier(TestID.imageImportButton)
                 Text(t("image.hint"))
                     .font(.subheadline)
                     .foregroundStyle(Theme.muted)
@@ -70,11 +70,11 @@ struct ImageImportView: View {
                         .font(.subheadline.weight(.semibold))
                         .underline()
                         .foregroundStyle(Theme.foreground)
-                        .accessibilityIdentifier(TestIDs.imageImportUndo)
+                        .accessibilityIdentifier(TestID.imageImportUndo)
                     }
                 }
                 .accessibilityElement(children: .contain)
-                .accessibilityIdentifier(TestIDs.imageImportStatus)
+                .accessibilityIdentifier(TestID.imageImportStatus)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
