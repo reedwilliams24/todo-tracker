@@ -12,6 +12,7 @@ UI-only rules (no domain ops, so no fixture file). Web enforces them with axe in
   - title button `Edit "{title}"`, with the hint "Opens the title for editing" where the platform supports hints
   - delete `Delete "{title}"`
   - inputs `Todo title`, `Due date`, `Priority`; the add button `Add todo` on native (web: `Add`)
+  - the empty due date field shows `Due date` as visible placeholder text on web, because native date inputs have no placeholder
   - filter group `Filter todos`
 - **Live updates**: the remaining count is announced politely when it changes (`aria-live="polite"` / Compose `liveRegion = Polite` / VoiceOver announcement). The undo toast is also a polite live region.
 - **Structure**: the app title is a heading. The list has the name `Todos` on web.
