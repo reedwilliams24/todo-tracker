@@ -5,6 +5,7 @@ UI-only rules (no domain ops, so no fixture file). Web enforces them with axe in
 ## Rules
 
 - **Contrast**: all text meets WCAG 2.1 AA (4.5:1) on its background. Secondary text (subtitle, due date, empty state, remaining count, delete `×`) uses the foreground at 70% opacity, never lower. Completed titles are struck through at 70% opacity.
+- **Disabled form controls**: the reminder control and the add button stay readable while waiting for input, so the contrast rule applies to them too. Their text uses the foreground at 70%. The add button and the selected reminder option use a 10% foreground fill. Don't fade the whole control with opacity.
 - **Priority badges** use the darker tints on the 15% badge background: high `#B91C1C` (red-700), medium `#92400E` (amber-800), low `#047857` (emerald-700). Dark mode on web keeps the 400 tints.
 - **Labels**: every control has an accessible name that includes the todo title where it acts on one:
   - checkbox `Mark "{title}" as complete` / `Mark "{title}" as active`

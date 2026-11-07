@@ -54,14 +54,15 @@ struct TodoFormView: View {
             Button(action: submit) {
                 Text(t("form.add"))
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Theme.card)
+                    .foregroundStyle(canAdd ? Theme.card : Theme.muted)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Theme.foreground, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
+                    .background(
+                        canAdd ? Theme.foreground : Theme.disabledFill,
+                        in: RoundedRectangle(cornerRadius: Theme.Radius.md))
             }
             .buttonStyle(UndimmedButtonStyle())
             .disabled(!canAdd)
-            .opacity(canAdd ? 1 : 0.4)
             .accessibilityLabel(t("form.add.label"))
             .accessibilityIdentifier(TestID.formSubmit)
         }
@@ -102,6 +103,8 @@ struct TodoFormView: View {
         return HStack(spacing: 0) {
             ForEach(keys, id: \.self) { key in
                 let selected = key == form.reminder
+                let selectedFill = enabled ? Theme.foreground : Theme.disabledFill
+                let selectedText = enabled ? Theme.card : Theme.muted
                 Button {
                     form.reminder = key
                     if !key.isEmpty { onPickReminder() }
@@ -109,13 +112,13 @@ struct TodoFormView: View {
                     Text(t(key.isEmpty ? "reminder.none" : "reminder.\(key)"))
                         .font(.system(size: 12))
                         .lineLimit(1)
-                        .foregroundStyle(selected ? Theme.card : Theme.foreground)
+                        .foregroundStyle(selected ? selectedText : (enabled ? Theme.foreground : Theme.muted))
                         .padding(.horizontal, 4)
                         .padding(.vertical, 6)
                         .frame(maxWidth: .infinity)
-                        .background(selected ? Theme.foreground : .clear)
+                        .background(selected ? selectedFill : .clear)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(UndimmedButtonStyle())
                 .accessibilityAddTraits(selected ? .isSelected : [])
                 .accessibilityIdentifier(TestID.formReminderOption(key))
             }
@@ -123,7 +126,6 @@ struct TodoFormView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.md).stroke(Theme.border, lineWidth: 1))
         .disabled(!enabled)
-        .opacity(enabled ? 1 : 0.4)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(t("form.reminder.label"))
         .accessibilityIdentifier(TestID.formReminder)
@@ -200,7 +202,7 @@ private struct QuickAddPreview: View {
     }
 }
 
-/// Keeps the label colors when disabled; the RN app dims the whole button with opacity instead.
+// `.plain` dims disabled labels and fills, which breaks the contrast rule in spec/features/accessibility.md.
 private struct UndimmedButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.opacity(configuration.isPressed ? 0.8 : 1)

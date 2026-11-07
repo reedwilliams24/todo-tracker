@@ -10,6 +10,7 @@ enum Theme {
         light: UIColor.black.withAlphaComponent(0.1), dark: UIColor.white.withAlphaComponent(0.15))
     static let foreground = Color(light: 0x171717, dark: 0xE9EAEE)
     static let muted = foreground.opacity(0.7)
+    static let disabledFill = foreground.opacity(0.1)
     static let danger = Color(light: 0xDC2626, dark: 0xF87171)
 
     enum Radius {
