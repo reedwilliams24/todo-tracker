@@ -319,6 +319,12 @@ fun TodoApp(
                                 }
                             },
                         )
+                        ImageImport(
+                            t,
+                            enabled = editable,
+                            onAddMany = viewModel::addMany,
+                            onUndo = viewModel::removeMany,
+                        )
 
                         FlowRow(
                             Modifier.fillMaxWidth(),

@@ -247,7 +247,12 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         if (_ui.value.hydrated) reminders.sync(_ui.value.state.todos)
     }
 
-    fun add(draft: TodoDraft) = dispatch(TodoAction.Prepend(addTodos(emptyList(), listOf(draft)).created))
+    fun add(draft: TodoDraft) {
+        addMany(listOf(draft))
+    }
+
+    fun addMany(drafts: List<TodoDraft>): List<Todo> =
+        addTodos(emptyList(), drafts).created.also { dispatch(TodoAction.Prepend(it)) }
 
     fun toggle(id: String) = dispatch(TodoAction.Toggle(id))
 

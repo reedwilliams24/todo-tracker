@@ -31,6 +31,7 @@ import { useSort } from "@/domain/react";
 import { localSortStorage } from "@/lib/storage";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
+import { ImageImport } from "@/components/image-import";
 import { VoiceCapture } from "@/components/voice-capture";
 import { StatsPanel } from "@/components/stats-panel";
 import { CONNECTION_BANNER_ID, ConnectionBanner } from "@/components/connection-banner";
@@ -331,6 +332,7 @@ export function TodoApp({ storage, sync, account, banner, expired = false }: Tod
                 disabled={!editable}
                 describedBy={describedBy}
               />
+              <ImageImport onAddMany={addMany} onUndo={removeMany} disabled={!editable} describedBy={describedBy} />
             </div>
             {permission === "default" && (
               <button

@@ -1,0 +1,645 @@
+{
+  "$schema": "../schema/fixture.schema.json",
+  "feature": "image-import",
+  "spec": "features/image-import.md",
+  "status": {
+    "web": "pass",
+    "ios": "pass",
+    "android": "pass"
+  },
+  "cases": [
+    {
+      "name": "constants",
+      "op": "imageImportConstants",
+      "given": {},
+      "then": {
+        "acceptedTypes": [
+          "image/heic",
+          "image/heif",
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ],
+        "maxBytes": 3000000,
+        "maxDimension": 2048,
+        "jpegQuality": 0.85,
+        "maxTodos": 50
+      }
+    },
+    {
+      "name": "checkImageUpload jpeg",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "image/jpeg",
+        "bytes": 120000
+      },
+      "then": "ok"
+    },
+    {
+      "name": "checkImageUpload png",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "image/png",
+        "bytes": 2500000
+      },
+      "then": "ok"
+    },
+    {
+      "name": "checkImageUpload upper-case type",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "IMAGE/PNG",
+        "bytes": 10
+      },
+      "then": "ok"
+    },
+    {
+      "name": "checkImageUpload exactly the limit",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "image/webp",
+        "bytes": 3000000
+      },
+      "then": "ok"
+    },
+    {
+      "name": "checkImageUpload one byte over",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "image/jpeg",
+        "bytes": 3000001
+      },
+      "then": "tooLarge"
+    },
+    {
+      "name": "checkImageUpload empty",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "image/heic",
+        "bytes": 0
+      },
+      "then": "invalid"
+    },
+    {
+      "name": "checkImageUpload gif",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "image/gif",
+        "bytes": 100
+      },
+      "then": "unsupported"
+    },
+    {
+      "name": "checkImageUpload pdf",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "application/pdf",
+        "bytes": 100
+      },
+      "then": "unsupported"
+    },
+    {
+      "name": "checkImageUpload unsupported and too large",
+      "op": "checkImageUpload",
+      "given": {
+        "mimeType": "image/tiff",
+        "bytes": 9000000
+      },
+      "then": "unsupported"
+    },
+    {
+      "name": "imageImportErrorFor error code wins",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 500,
+        "body": {
+          "error": "busy"
+        }
+      },
+      "then": "busy"
+    },
+    {
+      "name": "imageImportErrorFor unknown code falls back to status",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 429,
+        "body": {
+          "error": "slow down"
+        }
+      },
+      "then": "busy"
+    },
+    {
+      "name": "imageImportErrorFor 400",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 400,
+        "body": null
+      },
+      "then": "invalid"
+    },
+    {
+      "name": "imageImportErrorFor 413",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 413,
+        "body": "Request Entity Too Large"
+      },
+      "then": "tooLarge"
+    },
+    {
+      "name": "imageImportErrorFor 415",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 415,
+        "body": {}
+      },
+      "then": "unsupported"
+    },
+    {
+      "name": "imageImportErrorFor 429",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 429,
+        "body": null
+      },
+      "then": "busy"
+    },
+    {
+      "name": "imageImportErrorFor 503",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 503,
+        "body": null
+      },
+      "then": "unavailable"
+    },
+    {
+      "name": "imageImportErrorFor 500",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 500,
+        "body": null
+      },
+      "then": "failed"
+    },
+    {
+      "name": "imageImportErrorFor 502 with code",
+      "op": "imageImportErrorFor",
+      "given": {
+        "status": 502,
+        "body": {
+          "error": "failed"
+        }
+      },
+      "then": "failed"
+    },
+    {
+      "name": "coerceImageDrafts keeps wording and drops junk",
+      "op": "coerceImageDrafts",
+      "given": {
+        "value": {
+          "todos": [
+            {
+              "title": "  Put in repair request for\n bedroom light and blinds ",
+              "priority": "medium"
+            },
+            {
+              "title": "Expense chatgpt?",
+              "priority": "HIGH"
+            },
+            {
+              "title": "Clear work inbox",
+              "dueDate": "2026-11-03",
+              "priority": "high"
+            },
+            {
+              "title": "Wipe everything down",
+              "notes": "  Dust and wipe "
+            },
+            {
+              "title": "Pay rent",
+              "dueDate": "2026-02-30"
+            },
+            {
+              "title": "Renew passport",
+              "dueDate": "Nov 3"
+            },
+            {
+              "title": "Call mom",
+              "notes": "call mom"
+            },
+            {
+              "title": "   "
+            },
+            {
+              "priority": "low"
+            },
+            42
+          ]
+        }
+      },
+      "then": [
+        {
+          "title": "Put in repair request for bedroom light and blinds",
+          "priority": "medium"
+        },
+        {
+          "title": "Expense chatgpt?"
+        },
+        {
+          "title": "Clear work inbox",
+          "priority": "high",
+          "dueDate": "2026-11-03"
+        },
+        {
+          "title": "Wipe everything down",
+          "notes": "Dust and wipe"
+        },
+        {
+          "title": "Pay rent"
+        },
+        {
+          "title": "Renew passport"
+        },
+        {
+          "title": "Call mom"
+        }
+      ]
+    },
+    {
+      "name": "coerceImageDrafts strips list bullets",
+      "op": "coerceImageDrafts",
+      "given": {
+        "value": [
+          "- Buy milk",
+          "• Call the bank",
+          "[ ] File taxes",
+          "☐ Water plants",
+          "3. Book flights",
+          "2) Pack",
+          "-not a bullet",
+          "2026 budget review"
+        ]
+      },
+      "then": [
+        {
+          "title": "Buy milk"
+        },
+        {
+          "title": "Call the bank"
+        },
+        {
+          "title": "File taxes"
+        },
+        {
+          "title": "Water plants"
+        },
+        {
+          "title": "Book flights"
+        },
+        {
+          "title": "Pack"
+        },
+        {
+          "title": "-not a bullet"
+        },
+        {
+          "title": "2026 budget review"
+        }
+      ]
+    },
+    {
+      "name": "coerceImageDrafts drops case-insensitive duplicates, keeping the first",
+      "op": "coerceImageDrafts",
+      "given": {
+        "value": {
+          "todos": [
+            {
+              "title": "Get mail"
+            },
+            {
+              "title": "get  MAIL",
+              "priority": "high"
+            },
+            "- Get mail"
+          ]
+        }
+      },
+      "then": [
+        {
+          "title": "Get mail"
+        }
+      ]
+    },
+    {
+      "name": "coerceImageDrafts accepts leap days only in leap years",
+      "op": "coerceImageDrafts",
+      "given": {
+        "value": [
+          {
+            "title": "a",
+            "dueDate": "2028-02-29"
+          },
+          {
+            "title": "b",
+            "dueDate": "2027-02-29"
+          },
+          {
+            "title": "c",
+            "dueDate": "2100-02-29"
+          },
+          {
+            "title": "d",
+            "dueDate": "2000-02-29"
+          },
+          {
+            "title": "e",
+            "dueDate": "2026-13-01"
+          },
+          {
+            "title": "f",
+            "dueDate": "2026-04-31"
+          },
+          {
+            "title": "g",
+            "dueDate": "2026-04-00"
+          }
+        ]
+      },
+      "then": [
+        {
+          "title": "a",
+          "dueDate": "2028-02-29"
+        },
+        {
+          "title": "b"
+        },
+        {
+          "title": "c"
+        },
+        {
+          "title": "d",
+          "dueDate": "2000-02-29"
+        },
+        {
+          "title": "e"
+        },
+        {
+          "title": "f"
+        },
+        {
+          "title": "g"
+        }
+      ]
+    },
+    {
+      "name": "coerceImageDrafts caps the count",
+      "op": "coerceImageDrafts",
+      "given": {
+        "value": [
+          "Task 1",
+          "Task 2",
+          "Task 3",
+          "Task 4",
+          "Task 5",
+          "Task 6",
+          "Task 7",
+          "Task 8",
+          "Task 9",
+          "Task 10",
+          "Task 11",
+          "Task 12",
+          "Task 13",
+          "Task 14",
+          "Task 15",
+          "Task 16",
+          "Task 17",
+          "Task 18",
+          "Task 19",
+          "Task 20",
+          "Task 21",
+          "Task 22",
+          "Task 23",
+          "Task 24",
+          "Task 25",
+          "Task 26",
+          "Task 27",
+          "Task 28",
+          "Task 29",
+          "Task 30",
+          "Task 31",
+          "Task 32",
+          "Task 33",
+          "Task 34",
+          "Task 35",
+          "Task 36",
+          "Task 37",
+          "Task 38",
+          "Task 39",
+          "Task 40",
+          "Task 41",
+          "Task 42",
+          "Task 43",
+          "Task 44",
+          "Task 45",
+          "Task 46",
+          "Task 47",
+          "Task 48",
+          "Task 49",
+          "Task 50",
+          "Task 51",
+          "Task 52",
+          "Task 53",
+          "Task 54",
+          "Task 55"
+        ]
+      },
+      "then": [
+        {
+          "title": "Task 1"
+        },
+        {
+          "title": "Task 2"
+        },
+        {
+          "title": "Task 3"
+        },
+        {
+          "title": "Task 4"
+        },
+        {
+          "title": "Task 5"
+        },
+        {
+          "title": "Task 6"
+        },
+        {
+          "title": "Task 7"
+        },
+        {
+          "title": "Task 8"
+        },
+        {
+          "title": "Task 9"
+        },
+        {
+          "title": "Task 10"
+        },
+        {
+          "title": "Task 11"
+        },
+        {
+          "title": "Task 12"
+        },
+        {
+          "title": "Task 13"
+        },
+        {
+          "title": "Task 14"
+        },
+        {
+          "title": "Task 15"
+        },
+        {
+          "title": "Task 16"
+        },
+        {
+          "title": "Task 17"
+        },
+        {
+          "title": "Task 18"
+        },
+        {
+          "title": "Task 19"
+        },
+        {
+          "title": "Task 20"
+        },
+        {
+          "title": "Task 21"
+        },
+        {
+          "title": "Task 22"
+        },
+        {
+          "title": "Task 23"
+        },
+        {
+          "title": "Task 24"
+        },
+        {
+          "title": "Task 25"
+        },
+        {
+          "title": "Task 26"
+        },
+        {
+          "title": "Task 27"
+        },
+        {
+          "title": "Task 28"
+        },
+        {
+          "title": "Task 29"
+        },
+        {
+          "title": "Task 30"
+        },
+        {
+          "title": "Task 31"
+        },
+        {
+          "title": "Task 32"
+        },
+        {
+          "title": "Task 33"
+        },
+        {
+          "title": "Task 34"
+        },
+        {
+          "title": "Task 35"
+        },
+        {
+          "title": "Task 36"
+        },
+        {
+          "title": "Task 37"
+        },
+        {
+          "title": "Task 38"
+        },
+        {
+          "title": "Task 39"
+        },
+        {
+          "title": "Task 40"
+        },
+        {
+          "title": "Task 41"
+        },
+        {
+          "title": "Task 42"
+        },
+        {
+          "title": "Task 43"
+        },
+        {
+          "title": "Task 44"
+        },
+        {
+          "title": "Task 45"
+        },
+        {
+          "title": "Task 46"
+        },
+        {
+          "title": "Task 47"
+        },
+        {
+          "title": "Task 48"
+        },
+        {
+          "title": "Task 49"
+        },
+        {
+          "title": "Task 50"
+        }
+      ]
+    },
+    {
+      "name": "coerceImageDrafts drops titles over 200 characters",
+      "op": "coerceImageDrafts",
+      "given": {
+        "value": [
+          "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+        ]
+      },
+      "then": [
+        {
+          "title": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+        }
+      ]
+    },
+    {
+      "name": "coerceImageDrafts rejects non-objects",
+      "op": "coerceImageDrafts",
+      "given": {
+        "value": "buy milk"
+      },
+      "then": []
+    },
+    {
+      "name": "coerceImageDrafts handles no todos",
+      "op": "coerceImageDrafts",
+      "given": {
+        "value": {
+          "todos": []
+        }
+      },
+      "then": []
+    }
+  ]
+}

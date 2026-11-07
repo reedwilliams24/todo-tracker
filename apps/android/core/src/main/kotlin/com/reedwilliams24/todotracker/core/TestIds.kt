@@ -57,6 +57,12 @@ object TestIds {
 
     const val formSubmit = "todo-form-submit"
     const val formTitle = "todo-form-title"
+    const val imageImportButton = "image-import-button"
+    const val imageImportChoose = "image-import-choose"
+    const val imageImportInput = "image-import-input"
+    const val imageImportPaste = "image-import-paste"
+    const val imageImportStatus = "image-import-status"
+    const val imageImportUndo = "image-import-undo"
 
     fun item(title: String) = "todo-item-$title"
 

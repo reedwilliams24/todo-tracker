@@ -28,6 +28,7 @@ enum FixtureOps {
         [
             authOps,
             daybookOps,
+            imageImportOps,
             listOps,
             quickAddOps,
             realtimeOps,
