@@ -24,6 +24,13 @@ struct TodoTrackerApp: App {
         self.accountStore = accountStore
         let reminders: ReminderScheduling? = inMemory ? nil : ReminderScheduler()
         let defaults = inMemory ? Self.uiTestingDefaults() : .standard
+        #if DEBUG
+            // E2E hook (`forgetLocalTodos` scenario step): drops the account cache and cursor, keeping the session.
+            if defaults.bool(forKey: "forgetLocalTodos") {
+                accountStore.save([])
+                defaults.removeObject(forKey: AuthViewModel.syncCursorKey)
+            }
+        #endif
         // UI tests (and builds without Supabase config) stay guest-only.
         let auth =
             inMemory

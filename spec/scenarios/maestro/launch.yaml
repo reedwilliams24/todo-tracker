@@ -1,9 +1,13 @@
 # Fresh launch with empty storage. Pass -e APP_ID=<bundle id>.
+# Retried: on Android, clearing a still-running app can race the relaunch and leave a window with no process.
 appId: ${APP_ID}
 ---
-- launchApp:
-    clearState: true
-- extendedWaitUntil:
-    visible:
-      id: "todo-form-title"
-    timeout: 60000
+- retry:
+    maxRetries: 2
+    commands:
+      - launchApp:
+          clearState: true
+      - extendedWaitUntil:
+          visible:
+            id: "todo-form-title"
+          timeout: 30000

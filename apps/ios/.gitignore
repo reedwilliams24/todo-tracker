@@ -4,3 +4,4 @@ build/
 .build/
 .swiftpm/
 Config/Supabase.override.xcconfig
+build-supabase/
