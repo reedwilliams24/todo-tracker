@@ -33,6 +33,20 @@ iOS (macOS + Xcode): `swift test` in `apps/ios/TodoCore` runs the fixtures; see 
 
 Mobile scenarios: `maestro test --include-tags spec -e APP_ID=… spec/scenarios/maestro` (see `spec/README.md`).
 
+## Local devices
+
+Run `pnpm devices:setup` once. It checks your tools, creates a dedicated Android AVD and iOS simulator named `todo-tracker-e2e`, and reports a free web port. It never installs tools. Add `--check` to only check, or `--boot` to start both devices.
+
+Only use those devices. Maestro flows clear this app's data, and `hideKeyboard` can press Back into whatever is open underneath, so never run them on a device with other apps or data you care about.
+
+Sessions and worktrees share one machine, so run all simulator and emulator work one at a time through the queue, including Before/After screenshots:
+
+```bash
+pnpm devices:run -- bash -c 'maestro --device "$TODO_IOS_UDID" test -e APP_ID=com.reedwilliams24.todotracker spec/scenarios/maestro/add-todo.yaml'
+```
+
+The command gets `TODO_IOS_UDID` and `TODO_ANDROID_SERIAL`. For hands-on work, hold your turn with `pnpm devices:run -- sleep 600` in the background, then stop it when you're done. Keep building and editing outside the queue.
+
 ## Definition of done for a behavior change
 
 1. Update the rule in `spec/features/<feature>.md`.
