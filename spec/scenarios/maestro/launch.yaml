@@ -6,4 +6,16 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible:
       id: "todo-form-title"
+    timeout: 30000
+    optional: true
+# On slow Android runners, late cleanup of the cleared task can kill the new process and leave a blank window.
+- runFlow:
+    when:
+      notVisible:
+        id: "todo-form-title"
+    commands:
+      - launchApp
+- extendedWaitUntil:
+    visible:
+      id: "todo-form-title"
     timeout: 60000
