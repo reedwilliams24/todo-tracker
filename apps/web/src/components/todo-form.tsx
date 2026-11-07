@@ -49,14 +49,14 @@ export function TodoForm({
       className="flex flex-col gap-2 rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/15 dark:bg-white/5"
     >
       <fieldset disabled={disabled} aria-describedby={describedBy} className="contents disabled:opacity-50">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           <input
             value={title}
             onChange={(event) => setForm((f) => ({ ...f, title: event.target.value }))}
             placeholder={t("form.title.placeholder")}
             aria-label={t("form.title.label")}
             data-testid={TEST_IDS.formTitle}
-            className="flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50"
+            className="min-w-0 flex-1 rounded-lg bg-transparent px-2 py-2 outline-none placeholder:opacity-50 sm:basis-full"
           />
           <select
             value={priority}
@@ -124,7 +124,7 @@ export function TodoForm({
             type="submit"
             data-testid={TEST_IDS.formSubmit}
             disabled={!canAdd}
-            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
+            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40 sm:ml-auto"
           >
             {t("form.add")}
           </button>
