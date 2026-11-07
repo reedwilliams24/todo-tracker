@@ -90,7 +90,7 @@ export function TodoForm({
             onChange={(event) => setForm((f) => ({ ...f, reminder: event.target.value as ReminderOffset | "" }))}
             aria-label={t("form.reminder.label")}
             data-testid={TEST_IDS.formReminder}
-            className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm disabled:opacity-40 dark:border-white/15"
+            className="rounded-lg border border-black/10 bg-transparent px-2 py-2 text-sm disabled:text-foreground/70 disabled:opacity-100 dark:border-white/15"
           >
             <option value="">{t("reminder.none")}</option>
             {REMINDER_OFFSETS.map((option) => (
@@ -124,7 +124,7 @@ export function TodoForm({
             type="submit"
             data-testid={TEST_IDS.formSubmit}
             disabled={!canAdd}
-            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40 sm:ml-auto"
+            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background disabled:bg-foreground/10 disabled:text-foreground/70 sm:ml-auto"
           >
             {t("form.add")}
           </button>
