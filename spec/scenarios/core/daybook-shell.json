@@ -1,0 +1,24 @@
+{
+  "name": "daybook-shell",
+  "status": { "web": "pass", "ios": "pass", "android": "pass" },
+  "steps": [
+    { "do": "add", "title": "Yesterday low", "priority": "low", "dueDate": "2000-01-02" },
+    { "do": "add", "title": "Far future", "dueDate": "2999-12-31" },
+    { "do": "add", "title": "Undated" },
+    { "expect": "section", "section": "slipped" },
+    { "expect": "section", "section": "today" },
+    { "expect": "section", "section": "later" },
+    { "expect": "progress", "text": "0/2" },
+    { "expect": "titles", "titles": ["Yesterday low", "Undated", "Far future"] },
+    { "do": "toggle", "title": "Undated" },
+    { "expect": "progress", "text": "1/2" },
+    { "expect": "completed", "title": "Undated", "value": true },
+    { "do": "tab", "tab": "upcoming" },
+    { "expect": "upcomingDay", "date": "2999-12-31" },
+    { "expect": "titles", "titles": ["Far future"] },
+    { "do": "tab", "tab": "today" },
+    { "expect": "section", "section": "slipped" },
+    { "do": "openStats" },
+    { "expect": "stats", "total": "1", "current": "1d", "longest": "1d" }
+  ]
+}

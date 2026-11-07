@@ -55,6 +55,7 @@ internal typealias Op = (JsonObject) -> JsonElement
 private val OPS: Map<String, Op> = buildMap {
     listOf(
             authOps,
+            daybookOps,
             listOps,
             quickAddOps,
             realtimeOps,

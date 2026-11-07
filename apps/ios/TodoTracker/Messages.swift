@@ -2,6 +2,9 @@
 
 /// Format-argument order for each Localizable.xcstrings key that takes arguments.
 let messageArgs: [String: MessageArgs] = [
+    "daybook.left": MessageArgs(["count"]),
+    "daybook.progress": MessageArgs(["done", "total"]),
+    "item.slippedBadge": MessageArgs(["day"]),
     "list.emptyFiltered": MessageArgs(["filter"]),
     "list.noMatch": MessageArgs(["filter", "query"]),
     "list.noMatchAll": MessageArgs(["query"]),

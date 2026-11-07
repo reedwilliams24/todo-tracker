@@ -31,6 +31,9 @@
   "bulkToggle": "todo-bulk-toggle",
   "clearCompleted": "todo-clear-completed",
   "connectionBanner": "connection-banner",
+  "daybookDoneToggle": "daybook-done-toggle",
+  "daybookProgress": "daybook-progress",
+  "daybookSection": "daybook-section-{section}",
   "empty": "todo-empty",
   "filter": "todo-filter-{filter}",
   "formDueDate": "todo-form-due-date",
@@ -76,9 +79,13 @@
   "subtaskInput": "todo-subtask-input-{title}",
   "subtaskToggle": "todo-subtask-toggle-{title}",
   "syncError": "sync-error-toast",
+  "tab": "tab-{tab}",
   "themeOption": "theme-option-{theme}",
   "themeToggle": "theme-toggle",
   "undoAction": "undo-toast-action",
   "undoLabel": "undo-toast-label",
-  "undoToast": "undo-toast"
+  "undoToast": "undo-toast",
+  "upcomingDay": "upcoming-day-{date}",
+  "upcomingEmpty": "upcoming-empty",
+  "upcomingList": "upcoming-list"
 }

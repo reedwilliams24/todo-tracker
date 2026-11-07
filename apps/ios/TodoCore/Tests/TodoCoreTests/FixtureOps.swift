@@ -27,6 +27,7 @@ enum FixtureOps {
     static var modules: [[String: Op]] {
         [
             authOps,
+            daybookOps,
             listOps,
             quickAddOps,
             realtimeOps,

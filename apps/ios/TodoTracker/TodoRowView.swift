@@ -3,6 +3,8 @@ import TodoCore
 
 struct TodoRowView: View {
     let todo: Todo
+    /// Today's YYYY-MM-DD key, for the "from Fri" label on slipped todos.
+    var today: String?
     let onToggle: () -> Void
     let onRename: (String) -> Void
     let onRemove: () -> Void
@@ -27,22 +29,26 @@ struct TodoRowView: View {
     private var overdue: Bool { isOverdue(todo) }
 
     var body: some View {
-        if let selection {
-            selectableRow(selection)
-        } else {
-            row
+        Group {
+            if let selection {
+                selectableRow(selection)
+            } else {
+                row
+            }
         }
+        .preference(key: RowEditingKey.self, value: editing)
     }
 
     private func selectableRow(_ selection: Selection) -> some View {
         Button(action: selection.onSelect) {
             HStack(spacing: 10) {
                 Circle()
-                    .strokeBorder(Theme.foreground, lineWidth: 1.5)
-                    .background(Circle().fill(selection.selected ? Theme.foreground : .clear))
+                    .strokeBorder(selection.selected ? Theme.accent : Theme.border, lineWidth: 2)
+                    .background(Circle().fill(selection.selected ? Theme.accent : .clear))
                     .overlay {
                         if selection.selected {
-                            Text("✓").font(.system(size: 12)).foregroundStyle(Theme.card)
+                            Image(systemName: "checkmark").font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(Theme.accentInk)
                         }
                     }
                     .frame(width: 20, height: 20)
@@ -51,29 +57,23 @@ struct TodoRowView: View {
                     .accessibilityAddTraits(.isToggle)
                     .accessibilityIdentifier(TestID.itemSelect(todo.title))
                 Text(todo.title)
-                    .font(.system(size: 16))
-                    .foregroundStyle(Theme.foreground)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(todo.completed ? Theme.muted : Theme.foreground)
                     .strikethrough(todo.completed)
-                    .opacity(todo.completed ? 0.5 : 1)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                let colors = Theme.priority(todo.priority)
-                Text(todo.priority.rawValue.capitalized)
-                    .font(.system(size: 12))
-                    .foregroundStyle(colors.text)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(colors.bg, in: Capsule())
+                Circle().fill(Theme.priority(todo.priority)).frame(width: 8, height: 8)
+                    .accessibilityHidden(true)
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.vertical, 11)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .cardStyle()
         .overlay {
             if selection.selected {
-                RoundedRectangle(cornerRadius: Theme.Radius.lg).strokeBorder(Theme.foreground, lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: Theme.Radius.lg).strokeBorder(Theme.accent, lineWidth: 1.5)
             }
         }
         .accessibilityElement(children: .contain)
@@ -86,13 +86,8 @@ struct TodoRowView: View {
             if expanded { subtaskPanel }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 11)
         .cardStyle()
-        .overlay {
-            if overdue {
-                RoundedRectangle(cornerRadius: Theme.Radius.lg).stroke(Theme.danger, lineWidth: 1)
-            }
-        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(TestID.item(todo.title))
     }
@@ -112,9 +107,11 @@ struct TodoRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 if editing {
                     TextField(t("item.editTitle"), text: $draftTitle)
-                        .font(.system(size: 16))
+                        .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(Theme.foreground)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 2)
+                        .padding(.horizontal, 4)
+                        .background(Theme.soft, in: RoundedRectangle(cornerRadius: 6))
                         .focused($editFocused)
                         .submitLabel(.done)
                         .onSubmit(commit)
@@ -130,10 +127,9 @@ struct TodoRowView: View {
                         editing = true
                     } label: {
                         Text(todo.title)
-                            .font(.system(size: 16))
-                            .foregroundStyle(Theme.foreground)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(todo.completed ? Theme.muted : Theme.foreground)
                             .strikethrough(todo.completed)
-                            .opacity(todo.completed ? 0.7 : 1)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
@@ -150,7 +146,7 @@ struct TodoRowView: View {
                         if let dueDate = todo.dueDate {
                             HStack(spacing: 0) {
                                 if overdue {
-                                    Text(t("item.overdueBadge"))
+                                    Text(slippedBadge)
                                         .font(.system(size: 12, weight: .medium))
                                         .accessibilityIdentifier(TestID.itemOverdue(todo.title))
                                 }
@@ -158,7 +154,7 @@ struct TodoRowView: View {
                                     .font(.system(size: 12))
                                     .accessibilityIdentifier(TestID.itemDueDate(todo.title))
                             }
-                            .foregroundStyle(overdue ? Theme.danger : Theme.muted)
+                            .foregroundStyle(overdue ? Theme.note : Theme.muted)
                             .lineLimit(1)
                             .fixedSize(horizontal: true, vertical: false)
                             .layoutPriority(1)
@@ -194,7 +190,7 @@ struct TodoRowView: View {
                 HStack(spacing: 4) {
                     Text(progress.total > 0 ? progress.label : "+")
                         .font(.system(size: 12).monospacedDigit())
-                        .foregroundStyle(Theme.foreground)
+                        .foregroundStyle(Theme.muted)
                         .accessibilityIdentifier(TestID.itemSubtaskProgress(todo.title))
                     Text(expanded ? "▾" : "▸")
                         .font(.system(size: 12))
@@ -202,7 +198,7 @@ struct TodoRowView: View {
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
-                .background(Theme.border, in: Capsule())
+                .background(Theme.soft, in: Capsule())
                 .contentShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -211,15 +207,17 @@ struct TodoRowView: View {
             .accessibilityLabel(t(expanded ? "subtasks.collapse" : "subtasks.expand", ["title": todo.title]))
             .accessibilityIdentifier(TestID.itemSubtasksToggle(todo.title))
 
-            let colors = Theme.priority(todo.priority)
-            Text(t("priority.\(todo.priority.rawValue)"))
-                .font(.system(size: 12))
-                .foregroundStyle(colors.text)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background(colors.bg, in: Capsule())
-                .fixedSize()
-                .accessibilityIdentifier(TestID.itemPriority(todo.title))
+            HStack(spacing: 5) {
+                Circle().fill(Theme.priority(todo.priority)).frame(width: 8, height: 8)
+                    .accessibilityHidden(true)
+                Text(t("priority.\(todo.priority.rawValue)"))
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.muted)
+            }
+            .fixedSize()
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(t("priority.\(todo.priority.rawValue)"))
+            .accessibilityIdentifier(TestID.itemPriority(todo.title))
 
             Button(action: onRemove) {
                 Text("×")
@@ -253,9 +251,8 @@ struct TodoRowView: View {
 
                     Text(subtask.title)
                         .font(.system(size: 14))
-                        .foregroundStyle(Theme.foreground)
+                        .foregroundStyle(subtask.completed ? Theme.muted : Theme.foreground)
                         .strikethrough(subtask.completed)
-                        .opacity(subtask.completed ? 0.5 : 1)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -288,7 +285,27 @@ struct TodoRowView: View {
                 .accessibilityIdentifier(TestID.subtaskInput(todo.title))
         }
         .padding(.leading, 30)
+        .padding(.top, 8)
+        .overlay(alignment: .top) { Rectangle().fill(Theme.border).frame(height: 1).padding(.leading, 30) }
     }
+
+    /// "from Fri · " for a due date in the last 6 days, else e.g. "from Oct 2 · ".
+    private var slippedBadge: String {
+        guard let dueDate = todo.dueDate, let today, let due = Self.dayFormatter.date(from: dueDate),
+            let now = Self.dayFormatter.date(from: today)
+        else { return t("item.overdueBadge") }
+        let days = Calendar.current.dateComponents([.day], from: due, to: now).day ?? 0
+        let day = due.formatted(days <= 6 ? .dateTime.weekday(.abbreviated) : .dateTime.month(.abbreviated).day())
+        return t("item.slippedBadge", ["day": day])
+    }
+
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 
     private func submitSubtask() {
         guard isValidTitle(subtaskTitle) else { return }
@@ -305,7 +322,7 @@ struct TodoRowView: View {
     }
 }
 
-/// The RN app's square checkbox; keeps Toggle semantics (value 0/1) for accessibility.
+/// Daybook's round checkbox; keeps Toggle semantics (value 0/1) for accessibility.
 private struct CheckboxToggleStyle: ToggleStyle {
     var size: CGFloat = 20
 
@@ -313,15 +330,14 @@ private struct CheckboxToggleStyle: ToggleStyle {
         Button {
             configuration.isOn.toggle()
         } label: {
-            RoundedRectangle(cornerRadius: Theme.Radius.sm)
-                .strokeBorder(Theme.foreground, lineWidth: 1.5)
-                .background(
-                    RoundedRectangle(cornerRadius: Theme.Radius.sm)
-                        .fill(configuration.isOn ? Theme.foreground : .clear)
-                )
+            Circle()
+                .strokeBorder(configuration.isOn ? Theme.success : Theme.border, lineWidth: 2)
+                .background(Circle().fill(configuration.isOn ? Theme.success : .clear))
                 .overlay {
                     if configuration.isOn {
-                        Text("✓").font(.system(size: 12)).foregroundStyle(Theme.card)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: size * 0.5, weight: .bold))
+                            .foregroundStyle(.white)
                     }
                 }
                 .frame(width: size, height: size)

@@ -155,6 +155,7 @@ test("persists todos across page reload via localStorage", async ({ page }) => {
     .toContain("Persist me");
 
   await page.reload();
+  await page.getByTestId(TEST_IDS.daybookDoneToggle).click();
 
   const item = page.getByRole("listitem").filter({ hasText: "Persist me" });
   await expect(item).toBeVisible();
@@ -234,6 +235,7 @@ test("completing a recurring todo schedules the next occurrence", async ({ page 
   await expect(page.getByRole("checkbox", { name: 'Mark "Water plants" as active' })).toBeChecked();
 
   await page.reload();
+  await page.getByTestId(TEST_IDS.daybookDoneToggle).click();
   await expect(page.getByRole("listitem")).toHaveCount(2);
 });
 
@@ -278,10 +280,11 @@ test("highlights overdue todos and sorts by due date", async ({ page }) => {
       .getByRole("listitem")
       .getByRole("button", { name: /^Edit / })
       .allInnerTexts();
-  await expect.poll(titles).toEqual(["Far future high", "Undated high", "Yesterday low"]);
+  // Today groups slipped, then today/undated, then later; sort applies within each group.
+  await expect.poll(titles).toEqual(["Yesterday low", "Undated high", "Far future high"]);
 
   await page.getByLabel("Sort todos").selectOption("due");
-  await expect.poll(titles).toEqual(["Yesterday low", "Far future high", "Undated high"]);
+  await expect.poll(titles).toEqual(["Yesterday low", "Undated high", "Far future high"]);
 
   await page.getByRole("checkbox", { name: 'Mark "Yesterday low" as complete' }).check();
   await expect(overdue.getByLabel("Overdue, was due 2000-01-02")).toBeHidden();
@@ -329,14 +332,14 @@ test("stats panel counts completions and a one-day streak", async ({ page }) => 
   await page.getByRole("button", { name: "Add" }).click();
   await page.getByRole("checkbox", { name: 'Mark "Stretch" as complete' }).check();
 
-  await page.getByRole("button", { name: "Stats Show" }).click();
+  await page.getByTestId(TEST_IDS.statsToggle).click();
   await expect(page.getByTestId(TEST_IDS.statsTotal)).toHaveText("1");
   await expect(page.getByTestId(TEST_IDS.statsCurrent)).toHaveText("1d");
   await expect(page.getByTestId(TEST_IDS.statsLongest)).toHaveText("1d");
   await expect(page.getByLabel("Completed per day, last 30 days").getByRole("listitem")).toHaveCount(30);
 
   await page.reload();
-  await page.getByRole("button", { name: "Stats Show" }).click();
+  await page.getByTestId(TEST_IDS.statsToggle).click();
   await expect(page.getByTestId(TEST_IDS.statsTotal)).toHaveText("1");
 });
 
@@ -415,5 +418,6 @@ test("subtasks: add, progress badge, completing all completes the parent", async
   await expect(badge).toContainText("1/1");
 
   await page.reload();
+  await page.getByTestId(TEST_IDS.daybookDoneToggle).click();
   await expect(page.getByRole("button", { name: 'Expand subtasks of "Plan trip"' })).toContainText("1/1");
 });

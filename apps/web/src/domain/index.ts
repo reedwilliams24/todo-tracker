@@ -11,6 +11,7 @@ export * from "./reminders";
 export * from "./recurrence";
 export * from "./quick-add";
 export * from "./stats";
+export * from "./daybook";
 export * from "./theme";
 export * from "./subtasks";
 export * from "./realtime";

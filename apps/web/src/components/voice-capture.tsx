@@ -1,5 +1,6 @@
 "use client";
 
+import { MicIcon } from "@/components/daybook-icons";
 import { useCallback, useRef, useState } from "react";
 import type { Todo, TodoDraft } from "@/domain";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
@@ -85,26 +86,36 @@ export function VoiceCapture({ todos, onAddMany, onUndo, disabled = false, descr
   const status = speech.listening ? t("voice.listening") : parsing ? t("voice.adding") : null;
 
   return (
-    <section
-      aria-label={t("voice.label")}
-      className="flex flex-col gap-3 rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/15 dark:bg-white/5"
-    >
-      <div className="flex flex-wrap items-center gap-2">
+    <section aria-label={t("voice.label")} className="flex flex-col gap-2 border-t border-line px-3 py-3">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={handleMic}
           disabled={!speech.supported || parsing || (disabled && !speech.listening)}
           aria-describedby={disabled ? describedBy : undefined}
           aria-pressed={speech.listening}
-          className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-            speech.listening ? "bg-red-500 text-white" : "bg-foreground text-background disabled:opacity-40"
+          aria-label={speech.listening ? t("voice.stop") : t("voice.speak")}
+          title={speech.listening ? t("voice.stop") : t("voice.speak")}
+          className={`grid size-11 shrink-0 place-items-center rounded-full shadow-sm transition ${
+            speech.listening ? "animate-pulse bg-hi text-white" : "bg-accent text-accent-ink disabled:opacity-40"
           }`}
         >
-          {speech.listening ? t("voice.stop") : t("voice.speak")}
+          <MicIcon width={20} height={20} />
         </button>
+        <textarea
+          value={speech.listening || speech.transcript ? speech.transcript : manualTranscript}
+          onChange={(event) => {
+            speech.reset();
+            setManualTranscript(event.target.value);
+          }}
+          readOnly={speech.listening}
+          rows={1}
+          placeholder={t("voice.transcript.placeholder")}
+          aria-label={t("voice.transcript")}
+          className="min-h-9 flex-1 resize-y rounded-lg bg-transparent px-1 py-2 text-sm outline-none placeholder:text-muted"
+        />
 
-        {speech.listening && <span className="size-2 animate-pulse rounded-full bg-red-500" />}
-        {status && <span className="text-sm opacity-70">{status}</span>}
+        {status && <span className="text-sm text-muted">{status}</span>}
 
         {!speech.listening && (speech.transcript || manualTranscript) && !parsing && (
           <button
@@ -112,34 +123,21 @@ export function VoiceCapture({ todos, onAddMany, onUndo, disabled = false, descr
             onClick={() => void capture(speech.transcript || manualTranscript)}
             disabled={disabled}
             aria-describedby={disabled ? describedBy : undefined}
-            className="rounded-lg border border-black/15 px-3 py-2 text-sm dark:border-white/20"
+            className="shrink-0 rounded-xl bg-soft px-3 py-2 text-sm font-semibold text-accent"
           >
             {t("voice.addThese")}
           </button>
         )}
       </div>
 
-      {!speech.supported && <p className="text-xs opacity-70">{t("voice.unsupported")}</p>}
+      {!speech.supported && <p className="text-xs text-muted">{t("voice.unsupported")}</p>}
 
-      <textarea
-        value={speech.listening || speech.transcript ? speech.transcript : manualTranscript}
-        onChange={(event) => {
-          speech.reset();
-          setManualTranscript(event.target.value);
-        }}
-        readOnly={speech.listening}
-        rows={2}
-        placeholder={t("voice.transcript.placeholder")}
-        aria-label={t("voice.transcript")}
-        className="w-full resize-y rounded-lg bg-transparent px-2 py-2 text-sm outline-none placeholder:opacity-50"
-      />
+      {speech.error && <p className="text-xs text-hi">{speech.error}</p>}
 
-      {speech.error && <p className="text-xs text-red-500">{speech.error}</p>}
-
-      {empty && <p className="text-sm opacity-70">{t("voice.empty")}</p>}
+      {empty && <p className="text-sm text-muted">{t("voice.empty")}</p>}
 
       {lastAdd && (
-        <div className="flex flex-wrap items-center gap-2 border-t border-black/10 pt-3 text-sm dark:border-white/15">
+        <div className="flex flex-wrap items-center gap-2 border-t border-line pt-2 text-sm">
           <span>
             {t("voice.added", { count: lastAdd.titles.length, first: lastAdd.titles[0] ?? "" })}{" "}
             <span className="opacity-70">({SOURCE_LABEL[lastAdd.source]})</span>

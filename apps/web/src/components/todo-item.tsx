@@ -4,14 +4,27 @@ import { useRef, useState } from "react";
 import { useT } from "@/hooks/use-t";
 import { isOverdue, isValidTitle, subtaskProgress, TEST_IDS, type Todo } from "@/domain";
 
-const PRIORITY_STYLES: Record<Todo["priority"], string> = {
-  high: "bg-red-500/15 text-red-700 dark:text-red-400",
-  medium: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
-  low: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+const PRIORITY_DOTS: Record<Todo["priority"], string> = {
+  high: "bg-hi",
+  medium: "bg-md",
+  low: "bg-lo",
 };
+
+/** "Fri" for a due date in the last 6 days, else e.g. "Oct 2", in the browser's locale. */
+function slippedFrom(dueDate: string, today: string): string {
+  const [y, m, d] = dueDate.split("-").map(Number) as [number, number, number];
+  const due = new Date(y, m - 1, d);
+  const [ty, tm, td] = today.split("-").map(Number) as [number, number, number];
+  const days = Math.round((new Date(ty, tm - 1, td).getTime() - due.getTime()) / 86_400_000);
+  return days <= 6
+    ? due.toLocaleDateString(undefined, { weekday: "short" })
+    : due.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 type TodoItemProps = {
   todo: Todo;
+  /** Today's YYYY-MM-DD key, for the "from Fri" label on slipped todos. */
+  today?: string;
   onToggle: (id: string) => void;
   onRename: (id: string, title: string) => void;
   onRemove: (id: string) => void;
@@ -35,6 +48,7 @@ type TodoItemProps = {
 
 export function TodoItem({
   todo,
+  today,
   onToggle,
   onRename,
   onRemove,
@@ -87,8 +101,8 @@ export function TodoItem({
       <li
         data-testid={TEST_IDS.item(todo.title)}
         data-selected={selection.selected}
-        className={`flex items-center gap-3 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
-          selection.selected ? "border-foreground/60" : "border-black/10 dark:border-white/15"
+        className={`flex items-center gap-3 rounded-[14px] border bg-surface px-3 py-[11px] ${
+          selection.selected ? "border-accent bg-soft" : "border-line"
         }`}
       >
         <input
@@ -97,18 +111,16 @@ export function TodoItem({
           onChange={() => selection.onSelect(todo.id)}
           data-testid={TEST_IDS.itemSelect(todo.title)}
           aria-label={t("select.item", { title: todo.title })}
-          className="size-4 accent-current"
+          className="size-4 accent-[var(--acc)]"
         />
         <button
           type="button"
           onClick={() => selection.onSelect(todo.id)}
-          className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-50" : ""}`}
+          className={`flex-1 truncate text-left ${todo.completed ? "text-muted line-through" : ""}`}
         >
           {todo.title}
         </button>
-        <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${PRIORITY_STYLES[todo.priority]}`}>
-          {todo.priority}
-        </span>
+        <span aria-hidden className={`size-2 shrink-0 rounded-full ${PRIORITY_DOTS[todo.priority]}`} />
       </li>
     );
   }
@@ -134,13 +146,17 @@ export function TodoItem({
           : undefined
       }
       onDragEnd={drag?.onDragEnd}
-      className={`flex flex-col gap-2 rounded-xl border bg-white/60 px-3 py-2 dark:bg-white/5 ${
-        overdue ? "border-red-500/40" : "border-black/10 dark:border-white/15"
-      } ${drag?.dragging ? "opacity-40" : ""}`}
+      className={`group flex flex-col gap-2 rounded-[14px] border border-line bg-surface px-3 py-[11px] transition hover:border-[color-mix(in_srgb,var(--acc)_35%,var(--line))] ${
+        drag?.dragging ? "opacity-40" : ""
+      }`}
     >
       <div className="flex items-center gap-3">
         {drag && (
-          <span aria-label="Drag to reorder" title="Drag to reorder" className="cursor-grab opacity-40 select-none">
+          <span
+            aria-label="Drag to reorder"
+            title="Drag to reorder"
+            className="-mr-1 cursor-grab text-muted opacity-0 transition select-none group-hover:opacity-60"
+          >
             ⋮⋮
           </span>
         )}
@@ -151,69 +167,78 @@ export function TodoItem({
           {...locked}
           data-testid={TEST_IDS.itemToggle(todo.title)}
           aria-label={t(todo.completed ? "item.markActive" : "item.markComplete", { title: todo.title })}
-          className="size-4 accent-current"
+          className="dy-check"
         />
 
-        {editing ? (
-          <input
-            autoFocus
-            value={draftTitle}
-            onChange={(event) => setDraftTitle(event.target.value)}
-            onBlur={commit}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") commit();
-              if (event.key === "Escape") cancel();
-            }}
-            data-testid={TEST_IDS.itemEditInput}
-            aria-label={t("item.editTitle")}
-            className="flex-1 rounded-lg bg-transparent px-1 py-1 outline-none"
-          />
-        ) : (
-          <button
-            type="button"
-            onDoubleClick={startEditing}
-            aria-disabled={readOnly || undefined}
-            aria-describedby={readOnly ? describedBy : undefined}
-            data-testid={TEST_IDS.itemTitle(todo.title)}
-            aria-label={t("item.edit", { title: todo.title })}
-            title={t("item.editHint")}
-            className={`flex-1 truncate text-left ${todo.completed ? "line-through opacity-70" : ""}`}
-          >
-            {todo.title}
-          </button>
-        )}
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          {editing ? (
+            <input
+              autoFocus
+              value={draftTitle}
+              onChange={(event) => setDraftTitle(event.target.value)}
+              onBlur={commit}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") commit();
+                if (event.key === "Escape") cancel();
+              }}
+              data-testid={TEST_IDS.itemEditInput}
+              aria-label={t("item.editTitle")}
+              className="rounded-md bg-soft px-1 py-0.5 text-[15px] font-medium outline-none"
+            />
+          ) : (
+            <button
+              type="button"
+              aria-disabled={readOnly || undefined}
+              aria-describedby={readOnly ? describedBy : undefined}
+              onDoubleClick={startEditing}
+              data-testid={TEST_IDS.itemTitle(todo.title)}
+              aria-label={t("item.edit", { title: todo.title })}
+              title={t("item.editHint")}
+              className={`truncate text-left text-[15px] font-medium ${todo.completed ? "text-muted line-through" : ""}`}
+            >
+              {todo.title}
+            </button>
+          )}
+          {(todo.dueDate || todo.reminder || todo.recurrence) && (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted">
+              {todo.dueDate && (
+                <span
+                  data-testid={TEST_IDS.itemDueDate(todo.title)}
+                  className={overdue ? "font-medium text-note" : undefined}
+                  aria-label={t(overdue ? "item.overdue" : "item.due", { date: todo.dueDate })}
+                >
+                  {overdue && (
+                    <span data-testid={TEST_IDS.itemOverdue(todo.title)}>
+                      {today
+                        ? t("item.slippedBadge", { day: slippedFrom(todo.dueDate, today) })
+                        : t("item.overdueBadge")}
+                    </span>
+                  )}
+                  {todo.dueDate}
+                </span>
+              )}
+              {todo.reminder && (
+                <span
+                  data-testid={TEST_IDS.itemReminder(todo.title)}
+                  aria-label={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
+                  title={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
+                >
+                  {t(`reminder.${todo.reminder}`)}
+                </span>
+              )}
 
-        {todo.dueDate && (
-          <span
-            data-testid={TEST_IDS.itemDueDate(todo.title)}
-            className={`text-xs ${overdue ? "font-medium text-red-700 dark:text-red-400" : "opacity-70"}`}
-            aria-label={t(overdue ? "item.overdue" : "item.due", { date: todo.dueDate })}
-          >
-            {overdue && <span data-testid={TEST_IDS.itemOverdue(todo.title)}>{t("item.overdueBadge")}</span>}
-            {todo.dueDate}
-          </span>
-        )}
-        {todo.reminder && (
-          <span
-            data-testid={TEST_IDS.itemReminder(todo.title)}
-            className="text-xs opacity-60"
-            aria-label={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
-            title={t("item.reminder", { label: t(`reminder.${todo.reminder}`).toLowerCase() })}
-          >
-            {t(`reminder.${todo.reminder}`)}
-          </span>
-        )}
-
-        {todo.recurrence && (
-          <span
-            data-testid={TEST_IDS.itemRecurrence(todo.title)}
-            className="text-xs opacity-70"
-            aria-label={t(`item.repeats.${todo.recurrence}`)}
-            title={t(`item.repeats.${todo.recurrence}`)}
-          >
-            {t("item.recurrence", { label: t(`recurrence.${todo.recurrence}`) })}
-          </span>
-        )}
+              {todo.recurrence && (
+                <span
+                  data-testid={TEST_IDS.itemRecurrence(todo.title)}
+                  aria-label={t(`item.repeats.${todo.recurrence}`)}
+                  title={t(`item.repeats.${todo.recurrence}`)}
+                >
+                  {t("item.recurrence", { label: t(`recurrence.${todo.recurrence}`) })}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
 
         <button
           type="button"
@@ -222,7 +247,7 @@ export function TodoItem({
           aria-controls={panelId}
           aria-label={t(expanded ? "subtasks.collapse" : "subtasks.expand", { title: todo.title })}
           data-testid={TEST_IDS.itemSubtasksToggle(todo.title)}
-          className="rounded-full bg-black/5 px-2 py-0.5 text-xs tabular-nums opacity-70 transition hover:opacity-100 dark:bg-white/10"
+          className="rounded-full bg-soft px-2 py-0.5 text-xs text-muted tabular-nums transition hover:text-ink"
         >
           <span data-testid={TEST_IDS.itemSubtaskProgress(todo.title)}>
             {progress.total > 0 ? `${progress.done}/${progress.total}` : "+"}
@@ -232,10 +257,8 @@ export function TodoItem({
           </span>
         </button>
 
-        <span
-          data-testid={TEST_IDS.itemPriority(todo.title)}
-          className={`rounded-full px-2 py-0.5 text-xs ${PRIORITY_STYLES[todo.priority]}`}
-        >
+        <span data-testid={TEST_IDS.itemPriority(todo.title)} className="flex items-center gap-1.5 text-xs text-muted">
+          <span aria-hidden className={`size-2 rounded-full ${PRIORITY_DOTS[todo.priority]}`} />
           {t(`priority.${todo.priority}`)}
         </span>
 
@@ -245,14 +268,14 @@ export function TodoItem({
           {...locked}
           data-testid={TEST_IDS.itemDelete(todo.title)}
           aria-label={t("item.delete", { title: todo.title })}
-          className="rounded-lg px-2 py-1 text-sm opacity-70 transition hover:opacity-100 disabled:opacity-30"
+          className="rounded-lg px-2 py-1 text-sm text-muted transition hover:text-hi disabled:opacity-30"
         >
           ×
         </button>
       </div>
 
       {expanded && (
-        <div id={panelId} className="ml-7 flex flex-col gap-1 text-sm">
+        <div id={panelId} className="ml-8 flex flex-col gap-1.5 border-t border-line pt-2 text-sm">
           {todo.subtasks?.map((subtask) => (
             <div key={subtask.id} data-testid={TEST_IDS.subtask(subtask.title)} className="flex items-center gap-2">
               <input
@@ -264,9 +287,9 @@ export function TodoItem({
                 aria-label={t(subtask.completed ? "subtask.markActive" : "subtask.markComplete", {
                   title: subtask.title,
                 })}
-                className="size-3.5 accent-current"
+                className="dy-check dy-check-sm"
               />
-              <span className={`flex-1 truncate ${subtask.completed ? "line-through opacity-50" : ""}`}>
+              <span className={`flex-1 truncate ${subtask.completed ? "text-muted line-through" : ""}`}>
                 {subtask.title}
               </span>
               <button

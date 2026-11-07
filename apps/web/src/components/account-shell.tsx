@@ -11,15 +11,10 @@ import { accountTodoStorage, localTodoStorage } from "@/lib/storage";
 import { getRealtimeConnection, getSupabase, supabaseConfigured } from "@/lib/supabase";
 import { createSupabaseSyncServer } from "@/lib/sync-server";
 
-/** Header + list. Without Supabase config this is exactly the guest-only app. */
+/** Daybook shell + list. Without Supabase config this is exactly the guest-only app. */
 export function AccountShell() {
   if (!supabaseConfigured) {
-    return (
-      <>
-        <AppHeader />
-        <TodoApp />
-      </>
-    );
+    return <TodoApp />;
   }
   return <SignedInShell />;
 }
@@ -38,17 +33,24 @@ function SignedInShell() {
     () => (server && sessionUserId && scope !== "guest" ? { server, userId: sessionUserId, realtime } : null),
     [server, sessionUserId, scope, realtime],
   );
+  if (!auth.ready) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-10">
+        <AppHeader account={<AccountMenu auth={auth} />} />
+      </div>
+    );
+  }
   return (
     <>
-      <AppHeader account={<AccountMenu auth={auth} />} />
       {auth.ready && (
         <>
-          <AuthBanner auth={auth} />
           <TodoApp
             key={scope}
             storage={scope === "guest" ? localTodoStorage : accountTodoStorage}
             sync={sync}
             expired={status === "expired"}
+            account={<AccountMenu auth={auth} />}
+            banner={<AuthBanner auth={auth} />}
           />
           <MoveGuestTodosPrompt auth={auth} />
         </>
