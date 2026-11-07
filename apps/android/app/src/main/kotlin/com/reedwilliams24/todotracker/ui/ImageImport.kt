@@ -6,8 +6,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
@@ -31,6 +30,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -179,7 +185,23 @@ private fun clipboardImage(context: Context): Uri? {
 @Composable
 private fun ImageGlyph() {
     val color = Palette.accent
-    Box(Modifier.size(20.dp).border(2.dp, color, RoundedCornerShape(4.dp)), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(6.dp).clip(CircleShape).background(color))
+    Canvas(Modifier.size(20.dp)) {
+        val w = size.width
+        val stroke = 2.dp.toPx()
+        drawRoundRect(
+            color,
+            topLeft = Offset(w * 0.12f, w * 0.12f),
+            size = Size(w * 0.76f, w * 0.76f),
+            cornerRadius = CornerRadius(w * 0.12f),
+            style = Stroke(width = stroke),
+        )
+        drawCircle(color, radius = w * 0.08f, center = Offset(w * 0.37f, w * 0.37f))
+        val mountain =
+            Path().apply {
+                moveTo(w * 0.88f, w * 0.62f)
+                lineTo(w * 0.66f, w * 0.42f)
+                lineTo(w * 0.2f, w * 0.88f)
+            }
+        drawPath(mountain, color, style = Stroke(width = stroke, cap = StrokeCap.Round, join = StrokeJoin.Round))
     }
 }
