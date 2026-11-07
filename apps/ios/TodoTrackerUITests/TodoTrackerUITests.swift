@@ -1,5 +1,7 @@
 import XCTest
 
+private let undoWindowSeconds: TimeInterval = 5
+
 final class TodoTrackerUITests: XCTestCase {
     @MainActor
     func testAddCompleteUndoDelete() {
@@ -23,11 +25,12 @@ final class TodoTrackerUITests: XCTestCase {
         app.buttons["undo-toast-action"].tap()
         XCTAssertEqual(toggle.value as? String, "0")
 
+        let deleteTappedAt = Date()
         app.buttons["todo-delete-Buy milk"].tap()
         XCTAssertTrue(app.staticTexts["todo-empty"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["undo-toast-label"].label, "Deleted todo")
-        XCTAssertFalse(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 3))
-        XCTAssertTrue(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["undo-toast-label"].waitForNonExistence(timeout: 15))
+        XCTAssertGreaterThanOrEqual(Date().timeIntervalSince(deleteTappedAt), undoWindowSeconds)
     }
 
     @MainActor

@@ -45,6 +45,7 @@ struct ThemePicker: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(selected ? Theme.soft : .clear)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])

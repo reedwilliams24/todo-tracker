@@ -46,6 +46,7 @@ struct ListControlsView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(selected ? Theme.accent : .clear, in: Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -98,6 +99,7 @@ struct ListControlsView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(selected ? Theme.accent : .clear, in: Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])

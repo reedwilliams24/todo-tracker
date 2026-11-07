@@ -12,4 +12,6 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 maestro test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker ../../spec/scenarios/maestro
 ```
 
+Run Maestro on an emulator with no other apps you care about: flows clear this app's data, and `hideKeyboard` can press Back into whatever is open underneath.
+
 UI selectors are Compose `testTag`s, exposed as resource IDs (`testTagsAsResourceId`) so Maestro can find them.
