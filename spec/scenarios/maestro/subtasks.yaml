@@ -19,12 +19,14 @@ tags:
     id: "todo-subtask-input-Plan trip"
 - inputText: "Book flight"
 - pressKey: Enter
+- hideKeyboard
 - assertVisible:
     id: "todo-subtask-Book flight"
 - tapOn:
     id: "todo-subtask-input-Plan trip"
 - inputText: "Book hotel"
 - pressKey: Enter
+- hideKeyboard
 - assertVisible:
     id: "todo-subtask-Book hotel"
 - assertVisible:

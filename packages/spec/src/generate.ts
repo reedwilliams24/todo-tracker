@@ -54,8 +54,9 @@ function maestroStep(step: Step): string[] {
         `- inputText: ${q(s.title!)}`,
         ...(s.priority ? tap(id("formPriorityOption", s.priority)) : []),
         ...(s.recurrence ? tap(id("formRecurrenceOption", s.recurrence)) : []),
-        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
+        // Reminder options ignore taps until a due date exists, so the other order silently drops the reminder.
         ...(s.dueDate ? [...tap(id("formDueDate")), `- inputText: ${q(s.dueDate)}`] : []),
+        ...(s.reminder ? tap(id("formReminderOption", s.reminder)) : []),
         "- hideKeyboard",
         ...tap(id("formSubmit")),
         ...visible(id("item", s.title!)),
@@ -65,6 +66,8 @@ function maestroStep(step: Step): string[] {
         ...tap(id("subtaskInput", s.title!)),
         `- inputText: ${q(s.subtask)}`,
         "- pressKey: Enter",
+        // With the keyboard open the Android list is too short to show the new row, so the assertion fails.
+        "- hideKeyboard",
         ...visible(id("subtask", s.subtask!)),
       ];
     case "bulkDelete":

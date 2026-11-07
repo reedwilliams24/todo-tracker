@@ -9,10 +9,10 @@ tags:
     id: "todo-form-title"
 - inputText: "Pay rent"
 - tapOn:
-    id: "todo-form-reminder-1d"
-- tapOn:
     id: "todo-form-due-date"
 - inputText: "2030-01-01"
+- tapOn:
+    id: "todo-form-reminder-1d"
 - hideKeyboard
 - tapOn:
     id: "todo-form-submit"
