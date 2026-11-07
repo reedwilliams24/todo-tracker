@@ -318,12 +318,14 @@ fun TodoApp(
                                     notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                                 }
                             },
-                        )
-                        ImageImport(
-                            t,
-                            enabled = editable,
-                            onAddMany = viewModel::addMany,
-                            onUndo = viewModel::removeMany,
+                            accessory = {
+                                ImageImport(
+                                    t,
+                                    enabled = editable,
+                                    onAddMany = viewModel::addMany,
+                                    onUndo = viewModel::removeMany,
+                                )
+                            },
                         )
 
                         FlowRow(
@@ -926,7 +928,13 @@ private fun Field(
 }
 
 @Composable
-private fun TodoForm(t: Translator, enabled: Boolean, onAdd: (TodoDraft) -> Unit, onPickReminder: () -> Unit) {
+private fun TodoForm(
+    t: Translator,
+    enabled: Boolean,
+    onAdd: (TodoDraft) -> Unit,
+    onPickReminder: () -> Unit,
+    accessory: @Composable () -> Unit = {},
+) {
     var title by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.title) }
     var priority by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.priority) }
     var dueDate by rememberSaveable { mutableStateOf(EMPTY_TODO_FORM.dueDate) }
@@ -1093,20 +1101,26 @@ private fun TodoForm(t: Translator, enabled: Boolean, onAdd: (TodoDraft) -> Unit
             }
         }
         val addEnabled = canAdd && enabled
-        Text(
-            t("form.add"),
-            fontSize = FontSize.sm,
-            fontWeight = FontWeight.Medium,
-            color = if (addEnabled) Palette.accentInk else Palette.disabledText,
-            modifier =
-                Modifier.align(Alignment.End)
-                    .clip(RoundedCornerShape(Radius.md))
-                    .background(if (addEnabled) Palette.accent else Palette.disabledFill)
-                    .clickable(enabled = addEnabled, role = Role.Button) { submit() }
-                    .semantics { contentDescription = t("form.add.label") }
-                    .testTag(TestIds.formSubmit)
-                    .padding(horizontal = Spacing.s4, vertical = Spacing.s2),
-        )
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.weight(1f)) { accessory() }
+            Text(
+                t("form.add"),
+                fontSize = FontSize.sm,
+                fontWeight = FontWeight.Medium,
+                color = if (addEnabled) Palette.accentInk else Palette.disabledText,
+                modifier =
+                    Modifier.clip(RoundedCornerShape(Radius.md))
+                        .background(if (addEnabled) Palette.accent else Palette.disabledFill)
+                        .clickable(enabled = addEnabled, role = Role.Button) { submit() }
+                        .semantics { contentDescription = t("form.add.label") }
+                        .testTag(TestIds.formSubmit)
+                        .padding(horizontal = Spacing.s4, vertical = Spacing.s2),
+            )
+        }
     }
 }
 

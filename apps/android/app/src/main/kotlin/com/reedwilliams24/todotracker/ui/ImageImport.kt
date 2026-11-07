@@ -11,9 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -98,11 +96,10 @@ internal fun ImageImport(
     val picker =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(::import) }
 
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3), verticalAlignment = Alignment.CenterVertically) {
-            Box {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.CenterVertically) {
+        Box {
                 Box(
-                    Modifier.size(44.dp)
+                    Modifier.size(36.dp)
                         .clip(CircleShape)
                         .background(Palette.soft)
                         .alpha(if (enabled && !busy) 1f else 0.4f)
@@ -133,9 +130,9 @@ internal fun ImageImport(
                     )
                 }
             }
-            Text(t("image.hint"), fontSize = FontSize.sm, color = Palette.muted)
-        }
-        status?.let { current ->
+        when (val current = status) {
+            null -> Text(t("image.hint"), fontSize = FontSize.xs, color = Palette.muted)
+            else ->
             Row(
                 Modifier.semantics { liveRegion = LiveRegionMode.Polite }.testTag(TestIds.imageImportStatus),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
@@ -150,6 +147,7 @@ internal fun ImageImport(
                     },
                     fontSize = FontSize.sm,
                     color = if (current is ImageStatus.Failed) Palette.danger else Palette.muted,
+                    modifier = Modifier.weight(1f, fill = false),
                 )
                 if (current is ImageStatus.Added) {
                     Text(
