@@ -4,11 +4,13 @@ on:
   push:
     branches: [main]
   pull_request:
+    # `labeled` so adding the `e2e` label starts the native e2e jobs right away (see `changes`).
+    types: [opened, synchronize, reopened, labeled]
   merge_group:
   workflow_dispatch:
     inputs:
       e2e:
-        description: Also run the main-only e2e jobs
+        description: Also run every e2e job, as on main
         type: boolean
         default: false
 
@@ -27,6 +29,11 @@ jobs:
       ios: ${{ steps.filter.outputs.ios }}
       ios-app: ${{ steps.filter.outputs.ios-app }}
       supabase: ${{ steps.filter.outputs.supabase }}
+      # Native e2e runs on main and `e2e=true` dispatches. On PRs, Android runs when the app or the flows
+      # change; both platforms run with the `e2e` label. iOS isn't automatic on PRs because its 5 jobs fill
+      # the account's macOS limit and would make other PRs' checks queue. Neither is in the required gate.
+      e2e-android: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e) || (github.event_name == 'pull_request' && (steps.filter.outputs.android-e2e == 'true' || contains(github.event.pull_request.labels.*.name, 'e2e'))) }}
+      e2e-ios: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e) || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e')) }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -58,6 +65,16 @@ jobs:
             supabase:
               - *shared
               - 'supabase/**'
+            # What the Android Maestro flows exercise (narrower than `android`, which includes all of spec/).
+            android-e2e:
+              - 'apps/android/**'
+              - 'spec/scenarios/**'
+              - 'spec/test-ids.json'
+              - 'spec/i18n/**'
+              - 'packages/spec/src/generate.ts'
+              - 'scripts/maestro-slices.mjs'
+              - '.github/actions/android/**'
+              - '.github/workflows/ci.yml'
 
   lint-web:
     runs-on: ubuntu-latest
@@ -219,7 +236,7 @@ jobs:
         run: pnpm exec supabase stop --no-backup
 
   # Compiles the SwiftUI app (no tests) when the app target changes on a PR, so UI-code breakage
-  # is caught before main. The XCUITests and Maestro flows run in the e2e-*-ios jobs on main.
+  # is caught before main. The XCUITests and Maestro flows run in the e2e-*-ios jobs (see `changes`).
   # ---------------------------------------------------------------- builds (every PR, per touched platform)
   build-web:
     needs: changes
@@ -289,7 +306,7 @@ jobs:
           echo '${{ toJSON(needs) }}' | jq -e 'to_entries | map(select(.value.result == "failure" or .value.result == "cancelled")) | length == 0' \
             || { echo "::error::a required job failed or was cancelled"; exit 1; }
 
-  # ---------------------------------------------------------------- e2e tests (push to main)
+  # ---------------------------------------------------------------- e2e tests (main, plus native e2e on some PRs)
 
   e2e-tests-web:
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e)
@@ -306,7 +323,8 @@ jobs:
           path: apps/web/playwright-report/
           retention-days: 14
 
-  # Native e2e: each app is built once, then the spec-tagged Maestro flows run in parallel slices.
+  # Native e2e (when it runs: the e2e-android and e2e-ios outputs of `changes`). Each app is built once,
+  # then the spec-tagged Maestro flows run in parallel slices.
   # scripts/maestro-slices.mjs picks each slice's flows, so a new flow needs no list. e2e-tests-android
   # and e2e-tests-ios are the results to watch: each fails if any of its jobs did, and its run summary
   # lists every flow's slice, result and time. Each `matrix.slice` list sets that platform's slice count.
@@ -314,7 +332,8 @@ jobs:
   # account, so more slices would queue rather than run.
 
   e2e-build-android:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e)
+    needs: changes
+    if: needs.changes.outputs.e2e-android == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -389,8 +408,8 @@ jobs:
           retention-days: 14
 
   e2e-tests-android:
-    needs: [e2e-build-android, e2e-maestro-android]
-    if: always() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e))
+    needs: [changes, e2e-build-android, e2e-maestro-android]
+    if: always() && needs.changes.outputs.e2e-android == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -407,7 +426,8 @@ jobs:
             || { echo "::error::an Android e2e job didn't succeed"; exit 1; }
 
   e2e-build-ios:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e)
+    needs: changes
+    if: needs.changes.outputs.e2e-ios == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -488,8 +508,8 @@ jobs:
           retention-days: 14
 
   e2e-tests-ios:
-    needs: [e2e-build-ios, e2e-xcuitest-ios, e2e-maestro-ios]
-    if: always() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e))
+    needs: [changes, e2e-build-ios, e2e-xcuitest-ios, e2e-maestro-ios]
+    if: always() && needs.changes.outputs.e2e-ios == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
