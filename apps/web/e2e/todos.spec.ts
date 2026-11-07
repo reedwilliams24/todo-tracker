@@ -200,6 +200,22 @@ test("copy comes from the shared catalog with pluralised remaining count", async
   await expect(page.getByText("2 tasks remaining")).toBeVisible();
 });
 
+test("empty due date field shows a placeholder until focused or filled", async ({ page }) => {
+  const dueDate = page.getByTestId(TEST_IDS.formDueDate);
+  const placeholder = dueDate.locator("..").getByText("Due date");
+  await expect(placeholder).toBeVisible();
+
+  await dueDate.focus();
+  await expect(placeholder).toBeHidden();
+
+  await dueDate.blur();
+  await expect(placeholder).toBeVisible();
+
+  await dueDate.fill("2030-01-01");
+  await expect(placeholder).toBeHidden();
+  await expect(dueDate).toHaveValue("2030-01-01");
+});
+
 test("reminder option is tied to a due date and shown on the todo", async ({ page }) => {
   const reminder = page.getByLabel("Reminder");
   await expect(reminder).toBeDisabled();

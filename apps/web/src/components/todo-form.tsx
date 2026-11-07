@@ -73,14 +73,24 @@ export function TodoForm({
               </option>
             ))}
           </select>
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(event) => setForm((f) => ({ ...f, dueDate: event.target.value }))}
-            aria-label={t("form.dueDate.label")}
-            data-testid={TEST_IDS.formDueDate}
-            className="rounded-lg border border-line bg-transparent px-2 py-2 text-sm"
-          />
+          <span className="relative flex">
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(event) => setForm((f) => ({ ...f, dueDate: event.target.value }))}
+              aria-label={t("form.dueDate.label")}
+              data-testid={TEST_IDS.formDueDate}
+              className={`peer rounded-lg border border-line bg-transparent px-2 py-2 text-sm ${dueDate ? "" : "text-transparent focus:text-foreground"}`}
+            />
+            {!dueDate && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-sm text-muted peer-focus:hidden"
+              >
+                {t("form.dueDate.label")}
+              </span>
+            )}
+          </span>
           <select
             value={reminder}
             disabled={!dueDate}
