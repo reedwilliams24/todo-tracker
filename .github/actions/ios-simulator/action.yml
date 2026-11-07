@@ -1,0 +1,11 @@
+name: Boot an iPhone Simulator
+description: Picks the first available iPhone Simulator, starts booting it without waiting, and exports SIMULATOR_UDID. Wait with `xcrun simctl bootstatus "$SIMULATOR_UDID" -b` before using it.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        udid=$(xcrun simctl list devices available -j | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
+        echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+        xcrun simctl boot "$udid" || true

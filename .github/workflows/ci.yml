@@ -4,11 +4,13 @@ on:
   push:
     branches: [main]
   pull_request:
+    # `labeled` so adding the `e2e` label starts the native e2e jobs right away (see `changes`).
+    types: [opened, synchronize, reopened, labeled]
   merge_group:
   workflow_dispatch:
     inputs:
       e2e:
-        description: Also run the main-only e2e jobs
+        description: Also run every e2e job, as on main
         type: boolean
         default: false
 
@@ -27,6 +29,11 @@ jobs:
       ios: ${{ steps.filter.outputs.ios }}
       ios-app: ${{ steps.filter.outputs.ios-app }}
       supabase: ${{ steps.filter.outputs.supabase }}
+      # Native e2e runs on main and `e2e=true` dispatches. On PRs, Android runs when the app or the flows
+      # change; both platforms run with the `e2e` label. iOS isn't automatic on PRs because its 5 jobs fill
+      # the account's macOS limit and would make other PRs' checks queue. Neither is in the required gate.
+      e2e-android: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e) || (github.event_name == 'pull_request' && (steps.filter.outputs.android-e2e == 'true' || contains(github.event.pull_request.labels.*.name, 'e2e'))) }}
+      e2e-ios: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e) || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e')) }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -58,6 +65,16 @@ jobs:
             supabase:
               - *shared
               - 'supabase/**'
+            # What the Android Maestro flows exercise (narrower than `android`, which includes all of spec/).
+            android-e2e:
+              - 'apps/android/**'
+              - 'spec/scenarios/**'
+              - 'spec/test-ids.json'
+              - 'spec/i18n/**'
+              - 'packages/spec/src/generate.ts'
+              - 'scripts/maestro-slices.mjs'
+              - '.github/actions/android/**'
+              - '.github/workflows/ci.yml'
 
   lint-web:
     runs-on: ubuntu-latest
@@ -219,7 +236,7 @@ jobs:
         run: pnpm exec supabase stop --no-backup
 
   # Compiles the SwiftUI app (no tests) when the app target changes on a PR, so UI-code breakage
-  # is caught before main. The XCUITest and Maestro flows run in e2e-tests-ios on main.
+  # is caught before main. The XCUITests and Maestro flows run in the e2e-*-ios jobs (see `changes`).
   # ---------------------------------------------------------------- builds (every PR, per touched platform)
   build-web:
     needs: changes
@@ -289,7 +306,7 @@ jobs:
           echo '${{ toJSON(needs) }}' | jq -e 'to_entries | map(select(.value.result == "failure" or .value.result == "cancelled")) | length == 0' \
             || { echo "::error::a required job failed or was cancelled"; exit 1; }
 
-  # ---------------------------------------------------------------- e2e tests (push to main)
+  # ---------------------------------------------------------------- e2e tests (main, plus native e2e on some PRs)
 
   e2e-tests-web:
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e)
@@ -306,14 +323,51 @@ jobs:
           path: apps/web/playwright-report/
           retention-days: 14
 
-  e2e-tests-android:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e)
+  # Native e2e (when it runs: the e2e-android and e2e-ios outputs of `changes`). Each app is built once,
+  # then the spec-tagged Maestro flows run in parallel slices.
+  # scripts/maestro-slices.mjs picks each slice's flows, so a new flow needs no list. e2e-tests-android
+  # and e2e-tests-ios are the results to watch: each fails if any of its jobs did, and its run summary
+  # lists every flow's slice, result and time. Each `matrix.slice` list sets that platform's slice count.
+  # iOS stays at 4 slices: with the XCUITests that's 5 macOS jobs, GitHub's concurrency limit for this
+  # account, so more slices would queue rather than run.
+
+  e2e-build-android:
+    needs: changes
+    if: needs.changes.outputs.e2e-android == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/android
       - run: ./gradlew :app:assembleDebug --console=plain
         working-directory: apps/android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-android-apk
+          path: apps/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 1
+
+  e2e-maestro-android:
+    name: e2e-maestro-android (${{ matrix.slice }}/${{ strategy.job-total }})
+    needs: e2e-build-android
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        slice: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4 # for Maestro
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-android-apk
+      - name: Pick this slice's flows
+        run: |
+          flows=$(node scripts/maestro-slices.mjs list ${{ strategy.job-index }} ${{ strategy.job-total }})
+          echo "$flows" | tr ' ' '\n'
+          echo "FLOWS=$flows" >> "$GITHUB_ENV"
       - name: Install Maestro
         run: |
           curl -fsSL https://get.maestro.mobile.dev | bash
@@ -323,7 +377,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Run Maestro flows on the emulator
+      - name: Run this slice's Maestro flows on the emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -337,51 +391,136 @@ jobs:
             adb shell settings put global hide_error_dialogs 1
             adb shell cmd uimode night yes
             adb shell cmd uimode night no
-            adb install -r apps/android/app/build/outputs/apk/debug/app-debug.apk
-            maestro test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker --format junit --output maestro-android.xml spec/scenarios/maestro
+            adb install -r app-debug.apk
+            maestro test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker --format junit --output maestro-android-${{ matrix.slice }}.xml $FLOWS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: maestro-android
-          path: |
-            maestro-android.xml
-            ~/.maestro/tests/
+          name: junit-maestro-android-${{ matrix.slice }}
+          path: maestro-android-${{ matrix.slice }}.xml
+          if-no-files-found: ignore
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maestro-android-${{ matrix.slice }}
+          path: ~/.maestro/tests/
           retention-days: 14
 
-  e2e-tests-ios:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.e2e)
+  e2e-tests-android:
+    needs: [changes, e2e-build-android, e2e-maestro-android]
+    if: always() && needs.changes.outputs.e2e-android == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true # finds nothing if the build failed; the report then marks every flow as missing
+        with:
+          pattern: junit-maestro-android-*
+          path: junit
+          merge-multiple: true
+      - run: node scripts/maestro-slices.mjs report junit "Android Maestro flows"
+      - if: always()
+        run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | map(select(.value.result != "success")) | length == 0' \
+            || { echo "::error::an Android e2e job didn't succeed"; exit 1; }
+
+  e2e-build-ios:
+    needs: changes
+    if: needs.changes.outputs.e2e-ios == 'true'
     runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: apps/ios
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/ios
-      - name: Pick and boot an iPhone Simulator
+      - name: Build the app and the XCUITests for the Simulator
+        working-directory: apps/ios
         run: |
-          udid=$(xcrun simctl list devices available -j | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
-          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
-          xcrun simctl boot "$udid" || true
-      - name: Build and run the XCUITests on the Simulator
+          xcodebuild build-for-testing -project TodoTracker.xcodeproj -scheme TodoTracker \
+            -destination "generic/platform=iOS Simulator" -derivedDataPath build \
+            -onlyUsePackageVersionsFromResolvedFile ARCHS=arm64 CODE_SIGNING_ALLOWED=NO
+      # upload-artifact drops file modes, which breaks app bundles, so the products travel as a tarball.
+      - name: Pack the app, the XCUITest runner and the .xctestrun
+        working-directory: apps/ios/build/Build
+        run: tar -czf "$GITHUB_WORKSPACE/ios-e2e-products.tgz" Products/*.xctestrun Products/Debug-iphonesimulator/*.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ios-products
+          path: ios-e2e-products.tgz
+          compression-level: 0 # already gzipped
+          retention-days: 1
+
+  e2e-xcuitest-ios:
+    needs: e2e-build-ios
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/ios-simulator
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-ios-products
+      - run: tar -xzf ios-e2e-products.tgz
+      - name: Run the XCUITests on the Simulator
         run: |
-          xcodebuild build test -project TodoTracker.xcodeproj -scheme TodoTracker \
-            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" -derivedDataPath build \
-            -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO
+          xcodebuild test-without-building -xctestrun Products/*.xctestrun \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID"
+
+  e2e-maestro-ios:
+    name: e2e-maestro-ios (${{ matrix.slice }}/${{ strategy.job-total }})
+    needs: e2e-build-ios
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        slice: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/ios-simulator
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-ios-products
+      - run: tar -xzf ios-e2e-products.tgz
+      - name: Pick this slice's flows
+        run: |
+          flows=$(node scripts/maestro-slices.mjs list ${{ strategy.job-index }} ${{ strategy.job-total }})
+          echo "$flows" | tr ' ' '\n'
+          echo "FLOWS=$flows" >> "$GITHUB_ENV"
       - name: Install Maestro
         run: |
           curl -fsSL https://get.maestro.mobile.dev | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-      - name: Run Maestro flows on the Simulator
+      - name: Run this slice's Maestro flows on the Simulator
         run: |
           xcrun simctl bootstatus "$SIMULATOR_UDID" -b
-          app=$(find build/Build/Products -maxdepth 2 -name 'TodoTracker.app' -not -path '*Runner*' | head -1)
-          xcrun simctl install "$SIMULATOR_UDID" "$app"
-          maestro --device "$SIMULATOR_UDID" test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker --format junit --output maestro-ios.xml ../../spec/scenarios/maestro
+          xcrun simctl install "$SIMULATOR_UDID" Products/Debug-iphonesimulator/TodoTracker.app
+          maestro --device "$SIMULATOR_UDID" test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker --format junit --output maestro-ios-${{ matrix.slice }}.xml $FLOWS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: maestro-ios
-          path: |
-            apps/ios/maestro-ios.xml
-            ~/.maestro/tests/
+          name: junit-maestro-ios-${{ matrix.slice }}
+          path: maestro-ios-${{ matrix.slice }}.xml
+          if-no-files-found: ignore
           retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maestro-ios-${{ matrix.slice }}
+          path: ~/.maestro/tests/
+          retention-days: 14
+
+  e2e-tests-ios:
+    needs: [changes, e2e-build-ios, e2e-xcuitest-ios, e2e-maestro-ios]
+    if: always() && needs.changes.outputs.e2e-ios == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true # finds nothing if the build failed; the report then marks every flow as missing
+        with:
+          pattern: junit-maestro-ios-*
+          path: junit
+          merge-multiple: true
+      - run: node scripts/maestro-slices.mjs report junit "iOS Maestro flows"
+      - if: always()
+        run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | map(select(.value.result != "success")) | length == 0' \
+            || { echo "::error::an iOS e2e job (build, XCUITests or a Maestro slice) didn't succeed"; exit 1; }
