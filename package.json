@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "pnpm --filter web dev",
+    "devices:run": "./scripts/devices-run.sh",
+    "devices:setup": "./scripts/devices-setup.sh",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "lint:ios": "cd apps/ios && swiftlint lint --strict --quiet",

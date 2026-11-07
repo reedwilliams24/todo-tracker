@@ -22,11 +22,11 @@ open TodoTracker.xcodeproj    # run the TodoTracker scheme on a Simulator
 
 To bump a Swift package, update it in Xcode (File > Packages > Update to Latest Package Versions) and copy that `Package.resolved` back to `apps/ios/Package.resolved`. CI builds with `-onlyUsePackageVersionsFromResolvedFile`, so it never resolves versions itself.
 
-From the command line (no signing needed for the Simulator):
+From the command line (no signing needed for the Simulator). Run `pnpm devices:setup` first to create the simulator; see [Local devices](../../AGENTS.md#local-devices):
 
 ```bash
 xcodebuild build test -project TodoTracker.xcodeproj -scheme TodoTracker \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath build CODE_SIGNING_ALLOWED=NO
+  -destination 'platform=iOS Simulator,name=todo-tracker-e2e' -derivedDataPath build CODE_SIGNING_ALLOWED=NO
 ```
 
 ## UI scenarios
