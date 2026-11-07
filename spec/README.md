@@ -113,3 +113,5 @@ Running on the Android emulator or iOS Simulator, with the native app installed:
 ```bash
 maestro test --include-tags spec -e APP_ID=com.reedwilliams24.todotracker spec/scenarios/maestro
 ```
+
+On `main`, CI builds each native app once and splits the `spec`-tagged flows across parallel jobs, using `scripts/maestro-slices.mjs`. A new flow joins a slice automatically. To see which flows a CI slice runs, use `node scripts/maestro-slices.mjs list <index> <total>`. The `e2e-tests-ios` and `e2e-tests-android` jobs then collect every slice's result in their run summary. Each flow must start from cleared app data (`runFlow: launch.yaml`), because slices don't run flows in a fixed order.
