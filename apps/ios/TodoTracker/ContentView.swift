@@ -76,6 +76,7 @@ struct ContentView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(selected ? Theme.foreground : .clear)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -121,6 +122,7 @@ struct ContentView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(selected ? Theme.foreground : .clear, in: Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -173,6 +175,7 @@ struct ContentView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(selected ? Theme.foreground : .clear, in: Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
