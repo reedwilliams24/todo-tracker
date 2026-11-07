@@ -86,13 +86,16 @@ struct ContentView: View {
         // Content-sized scroll view: a drag on the (expanded) bar dismisses the keyboard, like the list.
         // Without it Maestro's hideKeyboard swipe lands on the bar and fails.
         ScrollView {
-            TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
-                .disabled(!editable)
-                .opacity(editable ? 1 : 0.5)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .frame(maxWidth: 640)
-                .frame(maxWidth: .infinity)
+            VStack(spacing: 8) {
+                TodoFormView(onAdd: model.add, onPickReminder: model.requestReminderPermission)
+                ImageImportView(onAddMany: model.addMany, onUndo: model.removeMany)
+            }
+            .disabled(!editable)
+            .opacity(editable ? 1 : 0.5)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .frame(maxWidth: 640)
+            .frame(maxWidth: .infinity)
         }
         .fixedSize(horizontal: false, vertical: true)
         .scrollDismissesKeyboard(.immediately)

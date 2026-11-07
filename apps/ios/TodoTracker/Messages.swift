@@ -32,6 +32,7 @@ let messageArgs: [String: MessageArgs] = [
     "stats.day": MessageArgs(["date", "count"]),
     "item.reminder": MessageArgs(["label"]),
     "item.recurrence": MessageArgs(["label"]),
+    "image.added": MessageArgs(["count", "first"], plural: "count"),
     "voice.added": MessageArgs(["count", "first"], plural: "count"),
     "auth.codeSent": MessageArgs(["email"]),
     "auth.resendIn": MessageArgs(["seconds"]),

@@ -15,6 +15,9 @@ val supabaseConfig =
 
 fun supabaseField(name: String) = "\"${supabaseConfig.getProperty(name, "")}\""
 
+/** Web app that hosts /api/image-todos; pass -PapiBaseUrl=http://10.0.2.2:3000 to use a local `pnpm dev`. */
+val apiBaseUrl = providers.gradleProperty("apiBaseUrl").orNull ?: "https://todo-tracker-puce.vercel.app"
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -34,6 +37,7 @@ android {
         versionName = "1.0.0"
         buildConfigField("String", "SUPABASE_URL", supabaseField("supabaseUrl"))
         buildConfigField("String", "SUPABASE_ANON_KEY", supabaseField("supabaseAnonKey"))
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {

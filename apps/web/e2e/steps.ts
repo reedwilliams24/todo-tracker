@@ -17,6 +17,10 @@ export function id(key: string, value = ""): string {
 }
 
 const ITEM_PREFIX = id("item");
+const TINY_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+  "base64",
+);
 export const AUTH = !!process.env.E2E_SUPABASE;
 const MAILPIT = process.env.E2E_MAILPIT_URL ?? "http://127.0.0.1:54324";
 
@@ -142,6 +146,14 @@ export async function run(page: Page, step: Step, ctx: Ctx) {
       return page.context().setOffline(true);
     case "goOnline":
       return page.context().setOffline(false);
+    case "importImage":
+      await page.route("**/api/image-todos", (route) => route.fulfill({ json: { todos: step.todos } }));
+      await page.getByTestId(id("imageImportInput")).setInputFiles({
+        name: "todos.png",
+        mimeType: "image/png",
+        buffer: TINY_PNG,
+      });
+      return;
     case "move":
       return page.getByTestId(id("item", s.title!)).dragTo(page.getByTestId(id("item", s.onto!)));
     case "openDeleteAccount":
@@ -189,6 +201,8 @@ export async function run(page: Page, step: Step, ctx: Ctx) {
       return page.getByTestId(id("formTitle")).fill(s.text!);
     case "undo":
       return page.getByTestId(id("undoAction")).click();
+    case "undoImageImport":
+      return page.getByTestId(id("imageImportUndo")).click();
   }
   switch (step.expect) {
     case "account":
@@ -222,6 +236,8 @@ export async function run(page: Page, step: Step, ctx: Ctx) {
     case "guestBanner":
       if (s.value) return expect(page.getByTestId(id("authGuestBanner"))).toBeVisible();
       return expect(page.getByTestId(id("authGuestBanner"))).toBeHidden();
+    case "imageImport":
+      return expect(page.getByTestId(id("imageImportStatus"))).toContainText(s.text!);
     case "movePrompt":
       if (s.text === null) return expect(page.getByTestId(id("authMovePrompt"))).toBeHidden();
       return expect(page.getByTestId(id("authMovePrompt"))).toContainText(s.text!);

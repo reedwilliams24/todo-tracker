@@ -56,6 +56,7 @@ private val OPS: Map<String, Op> = buildMap {
     listOf(
             authOps,
             daybookOps,
+            imageImportOps,
             listOps,
             quickAddOps,
             realtimeOps,

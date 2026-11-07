@@ -6,4 +6,9 @@
 SUPABASE_URL =
 SUPABASE_ANON_KEY =
 
+// Web app that hosts /api/image-todos (spec/features/image-import.md). For a local `pnpm dev`, set
+//   API_BASE_URL = http:/$()/127.0.0.1:3000
+// in Supabase.override.xcconfig.
+API_BASE_URL = https:/$()/todo-tracker-puce.vercel.app
+
 #include? "Supabase.override.xcconfig"

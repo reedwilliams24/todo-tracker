@@ -1,0 +1,12 @@
+{
+  "name": "import-image",
+  "status": { "web": "pass", "ios": "n/a", "android": "n/a" },
+  "steps": [
+    { "do": "add", "title": "Water plants" },
+    { "do": "importImage", "todos": [{ "title": "Get mail" }, { "title": "Clear work inbox" }] },
+    { "expect": "imageImport", "text": "Added 2 todos" },
+    { "expect": "titles", "titles": ["Water plants", "Get mail", "Clear work inbox"] },
+    { "do": "undoImageImport" },
+    { "expect": "titles", "titles": ["Water plants"] }
+  ]
+}

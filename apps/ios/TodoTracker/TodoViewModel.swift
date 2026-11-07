@@ -192,8 +192,17 @@ final class TodoViewModel {
     }
 
     func add(_ draft: TodoDraft) {
-        dispatch(.prepend(addTodos([], drafts: [draft], now: now()).created))
+        addMany([draft])
     }
+
+    @discardableResult
+    func addMany(_ drafts: [TodoDraft]) -> [Todo] {
+        let created = addTodos([], drafts: drafts, now: now()).created
+        dispatch(.prepend(created))
+        return created
+    }
+
+    func removeMany(_ ids: [String]) { dispatch(.remove(ids: ids)) }
 
     func toggle(_ id: String) { dispatch(.toggle(id: id)) }
     func rename(_ id: String, title: String) { dispatch(.rename(id: id, title: title)) }

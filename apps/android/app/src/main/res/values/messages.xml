@@ -129,6 +129,25 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_system">System</string>
+    <string name="image_hint">Paste or choose an image of your todos</string>
+    <string name="image_import">Import todos from an image</string>
+    <string name="image_paste">Paste image</string>
+    <string name="image_choose">Choose photo</string>
+    <string name="image_reading">Reading image…</string>
+    <plurals name="image_added">
+        <item quantity="one">Added %2$s</item>
+        <item quantity="other">Added %1$d todos</item>
+    </plurals>
+    <string name="image_empty">No tasks found in that image.</string>
+    <string name="image_undo">Undo</string>
+    <string name="image_error_busy">The AI is busy. Try again in a minute.</string>
+    <string name="image_error_failed">Couldn\'t read that image. Try again.</string>
+    <string name="image_error_invalid">That image couldn\'t be opened.</string>
+    <string name="image_error_noImage">There\'s no image on the clipboard.</string>
+    <string name="image_error_offline">You\'re offline. Connect and try again.</string>
+    <string name="image_error_tooLarge">That image is too large.</string>
+    <string name="image_error_unavailable">Image import isn\'t set up on this server.</string>
+    <string name="image_error_unsupported">That file type isn\'t supported. Use a PNG, JPEG, WebP or HEIC image.</string>
     <string name="voice_label">Voice capture</string>
     <string name="voice_speak">Speak your todos</string>
     <string name="voice_stop">Stop and add</string>

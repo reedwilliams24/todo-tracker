@@ -49,6 +49,12 @@ enum TestID {
     static func formReminderOption(_ reminder: String) -> String { "todo-form-reminder-\(reminder)" }
     static let formSubmit = "todo-form-submit"
     static let formTitle = "todo-form-title"
+    static let imageImportButton = "image-import-button"
+    static let imageImportChoose = "image-import-choose"
+    static let imageImportInput = "image-import-input"
+    static let imageImportPaste = "image-import-paste"
+    static let imageImportStatus = "image-import-status"
+    static let imageImportUndo = "image-import-undo"
     static func item(_ title: String) -> String { "todo-item-\(title)" }
     static func itemDelete(_ title: String) -> String { "todo-delete-\(title)" }
     static func itemDueDate(_ title: String) -> String { "todo-due-\(title)" }

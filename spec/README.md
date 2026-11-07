@@ -73,6 +73,7 @@ Actions (`do`):
 - `deleteSubtask {subtask}`
 - `expandSubtasks {title}`
 - `filter {filter}`
+- `importImage {todos}` (pick an image; web stubs `/api/image-todos` to answer `{todos}`)
 - `forgetLocalTodos` (drop the signed-in account's local cache and cursor, keeping the session; the next load must come from the server)
 - `move {title, onto}` (drag a row onto another; web only, since Maestro can't long-press-drag)
 - `openStats`
@@ -89,6 +90,7 @@ Actions (`do`):
 - `toggleSubtask {subtask}`
 - `type {text}` (fills the add form's title without submitting)
 - `undo`
+- `undoImageImport` (the image import's own Undo)
 
 Assertions (`expect`):
 
@@ -96,6 +98,7 @@ Assertions (`expect`):
 - `completed {title, value}`
 - `dueDate {title, dueDate}` and `recurrence {title, text}` (some todo with that title shows that value)
 - `empty`
+- `imageImport {text}` (the image import status contains `text`)
 - `overdue {title, value}`
 - `priority {title, priority}` (case-insensitive)
 - `quickAddPreview {title | null}` (`null`: preview hidden)
