@@ -1,0 +1,49 @@
+# Screenshot tour for .github/workflows/screenshots.yml. Not a spec scenario (no `spec` tag).
+# Pass -e APP_ID=<bundle id> -e PLATFORM=<android|ios>.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "todo-form-title"
+    timeout: 60000
+- takeScreenshot: ${PLATFORM}-1-empty
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Buy milk"
+- tapOn:
+    id: "todo-form-priority-high"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Buy milk"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Call the dentist"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Call the dentist"
+- tapOn:
+    id: "todo-form-title"
+- inputText: "Plan weekend trip"
+- tapOn:
+    id: "todo-form-priority-low"
+- hideKeyboard
+- tapOn:
+    id: "todo-form-submit"
+- assertVisible:
+    id: "todo-item-Plan weekend trip"
+- tapOn:
+    id: "todo-toggle-Call the dentist"
+- waitForAnimationToEnd
+- takeScreenshot: ${PLATFORM}-2-todos
+- scrollUntilVisible:
+    element:
+      id: "todo-remaining"
+    direction: DOWN
+- waitForAnimationToEnd
+- takeScreenshot: ${PLATFORM}-3-list
