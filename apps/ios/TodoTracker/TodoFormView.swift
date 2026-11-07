@@ -105,6 +105,7 @@ struct TodoFormView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(selected ? Theme.accent : .clear)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -139,6 +140,7 @@ struct TodoFormView: View {
                         .padding(.vertical, 6)
                         .frame(maxWidth: .infinity)
                         .background(selected ? selectedFill : .clear)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(UndimmedButtonStyle())
                 .accessibilityAddTraits(selected ? .isSelected : [])
@@ -166,6 +168,7 @@ struct TodoFormView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(selected ? Theme.accent : .clear)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
