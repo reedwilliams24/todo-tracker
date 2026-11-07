@@ -1005,7 +1005,6 @@ private fun TodoForm(t: Translator, enabled: Boolean, onAdd: (TodoDraft) -> Unit
         val reminderEnabled = dueDate.isNotEmpty()
         Row(
             Modifier.fillMaxWidth()
-                .alpha(if (reminderEnabled) 1f else 0.4f)
                 .clip(RoundedCornerShape(Radius.md))
                 .border(1.dp, Palette.border, RoundedCornerShape(Radius.md))
                 .selectableGroup()
@@ -1015,15 +1014,18 @@ private fun TodoForm(t: Translator, enabled: Boolean, onAdd: (TodoDraft) -> Unit
             (listOf("" to t("reminder.none")) + REMINDER_OFFSETS.map { it.key to t("reminder.${it.key}") }).forEach {
                 (key, label) ->
                 val selected = key == reminder
+                val selectedFill = if (reminderEnabled) Palette.accent else Palette.disabledFill
+                val selectedText = if (reminderEnabled) Palette.accentInk else Palette.disabledText
+                val idleText = if (reminderEnabled) Palette.foreground else Palette.disabledText
                 Text(
                     label,
                     fontSize = FontSize.xs,
-                    color = if (selected) Palette.accentInk else Palette.foreground,
+                    color = if (selected) selectedText else idleText,
                     maxLines = 1,
                     textAlign = TextAlign.Center,
                     modifier =
                         Modifier.weight(1f)
-                            .background(if (selected) Palette.accent else Palette.card)
+                            .background(if (selected) selectedFill else Palette.card)
                             .selectable(
                                 selected = selected,
                                 enabled = reminderEnabled && enabled,
@@ -1084,17 +1086,17 @@ private fun TodoForm(t: Translator, enabled: Boolean, onAdd: (TodoDraft) -> Unit
                 if (meta.isNotEmpty()) Text(meta.joinToString("  ·  "), fontSize = FontSize.xs, color = Palette.muted)
             }
         }
+        val addEnabled = canAdd && enabled
         Text(
             t("form.add"),
             fontSize = FontSize.sm,
             fontWeight = FontWeight.Medium,
-            color = Palette.card,
+            color = if (addEnabled) Palette.accentInk else Palette.disabledText,
             modifier =
                 Modifier.align(Alignment.End)
-                    .alpha(if (canAdd && enabled) 1f else 0.4f)
                     .clip(RoundedCornerShape(Radius.md))
-                    .background(Palette.foreground)
-                    .clickable(enabled = canAdd && enabled, role = Role.Button) { submit() }
+                    .background(if (addEnabled) Palette.accent else Palette.disabledFill)
+                    .clickable(enabled = addEnabled, role = Role.Button) { submit() }
                     .semantics { contentDescription = t("form.add.label") }
                     .testTag(TestIds.formSubmit)
                     .padding(horizontal = Spacing.s4, vertical = Spacing.s2),

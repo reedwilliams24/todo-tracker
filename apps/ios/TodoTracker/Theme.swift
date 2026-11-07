@@ -9,6 +9,8 @@ enum Theme {
     static let border = Color(light: 0xE3E5F1, dark: 0x272B4D)
     static let foreground = Color(light: 0x151833, dark: 0xE8EAFB)
     static let muted = Color(light: 0x686D8E, dark: 0x9196BA)
+    static let disabledText = foreground.opacity(0.7)
+    static let disabledFill = foreground.opacity(0.1)
     static let accent = Color(light: 0x4F46E5, dark: 0x8B8DFF)
     static let accentInk = Color(light: 0xFFFFFF, dark: 0x0D0F21)
     static let soft = Color(light: 0xECEDFF, dark: 0x23274F)

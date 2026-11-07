@@ -128,6 +128,12 @@ object Palette {
     val soft: Color
         @Composable @ReadOnlyComposable get() = LocalColors.current.soft
 
+    val disabledText: Color
+        @Composable @ReadOnlyComposable get() = foreground.copy(alpha = 0.7f)
+
+    val disabledFill: Color
+        @Composable @ReadOnlyComposable get() = foreground.copy(alpha = 0.1f)
+
     val danger: Color
         @Composable @ReadOnlyComposable get() = LocalColors.current.danger
 
