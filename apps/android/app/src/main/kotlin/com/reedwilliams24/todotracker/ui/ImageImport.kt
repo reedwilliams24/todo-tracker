@@ -98,74 +98,75 @@ internal fun ImageImport(
 
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.CenterVertically) {
         Box {
-                Box(
-                    Modifier.size(36.dp)
-                        .clip(CircleShape)
-                        .background(Palette.soft)
-                        .alpha(if (enabled && !busy) 1f else 0.4f)
-                        .clickable(enabled = enabled && !busy, role = Role.Button) { menuOpen = true }
-                        .semantics { contentDescription = t("image.import") }
-                        .testTag(TestIds.imageImportButton),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    ImageGlyph()
-                }
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    DropdownMenuItem(
-                        text = { Text(t("image.paste")) },
-                        modifier = Modifier.testTag(TestIds.imageImportPaste),
-                        onClick = {
-                            menuOpen = false
-                            val uri = clipboardImage(context)
-                            if (uri == null) status = ImageStatus.Failed("noImage") else import(uri)
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(t("image.choose")) },
-                        modifier = Modifier.testTag(TestIds.imageImportChoose),
-                        onClick = {
-                            menuOpen = false
-                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        },
-                    )
-                }
+            Box(
+                Modifier.size(36.dp)
+                    .clip(CircleShape)
+                    .background(Palette.soft)
+                    .alpha(if (enabled && !busy) 1f else 0.4f)
+                    .clickable(enabled = enabled && !busy, role = Role.Button) { menuOpen = true }
+                    .semantics { contentDescription = t("image.import") }
+                    .testTag(TestIds.imageImportButton),
+                contentAlignment = Alignment.Center,
+            ) {
+                ImageGlyph()
             }
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                DropdownMenuItem(
+                    text = { Text(t("image.paste")) },
+                    modifier = Modifier.testTag(TestIds.imageImportPaste),
+                    onClick = {
+                        menuOpen = false
+                        val uri = clipboardImage(context)
+                        if (uri == null) status = ImageStatus.Failed("noImage") else import(uri)
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(t("image.choose")) },
+                    modifier = Modifier.testTag(TestIds.imageImportChoose),
+                    onClick = {
+                        menuOpen = false
+                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
+                )
+            }
+        }
         when (val current = status) {
             null -> Text(t("image.hint"), fontSize = FontSize.xs, color = Palette.muted)
             else ->
-            Row(
-                Modifier.semantics { liveRegion = LiveRegionMode.Polite }.testTag(TestIds.imageImportStatus),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    when (current) {
-                        ImageStatus.Reading -> t("image.reading")
-                        is ImageStatus.Added -> t("image.added", "count" to current.ids.size, "first" to current.first)
-                        ImageStatus.Empty -> t("image.empty")
-                        is ImageStatus.Failed -> t("image.error.${current.key}")
-                    },
-                    fontSize = FontSize.sm,
-                    color = if (current is ImageStatus.Failed) Palette.danger else Palette.muted,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                if (current is ImageStatus.Added) {
+                Row(
+                    Modifier.semantics { liveRegion = LiveRegionMode.Polite }.testTag(TestIds.imageImportStatus),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text(
-                        t("image.undo"),
+                        when (current) {
+                            ImageStatus.Reading -> t("image.reading")
+                            is ImageStatus.Added ->
+                                t("image.added", "count" to current.ids.size, "first" to current.first)
+                            ImageStatus.Empty -> t("image.empty")
+                            is ImageStatus.Failed -> t("image.error.${current.key}")
+                        },
                         fontSize = FontSize.sm,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Palette.foreground,
-                        textDecoration = TextDecoration.Underline,
-                        modifier =
-                            Modifier.clickable(enabled = enabled, role = Role.Button) {
-                                    onUndo(current.ids)
-                                    status = null
-                                }
-                                .testTag(TestIds.imageImportUndo)
-                                .padding(Spacing.s1),
+                        color = if (current is ImageStatus.Failed) Palette.danger else Palette.muted,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
+                    if (current is ImageStatus.Added) {
+                        Text(
+                            t("image.undo"),
+                            fontSize = FontSize.sm,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Palette.foreground,
+                            textDecoration = TextDecoration.Underline,
+                            modifier =
+                                Modifier.clickable(enabled = enabled, role = Role.Button) {
+                                        onUndo(current.ids)
+                                        status = null
+                                    }
+                                    .testTag(TestIds.imageImportUndo)
+                                    .padding(Spacing.s1),
+                        )
+                    }
                 }
-            }
         }
     }
 }
